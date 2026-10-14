@@ -221,20 +221,20 @@ export function leeRedes(data, P) {
   return { mes, hashtags, temas, menciones: t.menciones, sinTema: t.sinTema, pideLectura: peor && peor.tono <= -0.25 ? peor : null };
 }
 
-// ══════════ 1.5 Competencia: actividad en redes (sin tono) ══════════
+// ══════════ 1.5 Competencia: lectura del mes, sin comparación ══════════
+// Como en producción: publicaciones del mes y anuncios activos de la biblioteca de Meta. No hay historia de la
+// competencia, así que no se compara con otro período.
 export function leeCompetencia(data, P) {
   const det = detalleDe(data);
-  const mes = P.hasta.slice(0, 7), mesComp = P.compararHasta.slice(0, 7);
-  return {
-    mes, formatos: data.config.formatosAnuncio.map((f) => f.nombre),
-    marcas: det.redes.map((r) => {
-      const m = r.meses.find((x) => x.mes === mes), c = r.meses.find((x) => x.mes === mesComp);
-      return {
-        id: r.id, nombre: r.nombre, propia: r.propia, publicaciones: m.publicaciones, anuncios: m.anuncios, formatos: m.formatos,
-        porPublicacion: razon(m.interacciones, m.publicaciones), porPublicacionPrevia: c ? razon(c.interacciones, c.publicaciones) : null,
-      };
-    }).sort((a, b) => b.porPublicacion - a.porPublicacion),
-  };
+  const mes = P.hasta.slice(0, 7);
+  const marcas = det.redes.map((r) => {
+    const m = r.meses.find((x) => x.mes === mes);
+    return {
+      id: r.id, nombre: r.nombre, propia: r.propia, publicaciones: m.publicaciones, interacciones: m.interacciones,
+      porPublicacion: razon(m.interacciones, m.publicaciones), anuncios: m.anuncios, formatos: m.formatos, tono: m.tonoTexto, palabras: r.palabras,
+    };
+  }).sort((a, b) => b.interacciones - a.interacciones);
+  return { mes, formatos: data.config.formatosAnuncio.map((f) => f.nombre), marcas };
 }
 
 // ══════════ 1.6 Sitio: interacción, por día, por hora y por día de semana ══════════

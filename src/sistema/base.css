@@ -76,7 +76,7 @@ a { color: var(--texto-1); text-underline-offset: 3px; }
 .q-tabla .q-num { text-align: right; white-space: nowrap; }
 .q-tabla tbody th { font-weight: var(--peso-lectura); color: var(--texto-1); }
 .q-tabla td { color: var(--texto-2); }
-.q-tabla tbody tr:hover > * { background: var(--superficie-alcance); }
+.q-tabla tbody tr:hover > * { background: var(--superficie-capitulo); }
 
 /* El atributo hidden siempre gana, aunque el componente declare su display */
 [hidden] { display: none !important; }

@@ -1,7 +1,8 @@
 // Capa 1 · Lee: lo que dice cada fuente, por separado. No calcula: pinta la vista y las lecturas de src/textos.
 import { Bloque, Cifra, Tabla, Resumen } from '../sistema/Componentes.jsx';
-import { Linea, Multiplos, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma } from '../sistema/graficos/Graficos.jsx';
-import { numero, soles, porcentaje, compacto, variacion, rangoFechas, fecha, diaSemanaLargo, mesCorto, NO_MEDIDO } from '../sistema/formato.js';
+import { useState } from 'react';
+import { Linea, Multiplos, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion } from '../sistema/graficos/Graficos.jsx';
+import { numero, dolares, porcentaje, compacto, variacion, rangoFechas, fecha, diaSemanaLargo, mesCorto, NO_MEDIDO } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe } from './comun.jsx';
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
@@ -10,6 +11,43 @@ const sinDato = (estado) => ({ tipo: estado === 'no-cargo' ? 'no-cargo' : estado
 const delta = (cambio, mejorSi, v) => ({ cambio, mejorSi, referencia: `contra ${comparacionTexto(v.periodo)}`, motivo: 'sin comparación' });
 // En el resumen la referencia va corta para que cada cifra quede en una línea: «contra set 2025»
 const deltaCorto = (cambio, mejorSi, v) => ({ ...delta(cambio, mejorSi, v), referencia: `contra ${mesCorto(+v.periodo.compararDesde.slice(5, 7))} ${v.periodo.compararDesde.slice(0, 4)}` });
+
+// Partes de un todo: tres con color (orden validado para daltonismo) y el resto juntas en un solo gris.
+// La tabla de al lado lista todas; la franja no repite grises que no se distinguen.
+const partesConResto = (partes, nombreResto) => {
+  const resto = partes.slice(3);
+  const pctResto = resto.every((p) => p.pct != null) ? resto.reduce((t, p) => t + p.pct, 0) : null;
+  return [
+    ...partes.slice(0, 3).map((p, i) => ({ ...p, clase: `q-p${i}` })),
+    ...(resto.length ? [{ nombre: nombreResto, valor: resto.reduce((t, p) => t + p.valor, 0), pct: pctResto, clase: 'q-p5', nota: resto.map((p) => p.nombre.toLowerCase()).join(', ') }] : []),
+  ];
+};
+
+// Competencia: dispersión de interacción y tono; al elegir un punto, su ficha al lado. Arranca en la marca propia.
+function Competencia({ marcas }) {
+  const [elegida, setElegida] = useState(() => marcas.find((m) => m.propia)?.id);
+  const m = marcas.find((x) => x.id === elegida) || marcas[0];
+  return (
+    <div className="q-competencia">
+      <div>
+        <Dispersion etiqueta="Interacción y tono del texto de cada marca" rotuloX="Interacción en el mes" rotuloY="Tono del texto, de 0 a 100"
+          formatoX={compacto} notas={{ neutro: 'neutro', arriba: 'tono positivo', abajo: 'tono negativo' }}
+          puntos={marcas.map((x) => ({ id: x.id, nombre: x.nombre, propia: x.propia, x: x.interacciones, y: x.tono }))}
+          elegido={m.id} onElegir={setElegida} />
+        <p className="q-nota-bloque">Elige un punto para ver el detalle de cada marca.</p>
+      </div>
+      <aside className="q-ficha" aria-live="polite" aria-label={`Detalle de ${m.nombre}`}>
+        <h4>{m.nombre}</h4>
+        <dl>
+          <div><dt>Interacción</dt><dd><b>{compacto(m.interacciones)}</b> en {numero(m.publicaciones)} {m.publicaciones === 1 ? 'publicación' : 'publicaciones'}</dd></div>
+          <div><dt>Tono del texto</dt><dd><b>{numero(m.tono)}</b> de 100 · 50 es neutro</dd></div>
+          <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b> {m.anuncios ? `· ${m.formatos.map((n, i) => `${numero(n)} ${['en imagen', 'en video', 'en carrusel'][i]}`).filter((t) => !t.startsWith('0 ')).join(', ')}` : ''}</dd></div>
+          <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
+        </dl>
+      </aside>
+    </div>
+  );
+}
 
 export default function Lee({ capa, vista: v }) {
   const [s11, s12, s13, s14, s15, s16] = capa.secciones;
@@ -22,8 +60,8 @@ export default function Lee({ capa, vista: v }) {
         pie={<span>Cada variación compara los días medidos de {periodoTexto(v.periodo)} con los mismos días de {comparacionTexto(v.periodo)}. Pauta, CRM y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
         items={[
           { rotulo: 'Leads de las plataformas', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? numero(pa.leads) : null, delta: ok(pa) ? deltaCorto(pa.cambio, 'sube', v) : null, dataClave: 'pauta-leads' },
-          { rotulo: 'Inversión en pauta', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? soles(pa.inversion) : null, nota: `en ${numero(v.lee.plataformas.plataformas.length)} plataformas` },
-          { rotulo: 'Costo por lead', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? soles(pa.cpl, 2) : null, delta: ok(pa) ? deltaCorto(pa.cambioCpl, 'baja', v) : null },
+          { rotulo: 'Inversión en pauta', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? dolares(pa.inversion) : null, nota: `en ${numero(v.lee.plataformas.plataformas.length)} plataformas` },
+          { rotulo: 'Costo por lead', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? dolares(pa.cpl, 2) : null, delta: ok(pa) ? deltaCorto(pa.cambioCpl, 'baja', v) : null },
           { rotulo: 'Leads en el CRM', universo: 'crm', ir: s12.id, irTexto: s12.titulo, valor: ok(cr) ? numero(cr.total) : null, delta: ok(cr) ? deltaCorto(cr.cambio, 'sube', v) : null, dataClave: 'crm-total' },
           { rotulo: 'Sesiones del sitio', universo: 'web', ir: s16.id, irTexto: s16.titulo, valor: ok(w) ? compacto(w.sesiones) : null, delta: ok(w) ? deltaCorto(w.sesionesCambio, 'sube', v) : null },
         ]} />
@@ -36,12 +74,12 @@ export default function Lee({ capa, vista: v }) {
               <Linea serie={pa.serie} previa={pa.seriePrevia} eventos={pa.eventos} etiqueta="Leads reportados por día, con el mismo tramo de la comparación en gris" />
             </Bloque>
             <Bloque universo="pauta" ancho="mitad" {...L.plataformasLectura(v)}
-              ayuda={<p>Costo por lead de cada plataforma contra su objetivo. El objetivo de Google Ads combina el de Search y el de Display según lo que invirtió cada uno. Las bandas grises marcan holgado (bajo 85 % del objetivo) y en objetivo.</p>}>
-              <Bala max={Math.ceil(Math.max(...v.lee.plataformas.plataformas.map((p) => Math.max(p.cpl ?? 0, p.objetivo) * 1.25)) / 5) * 5} formato={(n) => soles(n, 2)} formatoEje={(n) => soles(n)}
+              ayuda={<p>Costo por lead de cada plataforma contra su objetivo. El objetivo de Google Ads combina el de Search y el de Display según lo que invirtió cada uno. La zona gris llega hasta el objetivo; la raya vertical es el objetivo.</p>}>
+              <Bala max={Math.ceil(Math.max(...v.lee.plataformas.plataformas.map((p) => Math.max(p.cpl ?? 0, p.objetivo) * 1.25)) / 5) * 5} formato={(n) => dolares(n, 2)} formatoEje={(n) => dolares(n)}
                 etiqueta="Costo por lead de cada plataforma contra su objetivo"
                 filas={v.lee.plataformas.plataformas.map((p) => ({
                   nombre: p.nombre, valor: p.cpl, marca: p.objetivo,
-                  bandas: [{ hasta: p.objetivo * 0.85 }, { hasta: p.objetivo }, { hasta: Infinity }],
+                  bandas: [{ hasta: p.objetivo }],
                   estado: p.cpl > p.objetivo ? 'sobre el objetivo' : 'bajo el objetivo', tono: p.cpl > p.objetivo ? 'empeora' : null,
                 }))} />
             </Bloque>
@@ -52,12 +90,12 @@ export default function Lee({ capa, vista: v }) {
             <Bloque universo="pauta" {...L.campanasLectura(v)}>
               <Tabla etiqueta="Campañas con gasto en el período" numericas={[3, 4, 5, 6]}
                 columnas={['Campaña', 'Plataforma', 'Producto', 'Inversión', 'Clics', 'Leads', 'Costo por lead']}
-                filas={v.lee.plataformas.plataformas.flatMap((p) => p.campanas.map((c) => [c.nombre, p.nombre, c.producto === 'marca' ? 'Marca' : 'Membresías', soles(c.inversion), numero(c.clics), numero(c.leads), c.leads ? soles(c.cpl, 2) : 'sin leads']))} />
+                filas={v.lee.plataformas.plataformas.flatMap((p) => p.campanas.map((c) => [c.nombre, p.nombre, c.producto === 'marca' ? 'Marca' : 'Membresías', dolares(c.inversion), numero(c.clics), numero(c.leads), c.leads ? dolares(c.cpl, 2) : 'sin leads']))} />
             </Bloque>
             <Bloque universo="pauta" ancho="mitad" {...L.palabrasLectura(v)}>
               <Tabla etiqueta="Palabras clave con más gasto" numericas={[1, 2, 3, 4]}
                 columnas={['Palabra clave', 'Gasto', 'Clics', 'Leads', 'Costo por clic']}
-                filas={v.lee.plataformas.palabras.nombradas.map((k) => [k.texto, soles(k.inversion), numero(k.clics), numero(k.leads), soles(k.cpc, 2)])} />
+                filas={v.lee.plataformas.palabras.nombradas.map((k) => [k.texto, dolares(k.inversion), numero(k.clics), numero(k.leads), dolares(k.cpc, 2)])} />
             </Bloque>
             <Bloque universo="pauta" ancho="mitad" {...L.terminosLectura(v)}
               pie={<span>Otros términos: {numero(v.lee.plataformas.terminosResto?.clics ?? 0)} clics repartidos en búsquedas que se hicieron pocas veces.</span>}>
@@ -69,7 +107,7 @@ export default function Lee({ capa, vista: v }) {
               pie={<span>{v.lee.plataformas.programatica.fuente} · {numero(v.lee.plataformas.programatica.sitios)} sitios y apps</span>}>
               <Tabla etiqueta="Formatos de la pauta programática" numericas={[3, 4, 5, 6]}
                 columnas={['Formato', 'Compra', 'Audiencia', 'Impresiones', 'Clics', 'CTR', 'Consumo']}
-                filas={v.lee.plataformas.programatica.formatos.map((f) => [f.nombre, f.compra, f.audiencia, numero(f.impresiones), numero(f.clics), porcentaje(f.ctr * 100, 2), soles(f.consumo)])} />
+                filas={v.lee.plataformas.programatica.formatos.map((f) => [f.nombre, f.compra, f.audiencia, numero(f.impresiones), numero(f.clics), porcentaje(f.ctr * 100, 2), dolares(f.consumo)])} />
             </Bloque>
           </>}
         </SeccionDe>
@@ -115,7 +153,7 @@ export default function Lee({ capa, vista: v }) {
               pie={<span>Valor estimado: inscripciones por el ticket de entrada (matrícula y primer mes). No se compara con la inversión, que mide otra cosa.</span>}>
               {v.lee.crmDetalle.campanas.length > 0 && <Tabla etiqueta="Campañas del CRM" numericas={[2, 3, 4]}
                 columnas={['Campaña', 'Vigencia', 'Leads', 'Inscripciones', 'Valor estimado']}
-                filas={v.lee.crmDetalle.campanas.map((k) => [k.nombre + (k.enCurso ? ' (en curso)' : ''), rangoFechas(k.desde, k.hasta), numero(k.leads), numero(k.altas), soles(k.valor)])} />}
+                filas={v.lee.crmDetalle.campanas.map((k) => [k.nombre + (k.enCurso ? ' (en curso)' : ''), rangoFechas(k.desde, k.hasta), numero(k.leads), numero(k.altas), dolares(k.valor)])} />}
             </Bloque>
           </>}
         </SeccionDe>
@@ -151,24 +189,19 @@ export default function Lee({ capa, vista: v }) {
           </>}
         </SeccionDe>
 
-        {/* ───── 1.5 Competencia ───── */}
+{/* ───── 1.5 Competencia: lectura del mes, sin comparación (en producción no hay historia de la competencia) ───── */}
         <SeccionDe def={s15} vista={v}>
           {v.lee.competencia.estado !== 'ok' ? <Bloque titulo="Competencia" universo="conversacion" estado={sinDato(v.lee.competencia.estado)} /> : <>
-            <Bloque universo="conversacion" ancho="mitad" {...L.competenciaLectura(v)}
-              pie={<span>Marcas reales con cifras de muestra: no describen su desempeño real. Sin tono ni juicios.</span>}>
-              <Barras etiqueta="Interacción por publicación de cada marca" resaltar="Fit Lab" rotuloPrevio={comparacionTexto(v.periodo)}
-                filas={v.lee.competencia.marcas.map((m) => ({ nombre: m.nombre, valor: Math.round(m.porPublicacion), previo: m.porPublicacionPrevia == null ? null : Math.round(m.porPublicacionPrevia) }))} />
-              <Tabla etiqueta="Actividad de cada marca" numericas={[1, 2]}
-                columnas={['Marca', 'Publicaciones', 'Anuncios activos', ...v.lee.competencia.formatos]}
-                filas={v.lee.competencia.marcas.map((m) => [m.nombre, numero(m.publicaciones), numero(m.anuncios), ...m.formatos.map((n) => numero(n))])} />
+            <Bloque universo="conversacion" {...L.competenciaLectura(v)}
+              ayuda={<><p>Interacción: reacciones, comentarios y compartidos de las publicaciones del mes. Tono del texto: qué tan positivo es lo que cada marca escribe en sus publicaciones, de 0 a 100; 50 es neutro. No mide lo que la gente dice de la marca: eso está en Redes.</p><p>No se compara con otro período: de la competencia solo se lee lo que está publicado.</p></>}
+              pie={<><span>Publicaciones de {periodoTexto(v.periodo)} · anuncios activos al {fecha(v.periodo.hasta)}</span><span>Facebook y biblioteca de anuncios de Meta · marcas reales con cifras de muestra: no describen su desempeño real</span></>}>
+              <Competencia marcas={v.lee.competencia.marcas} />
             </Bloque>
-            <Bloque universo="conversacion" ancho="mitad" {...L.competenciaConversacion(v)}>
-              {v.lee.competencia.conversacion.estado === 'ok' && (() => {
-                const ms = v.lee.competencia.conversacion.meses;
-                const a = ms[0], b = ms.at(-1);
-                return <Pesas etiqueta="Participación en la conversación, hace un año y ahora" rotuloA={mesTexto(a.mes)} rotuloB={mesTexto(b.mes)} max={50}
-                  formato={(n) => porcentaje(n)} filas={[...b.marcas].sort((p, q) => q.pct - p.pct).map((x) => ({ nombre: x.nombre, a: a.marcas.find((y) => y.id === x.id).pct, b: x.pct }))} />;
-              })()}
+            <Bloque universo="conversacion" {...L.competenciaAnuncios(v)}
+              pie={<span>Anuncios activos el último día del período, por formato.</span>}>
+              <Tabla etiqueta="Publicaciones y anuncios activos de cada marca" numericas={[1, 2, 3, 4, 5, 6]}
+                columnas={['Marca', 'Publicaciones', 'Interacción por publicación', 'Anuncios activos', ...v.lee.competencia.formatos]}
+                filas={[...v.lee.competencia.marcas].sort((a, b) => b.anuncios - a.anuncios).map((m) => [m.nombre, numero(m.publicaciones), numero(m.porPublicacion), numero(m.anuncios), ...m.formatos.map((n) => numero(n))])} />
             </Bloque>
           </>}
         </SeccionDe>
@@ -185,7 +218,7 @@ export default function Lee({ capa, vista: v }) {
             </Bloque>
             <Bloque universo="web" ancho="mitad" {...L.webFuentes(v)} pie={<span>Las fuentes con pauta traen sesiones de anuncios; sus solicitudes ya cuentan como leads en Pauta pagada.</span>}>
               <Franja etiqueta="Sesiones por fuente" formato={(p) => porcentaje(p)}
-                partes={[...v.lee.web.fuentes].sort((a, b) => b.sesiones - a.sesiones).map((f, i) => ({ nombre: f.nombre, valor: f.sesiones, pct: f.pct, clase: i < 5 ? `q-p${i}` : 'q-p5' }))} />
+                partes={partesConResto([...v.lee.web.fuentes].sort((a, b) => b.sesiones - a.sesiones).map((f) => ({ nombre: f.nombre, valor: f.sesiones, pct: f.pct })), 'Otras fuentes')} />
               <Tabla etiqueta="Sesiones y solicitudes por fuente" numericas={[1, 2, 3]}
                 columnas={['Fuente', 'Sesiones', 'Solicitudes', 'Por cada 100 sesiones']}
                 filas={[...v.lee.web.fuentes].sort((a, b) => b.sesiones - a.sesiones).map((f) => [f.nombre, compacto(f.sesiones), numero(f.solicitudes), numero((f.solicitudes / f.sesiones) * 100, 1)])} />

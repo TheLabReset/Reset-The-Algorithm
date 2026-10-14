@@ -1,5 +1,5 @@
 // Lecturas de la capa Analiza: lo que aparece al cruzar fuentes. Observan; no ordenan.
-import { numero, soles, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
+import { numero, dolares, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
 import { periodoTexto, mesTexto, capital, lista } from './comun.js';
 
 export function veredicto(v) {
@@ -16,7 +16,7 @@ export function inversionContraLeads(v) {
   const menos = [...c].sort((a, b) => (a.pctLeads - a.pctInversion) - (b.pctLeads - b.pctInversion))[0];
   return {
     titulo: 'Parte de la inversión contra parte de los leads',
-    lectura: `${mas.nombre} se lleva ${numero(mas.pctInversion)} de cada 100 soles y trae ${numero(mas.pctLeads)} de cada 100 leads. ${menos.nombre}: ${numero(menos.pctInversion)} de cada 100 soles y ${numero(menos.pctLeads)} de cada 100 leads.`,
+    lectura: `${mas.nombre} se lleva ${numero(mas.pctInversion)} de cada 100 dólares y trae ${numero(mas.pctLeads)} de cada 100 leads. ${menos.nombre}: ${numero(menos.pctInversion)} de cada 100 dólares y ${numero(menos.pctLeads)} de cada 100 leads.`,
   };
 }
 
@@ -45,7 +45,7 @@ export function costos(v) {
   if (!r.cohorteCerrada) return { titulo, lectura: `El costo por inscripción usa la cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}, que todavía no cierra: se muestra solo el costo por lead.` };
   const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
   if (!b) return { titulo, lectura: 'Ningún canal tiene inscripciones suficientes para comparar el costo por inscripción.' };
-  return { titulo, lectura: a.id === b.id ? `${a.nombre} gana en las dos columnas.` : `La plataforma y el CRM no coinciden: ${a.nombre} sale más barato por lead (${soles(a.cpl, 2)}) y ${b.nombre} por inscripción (${soles(b.cohorte.cpa)}).` };
+  return { titulo, lectura: a.id === b.id ? `${a.nombre} gana en las dos columnas.` : `La plataforma y el CRM no coinciden: ${a.nombre} sale más barato por lead (${dolares(a.cpl, 2)}) y ${b.nombre} por inscripción (${dolares(b.cohorte.cpa)}).` };
 }
 
 export function demanda(v) {

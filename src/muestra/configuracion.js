@@ -7,7 +7,7 @@ export const CONFIG = {
   desde: '2025-01-01',
   corte: '2026-09-30', // fecha fija de la muestra: nunca Date.now()
   marca: { id: 'fitlab', nombre: 'Fit Lab', rubro: 'cadena de gimnasios', ciudad: 'Lima' },
-  moneda: 'S/',
+  moneda: '$', // todo monto en dólares, como facturan las plataformas
 
   // Índice mensual de «gimnasio» en Perú, Google Trends 2022-2025, media anual = 1 (confirmé, informe 06 §4.4)
   estacionalidad: [1.24, 1.14, 1.01, 0.89, 0.93, 0.87, 0.96, 1.08, 0.98, 0.96, 0.94, 1.0],
@@ -27,11 +27,13 @@ export const CONFIG = {
   // calidad: cuánto más (o menos) convierte un lead del canal en cita y en inscripción. Asumo: la búsqueda
   // trae intención declarada y convierte más; el formulario instantáneo de redes, menos.
   // metaCpl: asumo. En una demo real la fija el cliente.
+  // Montos en dólares: los supuestos se calibraron en soles para Lima y se pasaron a 3,75 soles por dólar (asumo;
+  // es muestra fija, no sigue el tipo de cambio del día).
   canales: [
-    { id: 'meta', nombre: 'Meta', cpm: 12, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 12, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
-    { id: 'search', nombre: 'Google Search', cpm: 90, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 25, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
-    { id: 'tiktok', nombre: 'TikTok', cpm: 10, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 20, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25, inflacion: 0.18 },
-    { id: 'display', nombre: 'Google Display', cpm: 6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 45, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
+    { id: 'meta', nombre: 'Meta', cpm: 3.2, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 3.2, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
+    { id: 'search', nombre: 'Google Search', cpm: 24, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 6.7, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
+    { id: 'tiktok', nombre: 'TikTok', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25, inflacion: 0.18 },
+    { id: 'display', nombre: 'Google Display', cpm: 1.6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 12, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
   ],
   // webPropia: fracción de los leads del canal que entra por un formulario del sitio (el resto, formulario dentro de la plataforma)
   // inflacion: cuánto de más reporta la plataforma sobre los leads que llegan al CRM (duplicados, pruebas, conversiones
@@ -39,7 +41,7 @@ export const CONFIG = {
   // Leads que llegan por el sitio sin pauta: entran al CRM pero no son leads de pauta (asumo: convierten un poco más)
   organico: { id: 'organico', nombre: 'Sitio sin pauta', calidad: { cita: 1.1, alta: 1.1 } },
 
-  presupuestoMensual: 60000, // asumo
+  presupuestoMensual: 16000, // asumo, en dólares
   pesoPresupuestoMes: [1.3, 1.15, 1.0, 0.9, 0.9, 0.85, 0.95, 1.05, 1.0, 0.95, 0.95, 1.0], // asumo: la inversión sigue a la demanda
   presionSubasta: [1.15, 1.0, 1.0, 1.0, 1.0, 1.0, 1.05, 1.0, 1.0, 1.0, 1.12, 1.18], // asumo: CPM más caro en enero y fin de año
 
@@ -174,9 +176,9 @@ export const CONFIG = {
     campana: 'FL | Programática | Prospección Lima Norte', desde: '2026-08-18', hasta: '2026-09-30',
     fuente: 'Planilla del equipo de programática (carga manual)', sitios: 214,
     formatos: [
-      { nombre: 'Notificación push', compra: 'CPC', audiencia: '18 a 34 años · Lima Norte', impresiones: 420000, ctr: 0.009, costoUnidad: 0.32 },
-      { nombre: 'Banners display', compra: 'CPM', audiencia: 'Alrededor de las sedes de Lima Norte', impresiones: 1600000, ctr: 0.0021, costoUnidad: 3.1 },
-      { nombre: 'Video en apps', compra: 'CPM', audiencia: '18 a 44 años · Lima', impresiones: 380000, ctr: 0.0042, costoUnidad: 7.4 },
+      { nombre: 'Notificación push', compra: 'CPC', audiencia: '18 a 34 años · Lima Norte', impresiones: 420000, ctr: 0.009, costoUnidad: 0.085 },
+      { nombre: 'Banners display', compra: 'CPM', audiencia: 'Alrededor de las sedes de Lima Norte', impresiones: 1600000, ctr: 0.0021, costoUnidad: 0.83 },
+      { nombre: 'Video en apps', compra: 'CPM', audiencia: '18 a 44 años · Lima', impresiones: 380000, ctr: 0.0042, costoUnidad: 2 },
     ],
   },
 
@@ -200,7 +202,7 @@ export const CONFIG = {
       { motivo: 'Menor de edad', peso: 0.04 },
       { motivo: 'Otros motivos', peso: 0.08 },
     ],
-    ticketInscripcion: 189, // asumo: matrícula más primer mes, en soles; valor de una inscripción en el CRM
+    ticketInscripcion: 50, // asumo: matrícula más primer mes, en dólares; valor de una inscripción en el CRM
     campanas: [
       { id: 'reto-2025', nombre: 'Reto de enero 2025', desde: '2025-01-02', hasta: '2025-02-15', canales: ['meta', 'tiktok'], participacion: 0.8 },
       { id: 'reto-2026', nombre: 'Reto de enero 2026', desde: '2026-01-02', hasta: '2026-02-15', canales: ['meta', 'tiktok'], participacion: 0.8 },
@@ -233,13 +235,17 @@ export const CONFIG = {
   ],
   sinTema: 0.06,
   // Competencia en redes: publicaciones del mes, interacción por publicación y anuncios activos (biblioteca de anuncios de Meta)
+  // Competencia en Facebook: lectura del mes (sin comparación: en producción la biblioteca de anuncios y las
+  // publicaciones se leen al día, no hay historia de la competencia). tonoTexto: tono del texto de SUS publicaciones,
+  // de 0 a 100 (50 neutro). Asumo de 52 a 80: una marca escribe en tono promocional; ninguna marca real queda
+  // en «tono negativo» con cifras inventadas. palabras: genéricas del rubro, de muestra.
   redesMarcas: [
-    { id: 'smartfit', publicaciones: 34, interaccion: 1450, anuncios: 46 },
-    { id: 'b2', publicaciones: 22, interaccion: 380, anuncios: 9 },
-    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14 },
-    { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25 },
-    { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4 },
-    { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true },
+    { id: 'smartfit', publicaciones: 34, interaccion: 1450, anuncios: 46, tonoTexto: 64, palabras: ['plan', 'precio', 'sedes', 'app'] },
+    { id: 'b2', publicaciones: 22, interaccion: 380, anuncios: 9, tonoTexto: 58, palabras: ['funcional', 'clases', 'comunidad'] },
+    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14, tonoTexto: 71, palabras: ['bienestar', 'piscina', 'clases'] },
+    { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25, tonoTexto: 61, palabras: ['boxeo', 'reto', 'entrenamiento'] },
+    { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4, tonoTexto: 55, palabras: ['máquinas', 'horario', 'promoción'] },
+    { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true, tonoTexto: 74, palabras: ['primera semana', 'clase de prueba', 'coach'] },
   ],
   formatosAnuncio: [{ nombre: 'Imagen', peso: 0.45 }, { nombre: 'Video', peso: 0.38 }, { nombre: 'Carrusel', peso: 0.17 }],
 

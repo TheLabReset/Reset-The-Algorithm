@@ -2,7 +2,7 @@
 // y la respuesta se parece a la de las últimas 4 semanas. No es meta ni promesa: es un rango condicional.
 //
 // Método (declarado en pantalla):
-//   leads por sol de los últimos 28 días × estacionalidad del mes / estacionalidad de la ventana × inversión planeada del mes.
+//   leads por dólar de los últimos 28 días × estacionalidad del mes / estacionalidad de la ventana × inversión planeada del mes.
 // Rango: del menor al mayor error que tuvo este mismo método en los meses pasados (real / estimado, por horizonte),
 //   usando solo meses que ya habían cerrado. El punto medio se corrige por el sesgo mediano de esos errores.
 //   No se le pone un nivel de confianza: se informa cuántas veces acertó.
@@ -113,6 +113,6 @@ export function escenario(data, origen) {
   return {
     origen, meses, historia, acierto, leGana,
     error: { metodo: errorMetodo, ingenuo: errorIngenuo },
-    supuestos: { ventanaDias: 28, inversionPlan: meses.map((m) => ({ mes: m.mes, soles: planMes(cfg, m.mes) })) },
+    supuestos: { ventanaDias: 28, inversionPlan: meses.map((m) => ({ mes: m.mes, dolares: planMes(cfg, m.mes) })) },
   };
 }

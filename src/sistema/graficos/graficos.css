@@ -44,31 +44,36 @@
 
 /* Barras: gris neutro; la que se lee primero, en la serie propia */
 .q-svg .q-barra { fill: var(--borde-control); }
-.q-svg .q-barra-acento, .q-svg .q-barra-valor { fill: var(--s1); }
+.q-svg .q-barra-valor { fill: var(--s1); }
+/* la barra resaltada: la menta de la marca, una por gráfico */
+.q-svg .q-barra-acento { fill: var(--resalte); }
 .q-svg .q-barra-rayada { fill: var(--rayado); }
 .q-svg .q-rayado-fondo { fill: var(--superficie); }
 .q-svg .q-rayado-linea { stroke: var(--atencion); stroke-width: 2; }
 .q-svg .q-raya-previa { stroke: var(--texto-1); stroke-width: 2; }
 .q-svg .q-marca { stroke: var(--texto-1); stroke-width: 3; }
 .q-svg .q-banda-0 { fill: var(--banda-0); }
-.q-svg .q-banda-1 { fill: var(--banda-1); }
-.q-svg .q-banda-2 { fill: var(--banda-2); }
 
 /* Proyección: lo real es barra, lo proyectado es punto con su rango; la zona futura cambia de superficie */
-.q-svg .q-zona-proyeccion { fill: var(--superficie-alcance); }
+.q-svg .q-zona-proyeccion { fill: var(--superficie-capitulo); }
 .q-svg .q-barra-real { fill: var(--texto-3); }
 .q-svg .q-banda-proy { stroke: var(--s1); stroke-width: 6; stroke-linecap: round; stroke-opacity: 0.45; }
-.q-svg .q-punto-proy { fill: var(--s1); stroke: var(--superficie-alcance); stroke-width: 2; }
+.q-svg .q-punto-proy { fill: var(--s1); stroke: var(--superficie-capitulo); stroke-width: 2; }
 
 /* Partes de un todo: series en orden fijo; el resto en grises */
-.q-p0 { fill: var(--s1); background: var(--s1); }
-.q-p1 { fill: var(--s2); background: var(--s2); }
-.q-p2 { fill: var(--s3); background: var(--s3); }
-.q-p3 { fill: var(--s4); background: var(--s4); }
-.q-p4 { fill: var(--s5); background: var(--s5); }
-.q-p5, .q-g2 { fill: var(--texto-3); background: var(--texto-3); }
-.q-p6, .q-g3 { fill: var(--borde-control); background: var(--borde-control); }
-.q-g1 { fill: var(--texto-2); background: var(--texto-2); }
+/* Partes de un todo: tres colores de categoría en este orden (azul, naranja, menta: pares vecinos validados
+   para daltonismo); lo demás se junta en «el resto», un solo gris. Nunca más de tres colores ni dos grises. */
+.q-p0 { fill: var(--s4); background: var(--s4); }
+.q-p1 { fill: var(--s3); background: var(--s3); }
+.q-p2 { fill: var(--s2); background: var(--s2); }
+/* «el resto»: el único gris de un gráfico de partes */
+.q-p5 { fill: var(--borde-control); background: var(--borde-control); }
+/* partes de una retícula: la resaltada en menta, dos en color de categoría (azul y naranja, validados para
+   daltonismo en ese orden), el resto en un solo gris y lo perdido hueco. Nunca dos grises vecinos. */
+.q-g0 { fill: var(--resalte); background: var(--resalte); }
+.q-g1 { fill: var(--s4); background: var(--s4); }
+.q-g2 { fill: var(--s3); background: var(--s3); }
+.q-g3 { fill: var(--borde-control); background: var(--borde-control); }
 /* el último grupo de una retícula es hueco: se lee como lo que se perdió */
 .q-g4 { fill: transparent; stroke: var(--borde-control); stroke-width: 1.5; background: transparent; }
 .q-leyenda .q-g4, .q-muestra.q-g4 { border: 1.5px solid var(--borde-control); }
@@ -116,3 +121,17 @@
   box-shadow: var(--sombra-flota); font-size: var(--t-12); pointer-events: none; white-space: nowrap;
 }
 .q-pista span:first-child { color: var(--texto-1); font-weight: var(--peso-rotulo); }
+
+/* Dispersión: puntos que se eligen */
+.q-svg .q-neutro { stroke: var(--borde-control); stroke-width: 1; stroke-dasharray: 4 4; }
+.q-svg .q-elegible, .q-svg .q-elegible * { pointer-events: all; cursor: pointer; }
+.q-svg .q-elegible text { pointer-events: none; }
+.q-svg .q-elegible:focus { outline: none; }
+.q-svg .q-blanco { fill: transparent; }
+.q-svg .q-punto { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
+.q-svg .q-punto-propio { fill: var(--resalte); }
+.q-svg .q-anillo { fill: none; stroke: transparent; stroke-width: 1.5; }
+.q-svg .q-elegido .q-anillo { stroke: var(--texto-1); }
+.q-svg .q-elegible:focus-visible .q-anillo { stroke: var(--foco); stroke-width: 2.5; }
+.q-svg .q-elegible:hover .q-anillo { stroke: var(--borde-control); }
+.q-svg .q-elegido:hover .q-anillo { stroke: var(--texto-1); }

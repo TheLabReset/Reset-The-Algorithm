@@ -118,7 +118,8 @@
   .q-bloque.q-dos-tercios { grid-column: span 8; }
 }
 @media (max-width: 640px) { .q-bloque { padding: var(--e-4); } }
-.q-bloque-alcance { background: var(--superficie-alcance); }
+/* lo que no sigue el período: borde punteado y su fecha arriba; el fondo no cambia (dos blancos casi iguales no se ven) */
+.q-bloque-alcance { border-style: dashed; border-color: var(--borde-control); }
 .q-bloque-cab { display: grid; gap: var(--e-1); align-content: start; }
 .q-bloque-titulo { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--e-3); }
 .q-bloque-titulo h3 { font-family: var(--f-titulo); font-size: var(--t-17); font-weight: var(--peso-titulo); line-height: 1.3; letter-spacing: -0.005em; }
@@ -186,3 +187,16 @@
 .q-nota-bloque { font-size: var(--t-13); color: var(--texto-2); }
 .q-dos-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--e-8); }
 .q-cohorte { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); align-items: center; }
+
+/* Competencia: el gráfico y la ficha de la marca elegida, lado a lado */
+.q-competencia { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-6); align-items: start; }
+@media (min-width: 900px) { .q-competencia { grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); } }
+.q-ficha { display: grid; gap: var(--e-4); padding: var(--e-5); border-radius: var(--r-bloque); background: var(--superficie-capitulo); }
+.q-ficha h4 { font-family: var(--f-titulo); font-size: var(--t-17); font-weight: var(--peso-titulo); }
+.q-ficha dl { margin: 0; display: grid; gap: var(--e-4); }
+.q-ficha dt { font-size: var(--t-12); color: var(--texto-3); }
+.q-ficha dd { margin: 0; font-size: var(--t-13); color: var(--texto-2); }
+.q-ficha dd b { font-family: var(--f-titulo); font-size: var(--c-22); font-weight: var(--peso-cifra); color: var(--texto-1); margin-right: var(--e-1); }
+.q-palabras { list-style: none; margin: var(--e-1) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
+.q-palabras li { font-size: var(--t-12); color: var(--texto-1); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); border: 1px solid var(--borde); }
+

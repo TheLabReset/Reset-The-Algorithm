@@ -30,7 +30,8 @@ export function compacto(n) {
   return numero(n, 0);
 }
 
-export const soles = (n, decimales = 0) => (finito(n) ? `S/${' '}${numero(n, decimales)}` : NO_MEDIDO);
+// Dólares, como en las plataformas: «$1 234», la cifra pegada al signo
+export const dolares = (n, decimales = 0) => (finito(n) ? `$${numero(n, decimales)}` : NO_MEDIDO);
 
 export function porcentaje(p, decimales = 0) {
   if (!finito(p)) return NO_MEDIDO;

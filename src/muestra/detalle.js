@@ -181,6 +181,13 @@ export function detallar(data) {
       return { mes: m, publicaciones, interacciones, anuncios, formatos: multinomial(azR, anuncios, cfg.formatosAnuncio.map((f) => f.peso)) };
     }),
   }));
+  // Tono del texto de cada marca, por mes: azar propio para no mover el resto de la muestra
+  const azTono = crearAzar(semillaDe(cfg.semilla, 'tono-texto'));
+  redes.forEach((r, i) => {
+    const base = cfg.redesMarcas[i].tonoTexto;
+    r.meses.forEach((x) => { x.tonoTexto = Math.max(52, Math.min(80, Math.round(base + (azTono.ruido(0.05) - 1) * 100))); });
+    r.palabras = cfg.redesMarcas[i].palabras;
+  });
 
   // ── Búsquedas por región, lectura mensual: índice relativo a la región con más búsqueda (= 100) ──
   const azG = crearAzar(semillaDe(cfg.semilla, 'regiones'));

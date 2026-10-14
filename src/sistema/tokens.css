@@ -32,30 +32,26 @@
 
   /* ── Primitivos: neutros con el tono cálido de la cal ── */
   --p-n-0: #ffffff;
-  --p-n-25: #fafaf7;
   --p-n-75: #ebebe6;
   --p-n-100: #e3e3dd;
-  --p-n-150: #d6d6d0;
-  --p-n-200: #c4c5c0;
   --p-n-300: #a3a6ad;   /* niebla */
   --p-n-400: #7d8088;
-  --p-n-500: #6e7179;
   --p-n-600: #5c5f67;
-  --p-n-700: #4a4d55;   /* pizarra */
   --p-n-750: #44474f;
 
   /* ── Primitivos: neutros del oscuro, de la tinta hacia arriba ── */
   --p-o-950: #0b0c0f;
   --p-o-900: #1c1d23;
-  --p-o-850: #212329;
   --p-o-800: #272930;
   --p-o-750: #33353d;
   --p-o-700: #3c3e46;
-  --p-o-600: #42444c;
-  --p-o-500: #5d6068;
   --p-o-400: #7b7e86;
   --p-o-300: #a4a7ae;
   --p-o-200: #c9cacd;
+
+  /* ── Primitivos: rampa de menta para magnitud (mapa de calor), de menos a más ── */
+  --p-m-1: #e9f8f2; --p-m-2: #b9e6d4; --p-m-3: #86d2b8; --p-m-4: #4fb796; --p-m-5: #239676; --p-m-6: #0e7258; --p-m-7: #08493a;
+  --p-mo-1: #21403a; --p-mo-2: #1d5e4f; --p-mo-3: #1b7d65; --p-mo-4: #26a07f; --p-mo-5: #4fc29f; --p-mo-6: #8fdcc1; --p-mo-7: #cff4e6;
 
   /* ── Primitivos: estado (reservados, nunca serie) ── */
   --p-ambar-700: #8c5b10;
@@ -65,17 +61,14 @@
   --p-cat-menta: #0c8a66;
   --p-cat-naranja: #c2601a;
   --p-cat-azul: #4b63c4;
-  --p-cat-ocre: #9a7a2e;
   --p-cat-menta-o: #1ea47f;
   --p-cat-naranja-o: #d26a26;
   --p-cat-azul-o: #6d84e6;
-  --p-cat-ocre-o: #b18c32;
 
   /* ══════════ Semánticos · tema claro (por defecto) ══════════ */
   --fondo: var(--p-cal);                 /* la página */
   --superficie-capitulo: var(--p-n-75);  /* panel que agrupa las tarjetas de un capítulo */
   --superficie: var(--p-n-0);            /* tarjetas */
-  --superficie-alcance: var(--p-n-25);   /* tarjetas que no siguen el período (cohorte, planilla, escenario) */
   --elevada: var(--p-n-0);               /* lo que flota: ayuda, pista de gráfico */
   --barra: var(--p-tinta);               /* barra de marca arriba */
   --sobre-barra: var(--p-cal);           /* texto sobre la barra */
@@ -94,21 +87,19 @@
   --empeora: var(--p-rojo-texto);        /* variación desfavorable */
   --atencion: var(--p-ambar-700);        /* pocos casos, dato parcial */
   --s1: var(--p-tinta);                  /* la serie propia: tinta, como la marca */
+  --resalte: var(--p-cat-menta);         /* lo que se mira primero en un gráfico: una sola marca por gráfico */
   --s2: var(--p-cat-menta);              /* categorías en orden fijo */
   --s3: var(--p-cat-naranja);
   --s4: var(--p-cat-azul);
-  --s5: var(--p-cat-ocre);
   --previa: var(--p-n-400);              /* período de comparación: siempre gris */
-  --q0: var(--p-n-75);                   /* rampa secuencial en tinta, de menos a más */
-  --q1: var(--p-n-150);
-  --q2: var(--p-n-200);
-  --q3: var(--p-n-300);
-  --q4: var(--p-n-500);
-  --q5: var(--p-n-700);
-  --q6: var(--p-tinta);
-  --banda-0: var(--p-n-75);              /* bandas de lectura de una bala, de la más lejana a la meta */
-  --banda-1: var(--p-n-100);
-  --banda-2: var(--p-n-150);
+  --q0: var(--p-m-1);                    /* rampa secuencial en menta, de menos a más: un solo tono */
+  --q1: var(--p-m-2);
+  --q2: var(--p-m-3);
+  --q3: var(--p-m-4);
+  --q4: var(--p-m-5);
+  --q5: var(--p-m-6);
+  --q6: var(--p-m-7);
+  --banda-0: var(--p-n-100);             /* la zona hasta el objetivo en una bala: un solo gris, nunca escalones */
   --sombra-flota: 0 10px 28px rgb(18 19 24 / 0.14);
   color-scheme: light;
 
@@ -143,7 +134,6 @@
     --fondo: var(--p-tinta);
     --superficie-capitulo: var(--p-o-900);
     --superficie: var(--p-o-800);
-    --superficie-alcance: var(--p-o-850);
     --elevada: var(--p-o-750);
     --barra: var(--p-o-950);
     --sobre-barra: var(--p-cal);
@@ -162,21 +152,20 @@
     --empeora: var(--p-rojo-claro);
     --atencion: var(--p-ambar-300);
     --s1: var(--p-cal);
+  --resalte: var(--p-menta);
+    --resalte: var(--p-menta);
     --s2: var(--p-cat-menta-o);
     --s3: var(--p-cat-naranja-o);
     --s4: var(--p-cat-azul-o);
-    --s5: var(--p-cat-ocre-o);
     --previa: var(--p-o-400);
-    --q0: var(--p-o-750);
-    --q1: var(--p-o-700);
-    --q2: var(--p-o-600);
-    --q3: var(--p-o-500);
-    --q4: var(--p-o-400);
-    --q5: var(--p-o-200);
-    --q6: var(--p-cal);
-    --banda-0: var(--p-o-750);
-    --banda-1: var(--p-o-700);
-    --banda-2: var(--p-o-600);
+    --q0: var(--p-mo-1);
+    --q1: var(--p-mo-2);
+    --q2: var(--p-mo-3);
+    --q3: var(--p-mo-4);
+    --q4: var(--p-mo-5);
+    --q5: var(--p-mo-6);
+    --q6: var(--p-mo-7);
+    --banda-0: var(--p-o-700);
     --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.45);
     color-scheme: dark;
   }
@@ -186,7 +175,6 @@
   --fondo: var(--p-tinta);
   --superficie-capitulo: var(--p-o-900);
   --superficie: var(--p-o-800);
-  --superficie-alcance: var(--p-o-850);
   --elevada: var(--p-o-750);
   --barra: var(--p-o-950);
   --sobre-barra: var(--p-cal);
@@ -205,21 +193,19 @@
   --empeora: var(--p-rojo-claro);
   --atencion: var(--p-ambar-300);
   --s1: var(--p-cal);
+  --resalte: var(--p-menta);
   --s2: var(--p-cat-menta-o);
   --s3: var(--p-cat-naranja-o);
   --s4: var(--p-cat-azul-o);
-  --s5: var(--p-cat-ocre-o);
   --previa: var(--p-o-400);
-  --q0: var(--p-o-750);
-  --q1: var(--p-o-700);
-  --q2: var(--p-o-600);
-  --q3: var(--p-o-500);
-  --q4: var(--p-o-400);
-  --q5: var(--p-o-200);
-  --q6: var(--p-cal);
-  --banda-0: var(--p-o-750);
-  --banda-1: var(--p-o-700);
-  --banda-2: var(--p-o-600);
+  --q0: var(--p-mo-1);
+  --q1: var(--p-mo-2);
+  --q2: var(--p-mo-3);
+  --q3: var(--p-mo-4);
+  --q4: var(--p-mo-5);
+  --q5: var(--p-mo-6);
+  --q6: var(--p-mo-7);
+  --banda-0: var(--p-o-700);
   --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.45);
   color-scheme: dark;
 }

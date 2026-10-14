@@ -14,15 +14,22 @@ import { quitarComentarios, bloquesDeTokens, contraste } from '../src/sistema/le
 export { contraste };
 
 export const TOKENS = 'src/sistema/tokens.css';
-const SUPERFICIES = ['fondo', 'superficie-capitulo', 'superficie', 'superficie-alcance', 'elevada'];
+const SUPERFICIES = ['fondo', 'superficie-capitulo', 'superficie', 'elevada'];
 // los gráficos solo viven dentro de tarjetas
-const SUPERFICIES_GRAFICO = ['superficie', 'superficie-alcance'];
+const SUPERFICIES_GRAFICO = ['superficie'];
 // texto: 4,5:1 sobre toda superficie (WCAG 1.4.3)
 const TEXTO = ['texto-1', 'texto-2', 'texto-3', 'acento-texto', 'mejora', 'empeora', 'atencion'];
 // marcas de interfaz que hay que ver: 3:1 sobre toda superficie (WCAG 1.4.11)
 const INTERFAZ = ['borde-control', 'acento', 'foco'];
 // marcas de datos: 3:1 sobre las superficies donde hay gráficos
-const GRAFICO = ['s1', 's2', 's3', 's4', 's5', 'previa'];
+const GRAFICO = ['s1', 'resalte', 's2', 's3', 's4', 'previa'];
+// colores que conviven en un mismo gráfico: tienen que separarse entre sí, no solo del fondo.
+// Regla de la casa: nunca dos grises vecinos que se confundan (asumo 1,2:1 entre escalones como piso perceptible
+// para rellenos grandes; 2:1 entre la serie y su comparación).
+const CONVIVEN = [
+  ['s1', 'previa', 2], ['banda-0', 'superficie', 1.2], ['s1', 'banda-0', 4.5], ['borde-control', 'superficie', 3],
+  ['q0', 'q1', 1.2], ['q1', 'q2', 1.2], ['q2', 'q3', 1.2], ['q3', 'q4', 1.2], ['q4', 'q5', 1.2], ['q5', 'q6', 1.2],
+];
 // pares fijos: texto sobre un relleno
 const PARES = [['sobre-seleccion', 'seleccion', 4.5], ['sobre-barra', 'barra', 4.5], ['sobre-barra-2', 'barra', 4.5]];
 
@@ -106,6 +113,7 @@ export function revisar(archivos) {
     for (const g of INTERFAZ) for (const s of SUPERFICIES) medir(g, s, 3, 'interfaz');
     for (const g of GRAFICO) for (const s of SUPERFICIES_GRAFICO) medir(g, s, 3, 'gráfico');
     for (const [a, b, min] of PARES) medir(a, b, min, 'par');
+    for (const [a, b, min] of CONVIVEN) medir(a, b, min, 'conviven');
   }
   return { errores, informe, primitivos: primitivos.length, semanticos: semanticos.length };
 }
@@ -129,7 +137,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { errores, informe, primitivos, semanticos } = revisar(leerSrc(raiz));
   const peor = (tipo) => informe.filter((f) => f.tipo === tipo).sort((a, b) => a.contraste - b.contraste)[0];
   console.log(`Quincha · ${primitivos} primitivos, ${semanticos} semánticos, ${informe.length} pares de contraste medidos`);
-  for (const t of ['texto', 'interfaz', 'gráfico', 'par']) { const p = peor(t); if (p) console.log(`  peor ${t}: --${p.token} sobre --${p.sobre} (${p.tema}) ${p.contraste}:1, mínimo ${p.minimo}:1`); }
+  for (const t of ['texto', 'interfaz', 'gráfico', 'par', 'conviven']) { const p = peor(t); if (p) console.log(`  peor ${t}: --${p.token} sobre --${p.sobre} (${p.tema}) ${p.contraste}:1, mínimo ${p.minimo}:1`); }
   if (errores.length) { console.error(`\n${errores.length} problema(s):\n` + errores.map((e) => '  · ' + e).join('\n')); process.exit(1); }
   console.log('Sin problemas.');
 }

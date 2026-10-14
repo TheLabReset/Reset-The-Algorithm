@@ -1,13 +1,13 @@
 // Lecturas de la capa Lee. Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
-import { numero, soles, porcentaje, compacto } from '../sistema/formato.js';
+import { numero, dolares, porcentaje, compacto } from '../sistema/formato.js';
 import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista } from './comun.js';
 
 const P = (v) => v.periodo;
 
 export function pautaResumen(v) {
   const p = v.lee.pauta;
-  const base = `En ${periodoTexto(P(v))} las plataformas reportaron ${numero(p.leads)} leads con ${soles(p.inversion)} de inversión: un lead cada ${soles(p.cpl, 2)}.`;
+  const base = `En ${periodoTexto(P(v))} las plataformas reportaron ${numero(p.leads)} leads con ${dolares(p.inversion)} de inversión: un lead cada ${dolares(p.cpl, 2)}.`;
   if (p.cambio == null) return { titulo: 'Leads que reportan las plataformas', lectura: `${base} Sin comparación: no hay días medidos suficientes en las dos ventanas.` };
   return { titulo: 'Leads que reportan las plataformas', lectura: `${base} Por día, ${frente(p.cambio, P(v))}.` };
 }
@@ -25,8 +25,8 @@ export function campanasLectura(v) {
   const conLeads = todas.filter((c) => c.leads > 0);
   const sin = todas.filter((c) => c.leads === 0 && c.inversion > 0);
   const barata = [...conLeads].sort((a, b) => a.cpl - b.cpl)[0];
-  let lectura = barata ? `La campaña con el lead más barato es «${barata.nombre}», a ${soles(barata.cpl, 2)}.` : 'Ninguna campaña reportó leads.';
-  if (sin.length) lectura += ` ${capital(numero(sin.length))} ${sin.length === 1 ? 'campaña es' : 'campañas son'} de alcance y no buscan leads: ${soles(sin.reduce((s, c) => s + c.inversion, 0))} en el período.`;
+  let lectura = barata ? `La campaña con el lead más barato es «${barata.nombre}», a ${dolares(barata.cpl, 2)}.` : 'Ninguna campaña reportó leads.';
+  if (sin.length) lectura += ` ${capital(numero(sin.length))} ${sin.length === 1 ? 'campaña es' : 'campañas son'} de alcance y no buscan leads: ${dolares(sin.reduce((s, c) => s + c.inversion, 0))} en el período.`;
   return { titulo: 'Campañas con gasto en el período', lectura };
 }
 
@@ -34,7 +34,7 @@ export function palabrasLectura(v) {
   const k = v.lee.plataformas.palabras;
   const titulo = 'Palabras clave de Google Search';
   if (!k.sinConversion.length) return { titulo, lectura: 'Todas las palabras con gasto trajeron leads en una proporción parecida a la del resto.' };
-  return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${soles(k.gastoSinConversion)} (${porcentaje((k.gastoSinConversion / k.inversionSearch) * 100)} de Search) con muy pocas conversiones.` };
+  return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${dolares(k.gastoSinConversion)} (${porcentaje((k.gastoSinConversion / k.inversionSearch) * 100)} de Search) con muy pocas conversiones.` };
 }
 
 export function terminosLectura(v) {
@@ -47,7 +47,7 @@ export function terminosLectura(v) {
 
 export function programaticaLectura(v) {
   const g = v.lee.plataformas.programatica;
-  return { titulo: 'Pauta programática', lectura: `${numero(g.impresiones)} impresiones y ${numero(g.clics)} clics por ${soles(g.consumo)} en toda la campaña. Viene de una planilla sin fecha por día: no se reparte por mes ni se suma a la inversión de plataformas.` };
+  return { titulo: 'Pauta programática', lectura: `${numero(g.impresiones)} impresiones y ${numero(g.clics)} clics por ${dolares(g.consumo)} en toda la campaña. Viene de una planilla sin fecha por día: no se reparte por mes ni se suma a la inversión de plataformas.` };
 }
 
 export function crmPorDia(v) {
@@ -114,13 +114,15 @@ export function competenciaLectura(v) {
   const m = v.lee.competencia.marcas;
   const propia = m.find((x) => x.propia);
   const puesto = m.indexOf(propia) + 1;
-  return { titulo: 'Interacción por publicación', lectura: `${m[0].nombre} logra la mayor interacción por publicación del mes. Fit Lab queda en el puesto ${numero(puesto)} de ${numero(m.length)}, con ${numero(propia.publicaciones)} publicaciones y ${numero(propia.anuncios)} anuncios activos.` };
+  const masAlto = [...m].sort((a, b) => b.tono - a.tono)[0];
+  const tono = masAlto.id === propia.id ? ', el más alto de las marcas leídas' : '';
+  return { titulo: 'Interacción y tono en Facebook', lectura: `${m[0].nombre} junta la mayor interacción del mes. Fit Lab queda en el puesto ${numero(puesto)} de ${numero(m.length)} y escribe con un tono de ${numero(propia.tono)} de 100${tono}.` };
 }
 
-export function competenciaConversacion(v) {
-  const c = v.lee.competencia.conversacion;
-  if (c.estado !== 'ok') return { titulo: 'Participación en la conversación', lectura: 'Hacen falta al menos dos meses con menciones.' };
-  return { titulo: 'Participación en la conversación', lectura: `Fit Lab pasó de ${porcentaje(c.propia.inicio)} a ${porcentaje(c.propia.actual)} de las menciones del rubro en un año.` };
+export function competenciaAnuncios(v) {
+  const m = [...v.lee.competencia.marcas].sort((a, b) => b.anuncios - a.anuncios);
+  const propia = m.find((x) => x.propia);
+  return { titulo: 'Publicaciones y anuncios activos', lectura: `${m[0].nombre} tiene más anuncios activos (${numero(m[0].anuncios)}). Fit Lab tiene ${numero(propia.anuncios)} y publicó ${numero(propia.publicaciones)} veces en el mes.` };
 }
 
 export function webFuentes(v) {

@@ -278,7 +278,7 @@ export function Franja({ partes, leyenda = true, etiqueta, formato = (p) => porc
         return (
           <>
             <Svg ancho={ancho} alto={30} etiqueta={etiqueta}>
-              {partes.map((p, i) => { const w = (p.valor / total) * ancho; const r = <rect key={p.nombre} className={`q-parte ${p.clase || 'q-p' + i}`} x={x0 + (i ? 1 : 0)} y={4} width={Math.max(0, w - (i ? 1 : 0))} height={22} data-valor={p.valor} />; x0 += w; return r; })}
+              {partes.map((p, i) => { const w = (p.valor / total) * ancho; const r = <rect key={p.nombre} className={`q-parte ${p.clase || 'q-p' + i}`} x={x0 + (i ? 2 : 0)} y={4} width={Math.max(0, w - (i ? 2 : 0))} height={22} data-valor={p.valor} />; x0 += w; return r; })}
             </Svg>
             {leyenda && <ul className="q-leyenda">{partes.map((p, i) => <li key={p.nombre}><span className={`q-muestra ${p.clase || 'q-p' + i}`} />{p.nombre} <b data-valor={p.pct ?? p.valor}>{p.pct == null ? numero(p.valor) : formato(p.pct)}</b>{p.nota && <span className="q-nota"> · {p.nota}</span>}</li>)}</ul>}
           </>
@@ -329,9 +329,9 @@ export function Reticula({ partes, cuadros, etiqueta }) {
         return (
           <div className="q-reticula-cuerpo">
             <Svg ancho={lado * 10} alto={lado * 10} etiqueta={etiqueta}>
-              {cuadros.flatMap((n, i) => Array.from({ length: n }, () => { const kk = k++; return <rect key={kk} className={`q-parte ${i === 0 ? 'q-p0' : 'q-g' + Math.min(i, 4)}`} x={(kk % 10) * lado} y={Math.floor(kk / 10) * lado} width={lado - 3} height={lado - 3} rx="2" />; }))}
+              {cuadros.flatMap((n, i) => Array.from({ length: n }, () => { const kk = k++; return <rect key={kk} className={`q-parte q-g${Math.min(i, 4)}`} x={(kk % 10) * lado} y={Math.floor(kk / 10) * lado} width={lado - 3} height={lado - 3} rx="2" />; }))}
             </Svg>
-            <ul className="q-leyenda">{partes.map((p, i) => <li key={p.nombre}><span className={`q-muestra ${i === 0 ? 'q-p0' : 'q-g' + Math.min(i, 4)}`} />{p.nombre} <b data-valor={cuadros[i]}>{cuadros[i]}</b> de cada 100</li>)}</ul>
+            <ul className="q-leyenda">{partes.map((p, i) => <li key={p.nombre}><span className={`q-muestra q-g${Math.min(i, 4)}`} />{p.nombre} <b data-valor={cuadros[i]}>{cuadros[i]}</b> de cada 100</li>)}</ul>
           </div>
         );
       }}
@@ -513,6 +513,75 @@ export function Histograma({ barras, formato = numero, resaltar = [], etiqueta, 
                   {b.valor > 0 && <rect className={r ? 'q-barra-acento' : 'q-barra'} x={x} y={y(b.valor)} width={w} height={y(0) - y(b.valor)} rx="2" data-valor={b.valor} />}
                   {(i % cada === 0 || r) && <text className={`q-eje${r ? ' q-fuerte' : ''}`} x={x + w / 2} y={alto - 8} textAnchor="middle">{b.corto ?? b.nombre}</text>}
                   {i === tope && <text className="q-rotulo-valor" x={x + w / 2} y={y(b.valor) - 6} textAnchor="middle">{formato(b.valor)}</text>}
+                </g>
+              );
+            })}
+          </Svg>
+        );
+      }}
+    </Grafico>
+  );
+}
+
+// ─────────────── Dispersión: dos medidas por marca, una escala por eje ───────────────
+// x en escala logarítmica (cada marca del eje vale 10 veces la anterior): las cifras de interacción van de miles a
+// decenas de miles. y de 0 a 100 con la raya de 50 (neutro). Cada punto se elige con clic o con el teclado; el
+// elegido lleva anillo. La marca propia va en menta, más grande y con su nombre en negrita.
+export function Dispersion({ puntos, elegido, onElegir, rotuloX, rotuloY, formatoX = numero, formatoY = numero, notas = {}, etiqueta }) {
+  const tabla = { columnas: ['Marca', rotuloX, rotuloY], filas: puntos.map((p) => [p.nombre, formatoX(p.x), formatoY(p.y)]) };
+  return (
+    <Grafico etiqueta={etiqueta} tabla={tabla} className="q-dispersion">
+      {(ancho) => {
+        const alto = Math.round(Math.max(260, Math.min(360, ancho * 0.56)));
+        const m = { t: 28, r: 20, b: 46, l: 34 };
+        const lo = Math.floor(Math.log10(Math.min(...puntos.map((p) => p.x))));
+        const hi = Math.max(lo + 1, Math.ceil(Math.log10(Math.max(...puntos.map((p) => p.x)))));
+        const x = (v) => m.l + ((Math.log10(v) - lo) / (hi - lo)) * (ancho - m.l - m.r);
+        const y = lineal(0, 100, alto - m.b, m.t);
+        // Rótulos: a la derecha del punto; si chocan con uno ya puesto, a la izquierda, luego abajo, luego arriba
+        const puestos = [];
+        const cajaDe = (p, lado) => {
+          // el rótulo arranca fuera del anillo de elección, para que nunca lo pise
+          const w = p.nombre.length * 7.2 + 4, cx = x(p.x), cy = y(p.y), d = (p.propia ? 12 : 10) + 6;
+          if (lado === 'der') return { x0: cx + d, x1: cx + d + w, y0: cy - 8, y1: cy + 6, tx: cx + d, ty: cy + 4, ancla: 'start' };
+          if (lado === 'izq') return { x0: cx - d - w, x1: cx - d, y0: cy - 8, y1: cy + 6, tx: cx - d, ty: cy + 4, ancla: 'end' };
+          if (lado === 'aba') return { x0: cx - w / 2, x1: cx + w / 2, y0: cy + d, y1: cy + d + 14, tx: cx, ty: cy + d + 11, ancla: 'middle' };
+          return { x0: cx - w / 2, x1: cx + w / 2, y0: cy - d - 14, y1: cy - d, tx: cx, ty: cy - d - 3, ancla: 'middle' };
+        };
+        const choca = (c) => c.x1 > ancho - 2 || c.x0 < m.l || puestos.some((o) => c.x0 < o.x1 && c.x1 > o.x0 && c.y0 < o.y1 && c.y1 > o.y0)
+          || puntos.some((q) => { const qx = x(q.x), qy = y(q.y); return qx > c.x0 - 5 && qx < c.x1 + 5 && qy > c.y0 - 5 && qy < c.y1 + 5; });
+        const rotulos = new Map();
+        [...puntos].sort((a, b) => (b.propia ? 1 : 0) - (a.propia ? 1 : 0) || a.x - b.x).forEach((p) => {
+          const c = ['der', 'izq', 'aba', 'arr'].map((l) => cajaDe(p, l)).find((k) => !choca(k)) || cajaDe(p, 'der');
+          puestos.push(c); rotulos.set(p.id, c);
+        });
+        const elegir = (id) => onElegir && onElegir(id);
+        return (
+          <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
+            {[0, 25, 50, 75, 100].map((v) => (
+              <g key={'y' + v}>
+                <line className={v === 50 ? 'q-neutro' : 'q-rejilla'} x1={m.l} x2={ancho - m.r} y1={y(v)} y2={y(v)} />
+                <text className="q-eje" x={m.l - 8} y={y(v) + 4} textAnchor="end">{v}</text>
+              </g>
+            ))}
+            {Array.from({ length: hi - lo + 1 }, (_, k) => 10 ** (lo + k)).map((v) => (
+              <text key={'x' + v} className="q-eje" x={x(v)} y={alto - m.b + 18} textAnchor={v === 10 ** lo ? 'start' : v === 10 ** hi ? 'end' : 'middle'}>{numero(v)}</text>
+            ))}
+            <text className="q-eje" x={m.l} y={m.t - 12}>↑ {rotuloY}</text>
+            <text className="q-eje" x={ancho - m.r} y={alto - 6} textAnchor="end">{rotuloX} →</text>
+            {notas.neutro && <text className="q-nota" x={ancho - m.r} y={y(50) - 6} textAnchor="end">{notas.neutro}</text>}
+            {notas.arriba && <text className="q-nota" x={ancho - m.r} y={m.t + 12} textAnchor="end">{notas.arriba}</text>}
+            {notas.abajo && <text className="q-nota" x={m.l + 6} y={alto - m.b - 8}>{notas.abajo}</text>}
+            {puntos.map((p) => {
+              const r = rotulos.get(p.id), sel = p.id === elegido;
+              return (
+                <g key={p.id} className={`q-elegible${sel ? ' q-elegido' : ''}`} role="button" tabIndex={0} aria-pressed={sel}
+                  aria-label={`${p.nombre}: ${formatoX(p.x)} de ${rotuloX.toLowerCase()}, ${formatoY(p.y)} de ${rotuloY.toLowerCase()}`}
+                  onClick={() => elegir(p.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(p.id); } }}>
+                  <circle className="q-blanco" cx={x(p.x)} cy={y(p.y)} r={16} data-pista={`${p.nombre}\n${rotuloX}: ${formatoX(p.x)}\n${rotuloY}: ${formatoY(p.y)}`} />
+                  <circle className="q-anillo" cx={x(p.x)} cy={y(p.y)} r={p.propia ? 12 : 10} />
+                  <circle className={p.propia ? 'q-punto q-punto-propio' : 'q-punto'} cx={x(p.x)} cy={y(p.y)} r={p.propia ? 7 : 5} data-valor={p.x} />
+                  <text className={`q-rotulo-fila${p.propia || sel ? ' q-fuerte' : ''}`} x={r.tx} y={r.ty} textAnchor={r.ancla}>{p.nombre}</text>
                 </g>
               );
             })}
