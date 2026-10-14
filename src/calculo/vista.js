@@ -8,7 +8,7 @@ import {
   ventanaCrm, ventanaWeb, sumarMeses, finDeMes, semanaEn, ETAPAS,
 } from './base.js';
 import { calcularIndice, bandaDe } from './indice.js';
-import { proyectar } from './proyeccion.js';
+import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
 
 export function periodoDesdeFiltros(cfg, { mes, comparar = 'anio' }) {
@@ -262,12 +262,12 @@ export function armarVista(data, filtros, estado = {}) {
     temporada(cfg, hasta),
   ].filter(Boolean);
 
-  const proyeccion = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : { estado: 'ok', universo: 'Leads de pauta, si se mantiene el plan de inversión', ...proyectar(data, hasta) };
+  const escenarioVista = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : { estado: 'ok', universo: 'Leads de pauta, si la inversión sigue el plan', ...escenario(data, hasta) };
 
   return {
     periodo, fuentes,
     lee: { pauta, crm, busquedas, conversacion, web },
     analiza: { rendimiento, ritmo, demandaRespuesta, horaDia, sedes },
-    sugiere: { indice: indiceVista, sugerencias, proyeccion },
+    sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };
 }

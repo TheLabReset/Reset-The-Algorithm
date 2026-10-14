@@ -128,5 +128,8 @@ export const CONFIG = {
     elasticidad: { central: 0.8, baja: 0.7, alta: 0.9 }, // asumo: leads ∝ inversión^β al mover presupuesto
     mejoraAgendamiento: 0.05, // asumo: escenario de +5 puntos en la tasa de cita
     mesesProyeccion: 3,
+    // el escenario de un mes se muestra solo si su rango acertó 7 de cada 10 veces en 10 pruebas o más
+    aciertoMinimo: 0.7,
+    pruebasMinimas: 10,
   },
 };

@@ -1,0 +1,112 @@
+/* Quincha · gráficos. Todo color sale de un semántico de tokens.css.
+   Reglas de forma: una sola escala por gráfico, líneas rectas entre puntos, la comparación siempre en gris,
+   el texto nunca lleva el color de la serie (la marca de color al lado lleva la identidad). */
+
+.q-grafico { position: relative; margin: 0; min-width: 0; }
+.q-svg { display: block; overflow: visible; max-width: 100%; }
+.q-svg * { pointer-events: none; }
+.q-svg [data-pista] { pointer-events: all; }
+.q-svg text { font: var(--peso-lectura) var(--t-12) var(--f-texto); fill: var(--texto-2); font-variant-numeric: tabular-nums; }
+
+/* Andamiaje: recesivo */
+.q-svg .q-eje { fill: var(--texto-3); }
+.q-svg .q-rejilla { stroke: var(--borde); stroke-width: 1; }
+.q-svg .q-separador { stroke: var(--borde); stroke-width: 1; }
+.q-svg .q-fuerte { fill: var(--texto-1); font-weight: var(--peso-cifra); }
+.q-svg .q-nota, .q-svg tspan.q-nota { fill: var(--texto-3); font-weight: var(--peso-lectura); }
+
+/* Rótulos */
+.q-svg .q-rotulo-fila { fill: var(--texto-2); }
+.q-svg .q-rotulo-valor { fill: var(--texto-1); font-weight: var(--peso-rotulo); }
+.q-svg .q-rotulo-final { fill: var(--texto-1); font-weight: var(--peso-cifra); }
+.q-svg .q-rotulo-previo { fill: var(--texto-3); }
+.q-svg .q-mejora { fill: var(--mejora); }
+.q-svg .q-empeora { fill: var(--empeora); }
+.q-svg .q-atencion { fill: var(--atencion); }
+
+/* Líneas: 2 px, sin suavizar */
+.q-svg .q-linea { fill: none; stroke: var(--s1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.q-svg .q-linea-2 { fill: none; stroke: var(--s2); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.q-svg .q-linea-previa { fill: none; stroke: var(--previa); stroke-width: 1.5; }
+.q-svg .q-linea-plan { fill: none; stroke: var(--previa); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.q-svg .q-punto-oculto { fill: transparent; }
+.q-svg .q-punto-final { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
+.q-svg .q-hueco { fill: var(--superficie-banda); }
+.q-svg .q-evento line { stroke: var(--borde-control); stroke-dasharray: 2 3; }
+.q-svg .q-evento text { fill: var(--texto-3); }
+
+/* Puntos y pesas */
+.q-svg .q-pesa { stroke: var(--borde-control); stroke-width: 2; }
+.q-svg .q-punto-previo { fill: var(--superficie); stroke: var(--previa); stroke-width: 2; }
+.q-svg .q-punto-actual { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
+.q-svg .q-pendiente { stroke: var(--previa); stroke-width: 1.5; }
+.q-svg .q-pendiente-propia { stroke: var(--s1); stroke-width: 3; }
+
+/* Barras: gris neutro; la que se lee primero, en la serie propia */
+.q-svg .q-barra { fill: var(--texto-3); }
+.q-svg .q-barra-acento, .q-svg .q-barra-valor { fill: var(--s1); }
+.q-svg .q-barra-rayada { fill: var(--rayado); }
+.q-svg .q-rayado-fondo { fill: var(--superficie); }
+.q-svg .q-rayado-linea { stroke: var(--atencion); stroke-width: 2; }
+.q-svg .q-raya-previa { stroke: var(--texto-1); stroke-width: 2; }
+.q-svg .q-marca { stroke: var(--texto-1); stroke-width: 3; }
+.q-svg .q-banda-0 { fill: var(--banda-0); }
+.q-svg .q-banda-1 { fill: var(--banda-1); }
+.q-svg .q-banda-2 { fill: var(--banda-2); }
+
+/* Proyección: lo real es barra, lo proyectado es punto con su rango; la zona futura cambia de superficie */
+.q-svg .q-zona-proyeccion { fill: var(--superficie-alcance); }
+.q-svg .q-barra-real { fill: var(--texto-3); }
+.q-svg .q-banda-proy { stroke: var(--s1); stroke-width: 6; stroke-linecap: round; stroke-opacity: 0.45; }
+.q-svg .q-punto-proy { fill: var(--s1); stroke: var(--superficie-alcance); stroke-width: 2; }
+
+/* Partes de un todo: series en orden fijo; el resto en grises */
+.q-p0 { fill: var(--s1); background: var(--s1); }
+.q-p1 { fill: var(--s2); background: var(--s2); }
+.q-p2 { fill: var(--s3); background: var(--s3); }
+.q-p3 { fill: var(--s4); background: var(--s4); }
+.q-p4 { fill: var(--s5); background: var(--s5); }
+.q-p5, .q-g1 { fill: var(--texto-3); background: var(--texto-3); }
+.q-p6, .q-g2 { fill: var(--borde-control); background: var(--borde-control); }
+.q-g3 { fill: var(--banda-2); background: var(--banda-2); }
+.q-g4 { fill: var(--banda-1); background: var(--banda-1); }
+
+/* Rampa secuencial de un tono */
+.q-q0 { fill: var(--q0); background: var(--q0); }
+.q-q1 { fill: var(--q1); background: var(--q1); }
+.q-q2 { fill: var(--q2); background: var(--q2); }
+.q-q3 { fill: var(--q3); background: var(--q3); }
+.q-q4 { fill: var(--q4); background: var(--q4); }
+.q-q5 { fill: var(--q5); background: var(--q5); }
+.q-q6 { fill: var(--q6); background: var(--q6); }
+.q-svg .q-sin-dato { fill: var(--superficie); stroke: var(--borde-control); stroke-dasharray: 2 2; }
+.q-svg .q-celda:hover { stroke: var(--texto-1); stroke-width: 1.5; }
+
+/* Zonas de lectura: invisibles hasta que el puntero las toca */
+.q-svg .q-zona { fill: transparent; }
+.q-svg .q-zona:hover { fill: var(--superficie-banda); }
+
+/* Leyendas y escalas en HTML */
+.q-leyenda { list-style: none; margin: var(--e-3) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); font-size: var(--t-13); color: var(--texto-2); }
+.q-leyenda b { color: var(--texto-1); font-weight: var(--peso-cifra); }
+.q-leyenda .q-nota { color: var(--texto-3); }
+.q-muestra { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: var(--e-2); vertical-align: -1px; }
+.q-escala { display: flex; align-items: center; gap: 2px; margin-top: var(--e-2); font-size: var(--t-12); color: var(--texto-3); }
+.q-escala span { padding-inline: var(--e-2); }
+.q-escala i { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+
+.q-multiplos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: var(--e-3) var(--e-4); }
+.q-multiplo-cab { display: flex; justify-content: space-between; gap: var(--e-2); font-size: var(--t-13); color: var(--texto-1); font-weight: var(--peso-rotulo); }
+.q-multiplo-cab .q-nota { color: var(--texto-3); font-weight: var(--peso-lectura); }
+.q-dos-lineas { display: grid; gap: var(--e-1); }
+.q-reticula-cuerpo { display: flex; flex-wrap: wrap; gap: var(--e-4) var(--e-6); align-items: center; }
+.q-reticula-cuerpo .q-leyenda { flex-direction: column; margin: 0; }
+
+/* Pista: lo único del gráfico que flota */
+.q-pista {
+  position: absolute; z-index: 5; transform: translate(-50%, calc(-100% - var(--e-3)));
+  display: grid; gap: 2px; padding: var(--e-2) var(--e-3); min-width: max-content;
+  background: var(--elevada); color: var(--texto-2); border: 1px solid var(--borde); border-radius: var(--r-control);
+  box-shadow: var(--sombra-flota); font-size: var(--t-12); pointer-events: none; white-space: nowrap;
+}
+.q-pista span:first-child { color: var(--texto-1); font-weight: var(--peso-rotulo); }

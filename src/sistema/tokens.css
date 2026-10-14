@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Quincha · tokens de The Algorithm
+   Quincha es la técnica limeña de caña y barro: liviana, flexible, resiste temblores.
+   Un sistema que se adapta por cliente sin romperse.
+
+   Dos capas:
+   1. Primitivos (--p-*): la paleta. Ningún componente los usa directo.
+   2. Semánticos: lo único que tocan los componentes. Cada uno dice para qué sirve
+      su contraste no se escribe a mano: lo mide `npm run sistema` y lo muestra la guía viva.
+   Regla de huérfanos (la vigila `npm run sistema`): todo primitivo lo usa al menos
+   un semántico, y todo semántico lo usa al menos un componente.
+   Oscuro por defecto; claro con [data-theme="light"] o la preferencia del sistema.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Primitivos: violeta de la guía de la agencia, tono 295° en OKLCH ── */
+  --p-violeta-100: #eee9ff;
+  --p-violeta-200: #ddd4ff;
+  --p-violeta-300: #c5b4fb;
+  --p-violeta-400: #ab91f2;
+  --p-violeta-500: #9572e7;
+  --p-violeta-600: #8257d9;
+  --p-violeta-700: #6f42c1; /* el violeta de marca */
+  --p-violeta-800: #572e9d;
+  --p-violeta-900: #3d206f;
+  --p-violeta-950: #261547;
+  --p-violeta-975: #1f1830;
+
+  /* ── Primitivos: grises con una pizca del mismo tono (croma 0,004 a 0,018) ── */
+  --p-gris-0: #ffffff;
+  --p-gris-25: #fcfbfe;
+  --p-gris-50: #f6f5f9;
+  --p-gris-100: #edecf1;
+  --p-gris-200: #dedde3;
+  --p-gris-300: #c7c6ce;
+  --p-gris-400: #a5a3ac;
+  --p-gris-500: #817f88;
+  --p-gris-600: #66646f;
+  --p-gris-700: #4d4b56;
+  --p-gris-800: #33313b;
+  --p-gris-850: #26242d;
+  --p-gris-900: #1c1a23;
+  --p-gris-950: #100e16;
+  --p-gris-975: #0a090f;
+
+  /* ── Primitivos: estado (reservados, nunca serie) ── */
+  --p-verde-600: #1b763a;
+  --p-verde-300: #6ed889;
+  --p-rojo-600: #c22826;
+  --p-rojo-300: #fa887d;
+  --p-ambar-700: #8c5b10;
+  --p-ambar-300: #ffbc63;
+
+  /* ── Primitivos: series de datos, orden fijo, validadas para daltonismo (informe 04) ── */
+  --p-serie-violeta-claro: #7544cd;
+  --p-serie-naranja-claro: #c2601a;
+  --p-serie-cian-claro: #0090a8;
+  --p-serie-oliva-claro: #848e2d;
+  --p-serie-azul-claro: #1762b6;
+  --p-serie-violeta-oscuro: #8b61e3;
+  --p-serie-naranja-oscuro: #d66919;
+  --p-serie-cian-oscuro: #0096af;
+  --p-serie-oliva-oscuro: #7e8826;
+  --p-serie-azul-oscuro: #337bd0;
+
+  /* ══════════ Semánticos · tema oscuro (por defecto) ══════════ */
+  --fondo: var(--p-gris-975);            /* fondo de la página */
+  --superficie: var(--p-gris-950);       /* bloques */
+  --superficie-banda: var(--p-gris-900); /* franja que abre cada sección */
+  --superficie-alcance: var(--p-gris-850); /* bloques que no siguen el período (cohorte, proyección) */
+  --elevada: var(--p-gris-900);          /* lo que flota: ayuda, menú, recorrido */
+  --texto-1: var(--p-gris-50);           /* cifras y títulos */
+  --texto-2: var(--p-gris-300);          /* texto de lectura */
+  --texto-3: var(--p-gris-400);          /* notas, ejes, rótulos secundarios */
+  --borde: var(--p-gris-800);            /* separadores decorativos */
+  --borde-control: var(--p-gris-500);    /* bordes de controles y marcas que hay que ver (≥ 3:1) */
+  --riel: var(--p-gris-700);             /* línea vertical que une los bloques de una sección */
+  --acento: var(--p-violeta-400);        /* capa activa, selección, la serie propia */
+  --acento-texto: var(--p-violeta-300);  /* texto en violeta */
+  --sobre-acento: var(--p-gris-975);     /* texto sobre un relleno de acento */
+  --foco: var(--p-violeta-300);          /* anillo de foco */
+  --mejora: var(--p-verde-300);          /* variación favorable: siempre con flecha y signo */
+  --empeora: var(--p-rojo-300);          /* variación desfavorable */
+  --atencion: var(--p-ambar-300);        /* pocos casos, dato parcial */
+  --s1: var(--p-serie-violeta-oscuro);   /* series en orden fijo */
+  --s2: var(--p-serie-naranja-oscuro);
+  --s3: var(--p-serie-cian-oscuro);
+  --s4: var(--p-serie-oliva-oscuro);
+  --s5: var(--p-serie-azul-oscuro);
+  --previa: var(--p-gris-500);           /* período de comparación: siempre gris */
+  --q0: var(--p-violeta-975);            /* rampa secuencial de un tono, de menos a más */
+  --q1: var(--p-violeta-950);
+  --q2: var(--p-violeta-900);
+  --q3: var(--p-violeta-800);
+  --q4: var(--p-violeta-600);
+  --q5: var(--p-violeta-400);
+  --q6: var(--p-violeta-200);
+  --banda-0: var(--p-gris-850);          /* bandas de lectura de una bala, de la más lejana a la meta */
+  --banda-1: var(--p-gris-800);
+  --banda-2: var(--p-gris-700);
+  color-scheme: dark;
+
+  /* ── Tipografía ── */
+  --f-cifra: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+  --f-texto: 'Montserrat Variable', 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --t-12: 0.75rem;  --t-13: 0.8125rem; --t-15: 0.9375rem; --t-17: 1.0625rem; --t-22: 1.375rem;
+  --c-22: 1.375rem; --c-34: 2.125rem;  --c-48: 3rem;      --c-64: 4rem;
+  --peso-lectura: 400; --peso-rotulo: 560; --peso-cifra: 640; --peso-titulo: 700;
+
+  /* ── Espacio (base 4) ── */
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 20px; --e-6: 24px; --e-8: 32px; --e-10: 40px; --e-18: 72px;
+
+  /* ── Medidas de composición ── */
+  --ancho-max: 1400px;     /* la página no crece más: las líneas largas se leen mal */
+  --ancho-lectura: 68ch;   /* texto corrido */
+  --alto-barra: 64px;      /* barra superior fija; el índice de capa se pega debajo */
+
+  /* ── Radio: tres, con rol ── */
+  --r-control: 6px; --r-bloque: 10px; --r-flota: 14px;
+
+  /* ── Elevación: solo lo que flota ── */
+  --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.35);
+
+  /* ── Movimiento: corto y productivo; nada se anima por adorno ── */
+  --d-110: 110ms; --d-150: 150ms;
+  --d-latido: 1200ms; /* solo el esqueleto de carga */
+  --curva-productiva: cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --fondo: var(--p-gris-50);
+    --superficie: var(--p-gris-25);
+    --superficie-banda: var(--p-gris-100);
+    --superficie-alcance: var(--p-gris-100);
+    --elevada: var(--p-gris-0);
+    --texto-1: var(--p-gris-950);
+    --texto-2: var(--p-gris-700);
+    --texto-3: var(--p-gris-600);
+    --borde: var(--p-gris-200);
+    --borde-control: var(--p-gris-500);
+    --riel: var(--p-gris-300);
+    --acento: var(--p-violeta-700);
+    --acento-texto: var(--p-violeta-700);
+    --sobre-acento: var(--p-gris-0);
+    --foco: var(--p-violeta-600);
+    --mejora: var(--p-verde-600);
+    --empeora: var(--p-rojo-600);
+    --atencion: var(--p-ambar-700);
+    --s1: var(--p-serie-violeta-claro);
+    --s2: var(--p-serie-naranja-claro);
+    --s3: var(--p-serie-cian-claro);
+    --s4: var(--p-serie-oliva-claro);
+    --s5: var(--p-serie-azul-claro);
+    --previa: var(--p-gris-500);
+    --q0: var(--p-violeta-100);
+    --q1: var(--p-violeta-200);
+    --q2: var(--p-violeta-300);
+    --q3: var(--p-violeta-400);
+    --q4: var(--p-violeta-500);
+    --q5: var(--p-violeta-600);
+    --q6: var(--p-violeta-700);
+    --banda-0: var(--p-gris-100);
+    --banda-1: var(--p-gris-200);
+    --banda-2: var(--p-gris-300);
+    --sombra-flota: 0 12px 32px rgb(16 14 22 / 0.14);
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --fondo: var(--p-gris-50);
+  --superficie: var(--p-gris-25);
+  --superficie-banda: var(--p-gris-100);
+  --superficie-alcance: var(--p-gris-100);
+  --elevada: var(--p-gris-0);
+  --texto-1: var(--p-gris-950);
+  --texto-2: var(--p-gris-700);
+  --texto-3: var(--p-gris-600);
+  --borde: var(--p-gris-200);
+  --borde-control: var(--p-gris-500);
+  --riel: var(--p-gris-300);
+  --acento: var(--p-violeta-700);
+  --acento-texto: var(--p-violeta-700);
+  --sobre-acento: var(--p-gris-0);
+  --foco: var(--p-violeta-600);
+  --mejora: var(--p-verde-600);
+  --empeora: var(--p-rojo-600);
+  --atencion: var(--p-ambar-700);
+  --s1: var(--p-serie-violeta-claro);
+  --s2: var(--p-serie-naranja-claro);
+  --s3: var(--p-serie-cian-claro);
+  --s4: var(--p-serie-oliva-claro);
+  --s5: var(--p-serie-azul-claro);
+  --previa: var(--p-gris-500);
+  --q0: var(--p-violeta-100);
+  --q1: var(--p-violeta-200);
+  --q2: var(--p-violeta-300);
+  --q3: var(--p-violeta-400);
+  --q4: var(--p-violeta-500);
+  --q5: var(--p-violeta-600);
+  --q6: var(--p-violeta-700);
+  --banda-0: var(--p-gris-100);
+  --banda-1: var(--p-gris-200);
+  --banda-2: var(--p-gris-300);
+  --sombra-flota: 0 12px 32px rgb(16 14 22 / 0.14);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] { color-scheme: dark; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --d-110: 0ms; --d-150: 0ms; --d-latido: 0ms; }
+}

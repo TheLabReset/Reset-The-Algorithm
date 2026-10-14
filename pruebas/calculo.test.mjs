@@ -77,10 +77,19 @@ cada('ritmo: lo ejecutado se compara contra el plan de los mismos días', (v, id
   assert.ok(v.analiza.ritmo.planMedido <= v.analiza.ritmo.plan + 1e-6, id);
   assert.ok(v.analiza.ritmo.ejecutado > 0.5 && v.analiza.ritmo.ejecutado <= 1.0001, id); // R8: nunca sobre el presupuesto
 });
-cada('proyección: la banda contiene al central', (v, id) => {
-  if (v.sugiere.proyeccion.estado !== 'ok') return;
-  v.sugiere.proyeccion.meses.filter((m) => m.central != null).forEach((m) => assert.ok(m.baja <= m.central && m.central <= m.alta, `${id} ${m.mes}`));
+cada('escenario: el rango contiene al punto medio', (v, id) => {
+  if (v.sugiere.escenario.estado !== 'ok') return;
+  v.sugiere.escenario.meses.filter((m) => m.central != null).forEach((m) => assert.ok(m.baja <= m.central && m.central <= m.alta, `${id} ${m.mes}`));
 });
 cada('sugerencias: cada una apunta a una sección', (v, id) => {
   v.sugiere.sugerencias.forEach((s) => assert.ok(s.sostiene.length && s.supuestos.length, `${id} ${s.id}`));
+});
+
+test('escenario: no mira el futuro (lo mismo con o sin los meses posteriores al origen)', async () => {
+  const { escenario } = await import('../src/calculo/escenario.js');
+  const origen = '2026-03-31';
+  const completo = escenario(data, origen);
+  const recortado = escenario({ ...data, config: { ...data.config, corte: origen } }, origen);
+  assert.deepEqual(completo.acierto, recortado.acierto);
+  assert.deepEqual(completo.meses.map((m) => [m.central, m.baja, m.alta, m.motivo]), recortado.meses.map((m) => [m.central, m.baja, m.alta, m.motivo]));
 });
