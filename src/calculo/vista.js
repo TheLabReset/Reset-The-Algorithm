@@ -131,7 +131,8 @@ export function armarVista(data, filtros, estado = {}) {
   }
 
   // Conversación: 12 meses hasta el período, solo meses con data
-  const meses12 = Array.from({ length: 12 }, (_, k) => sumarMeses(hasta.slice(0, 7), k - 11));
+  // 13 meses: del mismo mes del año anterior al mes del período, para que «en un año» empiece donde dice
+  const meses12 = Array.from({ length: 13 }, (_, k) => sumarMeses(hasta.slice(0, 7), k - 12));
   const sovMes = meses12.map((m) => ({ mes: m, tot: data.conversacion.map((b) => suma(b.semanas.filter((s) => sumarDias(s.semana, 3).slice(0, 7) === m), (s) => s.menciones)) }))
     .filter((x) => suma(x.tot, (v) => v) > 0)
     .map(({ mes: m, tot }) => { const pct = mayorResto(tot); return { mes: m, marcas: data.conversacion.map((b, i) => ({ id: b.id, nombre: b.nombre, propia: b.propia, menciones: tot[i], pct: pct[i] })) }; });

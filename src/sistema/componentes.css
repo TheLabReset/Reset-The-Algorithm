@@ -6,7 +6,7 @@
    5. cada sección y cada bloque dicen su universo: lo de universos distintos no comparte bloque. */
 
 /* ── Página ── */
-.q-pagina { min-height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto; }
+.q-pagina { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; }
 .q-envoltura { width: 100%; max-width: var(--ancho-max); margin-inline: auto; padding-left: max(var(--e-4), env(safe-area-inset-left, 0px)); padding-right: max(var(--e-4), env(safe-area-inset-right, 0px)); }
 @media (min-width: 900px) { .q-envoltura { padding-left: max(var(--e-8), env(safe-area-inset-left, 0px)); padding-right: max(var(--e-8), env(safe-area-inset-right, 0px)); } }
 
@@ -14,7 +14,7 @@
 .q-barra { position: sticky; top: 0; z-index: 20; background: var(--fondo); border-bottom: 1px solid var(--borde); padding-top: env(safe-area-inset-top, 0px); }
 .q-barra-fila { min-height: var(--alto-barra); display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-6); padding-block: var(--e-2); }
 .q-marca { display: flex; align-items: center; gap: var(--e-3); color: var(--texto-1); text-decoration: none; margin-right: auto; }
-.q-marca img { display: block; height: 22px; width: auto; }
+
 .q-marca-producto { display: grid; line-height: 1.1; border-left: 1px solid var(--borde); padding-left: var(--e-3); }
 .q-marca-producto b { font-family: var(--f-cifra); font-weight: var(--peso-lectura); font-size: var(--c-22); letter-spacing: 0.02em; color: var(--texto-1); }
 .q-marca-producto span { font-size: var(--t-12); color: var(--texto-3); }
@@ -23,7 +23,7 @@
 @media (max-width: 899px) { .q-barra { position: static; } }
 
 /* ── Las tres capas ── */
-.q-capas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-2); padding-block: var(--e-6) var(--e-4); list-style: none; margin: 0; }
+.q-capas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-2); padding: var(--e-6) 0 var(--e-4); list-style: none; margin: 0; }
 .q-capa-boton {
   width: 100%; height: 100%; display: grid; grid-template-columns: auto 1fr; gap: 0 var(--e-3); align-items: baseline; text-align: left;
   padding: var(--e-3) var(--e-4); border-radius: var(--r-bloque); cursor: pointer;
@@ -122,7 +122,7 @@
 .q-chip-fuente { border-color: var(--borde); }
 .q-chip-muestra { border-style: dashed; }
 .q-chip-atencion { color: var(--atencion); border-color: currentColor; }
-.q-chip-alcance { color: var(--texto-1); border-style: dashed; }
+.q-chip-alcance { color: var(--texto-1); border-style: dashed; white-space: normal; max-width: 100%; }
 .q-chip-acento { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); }
 .q-chip svg { flex: none; }
 
@@ -159,3 +159,8 @@
 /* ── Pie de página ── */
 .q-pie { border-top: 1px solid var(--borde); padding-block: var(--e-6) var(--e-10); font-size: var(--t-12); color: var(--texto-3); display: grid; gap: var(--e-2); }
 .q-pie p { max-width: var(--ancho-lectura); }
+
+/* ── Piezas de la app ── */
+.q-marca-cliente svg { display: block; height: 26px; width: auto; color: var(--texto-1); }
+.q-nota-bloque { font-size: var(--t-13); color: var(--texto-2); }
+.q-dos-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--e-6); }

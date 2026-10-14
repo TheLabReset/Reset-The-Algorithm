@@ -67,3 +67,6 @@ a { color: var(--acento-texto); text-underline-offset: 3px; }
 .q-tabla .q-num { text-align: right; white-space: nowrap; }
 .q-tabla tbody th { font-weight: var(--peso-rotulo); color: var(--texto-1); }
 .q-tabla td { color: var(--texto-2); }
+
+/* El atributo hidden siempre gana, aunque el componente declare su display */
+[hidden] { display: none !important; }

@@ -66,10 +66,12 @@
 .q-p2 { fill: var(--s3); background: var(--s3); }
 .q-p3 { fill: var(--s4); background: var(--s4); }
 .q-p4 { fill: var(--s5); background: var(--s5); }
-.q-p5, .q-g1 { fill: var(--texto-3); background: var(--texto-3); }
-.q-p6, .q-g2 { fill: var(--borde-control); background: var(--borde-control); }
-.q-g3 { fill: var(--banda-2); background: var(--banda-2); }
-.q-g4 { fill: var(--banda-1); background: var(--banda-1); }
+.q-p5, .q-g2 { fill: var(--texto-3); background: var(--texto-3); }
+.q-p6, .q-g3 { fill: var(--borde-control); background: var(--borde-control); }
+.q-g1 { fill: var(--texto-2); background: var(--texto-2); }
+/* el último grupo de una retícula es hueco: se lee como lo que se perdió */
+.q-g4 { fill: transparent; stroke: var(--borde-control); stroke-width: 1.5; background: transparent; }
+.q-leyenda .q-g4, .q-muestra.q-g4 { border: 1.5px solid var(--borde-control); }
 
 /* Rampa secuencial de un tono */
 .q-q0 { fill: var(--q0); background: var(--q0); }
@@ -90,12 +92,16 @@
 .q-leyenda { list-style: none; margin: var(--e-3) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); font-size: var(--t-13); color: var(--texto-2); }
 .q-leyenda b { color: var(--texto-1); font-weight: var(--peso-cifra); }
 .q-leyenda .q-nota { color: var(--texto-3); }
+.q-leyenda-pesas { margin: 0 0 var(--e-2); }
+.q-muestra-previa { border-radius: 50%; border: 2px solid var(--previa); background: transparent; }
+.q-muestra-actual { border-radius: 50%; background: var(--s1); }
 .q-muestra { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: var(--e-2); vertical-align: -1px; }
 .q-escala { display: flex; align-items: center; gap: 2px; margin-top: var(--e-2); font-size: var(--t-12); color: var(--texto-3); }
 .q-escala span { padding-inline: var(--e-2); }
 .q-escala i { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
 
-.q-multiplos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: var(--e-3) var(--e-4); }
+.q-multiplos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-4) var(--e-6); }
+@media (max-width: 480px) { .q-multiplos { grid-template-columns: 1fr; } }
 .q-multiplo-cab { display: flex; justify-content: space-between; gap: var(--e-2); font-size: var(--t-13); color: var(--texto-1); font-weight: var(--peso-rotulo); }
 .q-multiplo-cab .q-nota { color: var(--texto-3); font-weight: var(--peso-lectura); }
 .q-dos-lineas { display: grid; gap: var(--e-1); }

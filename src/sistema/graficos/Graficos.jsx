@@ -27,11 +27,13 @@ export function Grafico({ etiqueta, tabla, children, className = '' }) {
         </div>
       )}
       {tabla && (
-        <table className="solo-lector">
-          <caption>{etiqueta}</caption>
-          <thead><tr>{tabla.columnas.map((c) => <th key={c} scope="col">{c}</th>)}</tr></thead>
-          <tbody>{tabla.filas.map((f, i) => <tr key={i}>{f.map((v, j) => (j ? <td key={j}>{v}</td> : <th key={j} scope="row">{v}</th>))}</tr>)}</tbody>
-        </table>
+        <div className="solo-lector">{/* una tabla no recorta su contenido: el contenedor sí */}
+          <table>
+            <caption>{etiqueta}</caption>
+            <thead><tr>{tabla.columnas.map((c) => <th key={c} scope="col">{c}</th>)}</tr></thead>
+            <tbody>{tabla.filas.map((f, i) => <tr key={i}>{f.map((v, j) => (j ? <td key={j}>{v}</td> : <th key={j} scope="row">{v}</th>))}</tr>)}</tbody>
+          </table>
+        </div>
       )}
     </figure>
   );
@@ -123,19 +125,22 @@ export function Multiplos({ paneles, formato = numero, etiqueta }) {
 }
 
 // ─────────────── Pesas: dos valores de la misma escala por fila ───────────────
-export function Pesas({ filas, formato = numero, max, rotuloA, rotuloB, etiqueta }) {
+export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB, etiqueta }) {
   const tabla = { columnas: ['', rotuloA, rotuloB], filas: filas.map((f) => [f.nombre, formato(f.a), formato(f.b)]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
-        const fila = 32, m = { t: 26, r: 64, b: 6, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
-        const alto = m.t + filas.length * fila + m.b;
-        const tope = marcas(max ?? Math.max(1, ...filas.flatMap((f) => [f.a ?? 0, f.b ?? 0])), 4).at(-1);
-        const x = lineal(0, tope, m.l, ancho - m.r);
+        const fila = 32, m = { t: 6, r: 64, b: 6, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
+        const alto = m.t + filas.length * fila + m.b + (min < 0 ? 18 : 0);
+        const tope = max ?? marcas(Math.max(1, ...filas.flatMap((f) => [f.a ?? 0, f.b ?? 0])), 4).at(-1);
+        const x = lineal(min, tope, m.l, ancho - m.r);
         return (
+          <>
+          <ul className="q-leyenda q-leyenda-pesas" aria-hidden="true">
+            <li><span className="q-muestra q-muestra-previa" />{rotuloA}</li>
+            <li><span className="q-muestra q-muestra-actual" /><b>{rotuloB}</b></li>
+          </ul>
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
-            <g className="q-leyenda-svg"><circle className="q-punto-previo" cx={m.l + 5} cy={10} r="5" /><text className="q-eje" x={m.l + 15} y={14}>{rotuloA}</text>
-              <circle className="q-punto-actual" cx={m.l + 30 + rotuloA.length * 6.6} cy={10} r="5" /><text className="q-eje q-fuerte" x={m.l + 40 + rotuloA.length * 6.6} y={14}>{rotuloB}</text></g>
             {filas.map((f, i) => {
               const cy = m.t + i * fila + fila / 2;
               return (
@@ -143,14 +148,17 @@ export function Pesas({ filas, formato = numero, max, rotuloA, rotuloB, etiqueta
                   <text className="q-rotulo-fila" x={m.l - 10} y={cy + 4} textAnchor="end">{recortar(f.nombre, m.l)}</text>
                   <Zona x={0} y={cy - fila / 2} w={ancho} h={fila} pista={`${f.nombre}\n${rotuloA}: ${formato(f.a)}\n${rotuloB}: ${formato(f.b)}`} />
                   <line className="q-rejilla" x1={m.l} x2={ancho - m.r} y1={cy} y2={cy} />
+                  {min < 0 && <line className="q-separador" x1={x(0)} x2={x(0)} y1={cy - 10} y2={cy + 10} />}
                   {f.a != null && f.b != null && <line className="q-pesa" x1={x(f.a)} x2={x(f.b)} y1={cy} y2={cy} />}
                   {f.a != null && <circle className="q-punto-previo" cx={x(f.a)} cy={cy} r="5" data-valor={f.a} />}
                   {f.b != null && <circle className="q-punto-actual" cx={x(f.b)} cy={cy} r="6" data-valor={f.b} />}
-                  <text className="q-rotulo-valor" x={x(Math.max(f.a ?? 0, f.b ?? 0)) + 10} y={cy + 4}>{formato(f.b)}</text>
+                  <text className="q-rotulo-valor" x={x(Math.max(f.a ?? min, f.b ?? min)) + 10} y={cy + 4}>{formato(f.b)}</text>
                 </g>
               );
             })}
+            {min < 0 && [min, 0, tope].map((t) => <text key={t} className="q-eje" x={x(t)} y={alto - 2} textAnchor="middle">{formato(t)}</text>)}
           </Svg>
+          </>
         );
       }}
     </Grafico>
@@ -190,17 +198,18 @@ export function Pendiente({ filas, formato = numero, rotuloA, rotuloB, resaltar 
 }
 
 // ─────────────── Bala (Few 2013): valor, marca y bandas de un tono; el estado va escrito ───────────────
-export function Bala({ filas, max, formato = numero, etiqueta }) {
+export function Bala({ filas, max, formato = numero, formatoEje, etiqueta }) {
   const tabla = { columnas: ['', 'Valor', 'Referencia'], filas: filas.map((f) => [f.nombre, formato(f.valor), formato(f.marca)]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
-        const fila = 44, m = { t: 6, r: 132, b: 24, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
+        const angosto = ancho < 520;
+        const fila = 44, m = { t: 6, r: angosto ? 76 : 132, b: 24, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
         const alto = m.t + filas.length * fila + m.b;
         const x = lineal(0, max, m.l, ancho - m.r);
         return (
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
-            {marcas(max, 4).filter((v) => v <= max).map((v) => <text key={v} className="q-eje" x={x(v)} y={alto - 6} textAnchor="middle">{formato(v)}</text>)}
+            {marcas(max, angosto ? 2 : 4).filter((v) => v <= max).map((v) => <text key={v} className="q-eje" x={x(v)} y={alto - 6} textAnchor="middle">{(formatoEje ?? formato)(v)}</text>)}
             {filas.map((f, i) => {
               const cy = m.t + i * fila;
               let desde = 0;
@@ -211,7 +220,7 @@ export function Bala({ filas, max, formato = numero, etiqueta }) {
                   {f.valor != null && <rect className="q-barra-valor" x={x(0)} y={cy + 12} width={Math.max(1, x(Math.min(f.valor, max)) - x(0))} height={fila - 32} data-valor={f.valor} />}
                   {f.marca != null && <line className="q-marca" x1={x(f.marca)} x2={x(f.marca)} y1={cy + 6} y2={cy + fila - 14} data-valor={f.marca} />}
                   <text className="q-rotulo-fila" x={m.l - 10} y={cy + fila / 2 + 1} textAnchor="end">{recortar(f.nombre, m.l)}</text>
-                  <text className={`q-rotulo-valor${f.tono ? ' q-' + f.tono : ''}`} x={x(Math.min(max, Math.max(f.valor ?? 0, f.marca ?? 0))) + 8} y={cy + fila / 2 + 1}>{formato(f.valor)}{f.estado ? ` ${f.estado}` : ''}</text>
+                  <text className={`q-rotulo-valor${f.tono ? ' q-' + f.tono : ''}`} x={x(Math.min(max, Math.max(f.valor ?? 0, f.marca ?? 0))) + 8} y={cy + fila / 2 + 1}>{formato(f.valor)}{f.estado && !angosto ? ` ${f.estado}` : ''}</text>
                 </g>
               );
             })}
@@ -223,17 +232,19 @@ export function Bala({ filas, max, formato = numero, etiqueta }) {
 }
 
 // ─────────────── Barras ordenadas, con el valor de comparación como raya ───────────────
-export function Barras({ filas, formato = numero, max: maxComun, margen, margenDer, resaltar, etiqueta }) {
+export function Barras({ filas, formato = numero, max: maxComun, margen, margenDer, resaltar, rotuloPrevio, etiqueta }) {
   const tabla = { columnas: ['', 'Valor', 'Comparación'], filas: filas.map((f) => [f.nombre, formato(f.valor), f.previo == null ? 'sin dato' : formato(f.previo)]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
-        const fila = 30, m = { t: 4, r: margenDer ?? (filas.some((f) => f.nota) ? 156 : 72), b: 4, l: margen ?? margenRotulos(filas.map((f) => f.nombre), ancho) };
+        const conPrevio = rotuloPrevio && filas.some((f) => f.previo != null);
+        const fila = 30, m = { t: conPrevio ? 26 : 4, r: margenDer ?? (filas.some((f) => f.nota) ? 156 : 72), b: 4, l: margen ?? margenRotulos(filas.map((f) => f.nombre), ancho) };
         const alto = m.t + filas.length * fila + m.b;
         const max = maxComun ?? Math.max(1, ...filas.flatMap((f) => [f.valor ?? 0, f.previo ?? 0]));
         const x = lineal(0, max, m.l, ancho - m.r);
         return (
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
+            {conPrevio && <g><line className="q-raya-previa" x1={m.l + 1} x2={m.l + 1} y1={4} y2={18} /><text className="q-eje" x={m.l + 10} y={15}>{rotuloPrevio}</text></g>}
             {filas.map((f, i) => {
               const cy = m.t + i * fila;
               const r = resaltar && resaltar === f.nombre;
@@ -472,6 +483,39 @@ export function Proyeccion({ historia, meses, formato = numero, etiqueta }) {
                 {p.real != null && <rect className="q-barra-real" x={x(i) - Math.min(14, paso * 0.3)} y={y(p.real)} width={Math.min(28, paso * 0.6)} height={alto - m.b - y(p.real)} rx="2" data-valor={p.real} />}
               </g>
             ))}
+          </Svg>
+        );
+      }}
+    </Grafico>
+  );
+}
+
+// ─────────────── Columnas verticales: una medida por categoría ordenada (horas, días, tramos) ───────────────
+export function Histograma({ barras, formato = numero, resaltar = [], etiqueta, alto: altoPedido = 180 }) {
+  const tabla = { columnas: ['', 'Valor'], filas: barras.map((b) => [b.nombre, formato(b.valor)]) };
+  return (
+    <Grafico etiqueta={etiqueta} tabla={tabla}>
+      {(ancho) => {
+        const alto = altoPedido, m = { t: 22, r: 4, b: 24, l: 4 };
+        const max = Math.max(1, ...barras.map((b) => b.valor ?? 0));
+        const paso = (ancho - m.l - m.r) / barras.length, w = Math.max(2, paso - Math.min(8, paso * 0.28));
+        const y = lineal(0, max, alto - m.b, m.t);
+        const cada = Math.ceil(30 / paso);
+        const tope = resaltar.length ? resaltar.reduce((a, i) => (barras[i].valor > barras[a].valor ? i : a), resaltar[0]) : -1;
+        return (
+          <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
+            <line className="q-rejilla" x1={m.l} x2={ancho - m.r} y1={y(0)} y2={y(0)} />
+            {barras.map((b, i) => {
+              const x = m.l + i * paso + (paso - w) / 2, r = resaltar.includes(i);
+              return (
+                <g key={b.nombre}>
+                  <Zona x={m.l + i * paso} y={m.t} w={paso} h={alto - m.b - m.t} pista={`${b.nombre}\n${formato(b.valor)}`} />
+                  {b.valor > 0 && <rect className={r ? 'q-barra-acento' : 'q-barra'} x={x} y={y(b.valor)} width={w} height={y(0) - y(b.valor)} rx="2" data-valor={b.valor} />}
+                  {(i % cada === 0 || r) && <text className={`q-eje${r ? ' q-fuerte' : ''}`} x={x + w / 2} y={alto - 8} textAnchor="middle">{b.corto ?? b.nombre}</text>}
+                  {i === tope && <text className="q-rotulo-valor" x={x + w / 2} y={y(b.valor) - 6} textAnchor="middle">{formato(b.valor)}</text>}
+                </g>
+              );
+            })}
           </Svg>
         );
       }}
