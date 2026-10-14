@@ -6,7 +6,7 @@
  * Actor: clockworks/tiktok-trends-scraper
  *
  * Uso:
- *   node tiktok_apify.js --client=ucsp
+ *   node tiktok_apify.js --client=example
  *
  * Documentación completa: docs/APIFY_SCRAPERS.md
  */
@@ -30,7 +30,7 @@ const ACTOR_ID = 'clockworks/tiktok-trends-scraper';
 // ============================================================================
 function parseArgs() {
   const args = process.argv.slice(2);
-  const options = { client: 'ucsp' };
+  const options = { client: 'example' };
   args.forEach(arg => {
     if (arg.startsWith('--client=')) options.client = arg.split('=')[1];
   });

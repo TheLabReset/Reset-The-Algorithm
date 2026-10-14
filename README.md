@@ -217,7 +217,6 @@ Reset-The-Algorithm/
 │   ├── config/
 │   │   ├── example-client.json # Template de configuración de cliente
 │   │   ├── fitzone.json        # Config del cliente demo (FitZone)
-│   │   └── ucsp.json           # Config de ejemplo (universidad)
 │   └── package.json            # Dependencias de scrapers
 │
 └── docs/                       # Documentación adicional

@@ -15,7 +15,7 @@
 | 3 | Activación Estratégica | Presupuesto por canal, rendimiento por producto/servicio, sedes/puntos de venta, timing óptimo |
 | 4 | Performance & Optimización | 4 KPIs principales, gráfico 7 días, funnel de conversión, alertas, análisis de competidores |
 
-El template fue creado para **FitZone Perú** (cadena de gimnasios) y adaptado a **UPN - Universidad Privada del Norte**. El proceso de esa adaptación es la base de este playbook.
+El template fue creado para **FitZone Perú** (cadena de gimnasios) y adaptado a **un cliente real de educación** (nombre omitido). El proceso de esa adaptación es la base de este playbook.
 
 ---
 
@@ -105,7 +105,7 @@ Con las respuestas del intake, lanzar múltiples subagentes simultáneos. Cada b
 **Verificar siempre:** el color del texto vs. el color de fondo exacto donde se muestra. Un token de color puede fallar en un contexto y pasar en otro.
 
 **Errores comunes a evitar:**
-- Texto oscuro (`text-upn-navy`) sobre fondo de color oscuro (`bg-fitzone-emerald`) → invisible
+- Texto oscuro (`text-cliente-navy`) sobre fondo de color oscuro (`bg-fitzone-emerald`) → invisible
 - Texto de opacidad baja (`text-white/30`) sobre fondos de color → puede fallar
 - Badges con texto oscuro sobre fondo de color saturado → verificar siempre
 
@@ -159,7 +159,7 @@ fitzone: {
   orange:      '#XXXXXX',  // alias accent
   darkOrange:  '#XXXXXX',  // alias darkAccent
 },
-upn: {
+cliente: {
   navy:      '#XXXXXX',  // color header/nav del cliente (oscuro)
   darkNavy:  '#XXXXXX',  // sub-nav
   lightNavy: '#XXXXXX',  // hover en nav
@@ -352,7 +352,7 @@ Ejecutar TODOS los puntos antes de considerar la adaptación terminada.
 
 ### Contraste y diseño
 - [ ] Ningún texto oscuro sobre fondo oscuro
-- [ ] Ningún texto claro sobre fondo claro (especialmente en secciones con `bg-upn-navy`)
+- [ ] Ningún texto claro sobre fondo claro (especialmente en secciones con `bg-cliente-navy`)
 - [ ] Los badges de estado sobre fondos de color usan `text-white` (nunca texto oscuro)
 - [ ] Los subtítulos en acordeones de colores usan `/90` o superior de opacidad en blanco
 - [ ] No hay gradients de dos colores en bloques de contenido (solo accents decorativos)
@@ -380,7 +380,7 @@ Ejecutar TODOS los puntos antes de considerar la adaptación terminada.
 - [ ] Sin absolutismos en propuesta de valor
 
 ### Terminología
-- [ ] Cero menciones al cliente anterior (FitZone, UPN, gym, fitness, membresía u otro)
+- [ ] Cero menciones al cliente anterior (FitZone, el cliente anterior, gym, fitness, membresía u otro)
 - [ ] Terminología consistente entre las 4 capas (mismo término para el mismo concepto)
 - [ ] Nombre correcto del cliente en: header, footer, `BRAND_CONFIG.client`, metadatos JSON
 - [ ] Nombre correcto en `ALGORITHM_BRIEF.md` si se actualizó
@@ -462,7 +462,7 @@ FASE 6 → Ejecutar checklist completo
 ## Notas técnicas importantes
 
 ### Sistema de tokens de color
-Los nombres de los tokens (`fitzone-purple`, `upn-navy`, etc.) son históricos del primer cliente y se mantienen por compatibilidad. Solo cambiar los valores hex en `tailwind.config.js`. Tailwind JIT propaga los cambios automáticamente.
+Los nombres de los tokens (`fitzone-purple`, `cliente-navy`, etc.) son históricos del primer cliente y se mantienen por compatibilidad. Solo cambiar los valores hex en `tailwind.config.js`. Tailwind JIT propaga los cambios automáticamente.
 
 ### Iconos de plataformas
 `PlatformIcons.jsx` contiene SVGs inline de Simple Icons (simpleicons.org) para Google, TikTok, Meta y GA4. No requieren instalación npm. Si se necesita un ícono adicional, buscar en `https://github.com/simple-icons/simple-icons/tree/develop/icons` y añadir como componente función en ese archivo.

@@ -32,7 +32,7 @@ Extrae tendencias de búsqueda para keywords configurados por cliente.
 - Interés promedio (0-100)
 - Tendencia (rising, stable, falling)
 - Crecimiento últimos 30 días
-- Regiones top: Arequipa, Puno, Cusco, Moquegua, Tacna
+- Regiones top: Lima, Puno, Cusco, Moquegua, Tacna
 
 ### Cómo ejecutarlo
 ```bash
@@ -170,16 +170,16 @@ Para ejecutar manualmente:
   "region": "PE",
   "category": "Education",
   "source": "Google Trends",
-  "client": "UCSP - Universidad Católica San Pablo",
+  "client": "Cliente de ejemplo",
   "keywords": [
     {
-      "keyword": "admisión UCSP 2026",
+      "keyword": "keyword de ejemplo",
       "average_interest": 85,
       "trend": "rising",
       "peak_score": 100,
       "growth_3m": "+145%",
       "top_regions": {
-        "Arequipa": 100,
+        "Lima": 100,
         "Puno": 65,
         "Cusco": 48
       }
@@ -195,17 +195,17 @@ Para ejecutar manualmente:
   "source": "TikTok Creative Center",
   "region": "PE",
   "category": "Education",
-  "client": "UCSP - Universidad Católica San Pablo",
+  "client": "Cliente de ejemplo",
   "trends": {
     "hashtags": [
       {
-        "hashtag": "#ucsp",
+        "hashtag": "#marca",
         "views": "2.8M",
         "posts": "1.2K",
         "growth": "+95%",
         "relevanceScore": 100,
         "region": "Peru",
-        "category": "UCSP"
+        "category": "MARCA"
       }
     ]
   }
@@ -219,15 +219,15 @@ Para ejecutar manualmente:
   "source": "Meta/Facebook Public Trends",
   "region": "Peru",
   "category": "Education",
-  "client": "UCSP - Universidad Católica San Pablo",
+  "client": "Cliente de ejemplo",
   "aggregatedTopics": [
     {
-      "topic": "Admisión UCSP 2026",
+      "topic": "Tema de ejemplo",
       "mentions": 2850,
       "engagement_score": 9.5,
       "growth": "+125%",
       "sentiment": "very positive",
-      "top_brands": ["UCSP", "Admisión UCSP"],
+      "top_brands": ["MARCA"],
       "avg_reactions": 580,
       "avg_comments": 125,
       "avg_shares": 185

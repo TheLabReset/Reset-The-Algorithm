@@ -142,20 +142,20 @@ console.log(items[0]); // Output del actor
 
 ## Configuración por Cliente
 
-### UCSP (Universidad)
+### MARCA (Universidad)
 
 ```json
 {
-  "clientName": "UCSP",
-  "clientFullName": "Universidad Católica San Pablo",
+  "clientName": "MARCA",
+  "clientFullName": "Cliente de ejemplo",
   "facebookPages": [
-    "https://www.facebook.com/UCSPoficial"
+    "https://www.facebook.com/PaginaDeEjemplo"
   ],
   "topics": [
     {
       "name": "Admisión 2024",
       "keywords": ["admisión", "postular", "examen de admisión"],
-      "brands": ["UCSP", "UNSA", "UCSM"]
+      "brands": ["MARCA", "COMPETIDOR_1", "COMPETIDOR_2"]
     },
     {
       "name": "Becas y Financiamiento",
