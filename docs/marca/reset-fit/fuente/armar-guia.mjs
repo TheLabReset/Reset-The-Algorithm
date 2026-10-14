@@ -227,10 +227,21 @@ const appCargando = telefono('Cargando', `${T(30, 96, 'Clases', { tam: 24, peso:
 ${poseG('piensa', 86, 190, 1.2)}
 ${T(150, 394, 'Un momento', { tam: 21, peso: 800, fam: 'titulo', ancla: 'middle' })}${T(150, 424, 'Buscamos los horarios de tu sede.', { tam: 15, color: C.pizarra, ancla: 'middle' })}`, 'clases');
 
-const post = `<svg viewBox="0 0 1080 1080" role="img" aria-label="Publicación cuadrada para redes">
-<rect width="1080" height="1080" fill="${C.tinta}"/>${poseG('celebra', 600, 70, 4.2, { cara: C.tinta, acento: C.menta })}
+// Publicación cuadrada, mostrada como se ve en el feed: cuenta arriba, acciones y texto abajo
+const postArte = `<rect width="1080" height="1080" fill="${C.tinta}"/>${poseG('celebra', 600, 70, 4.2, { cara: C.tinta, acento: C.menta })}
 ${T(80, 640, 'Tres semanas', { tam: 104, peso: 800, color: C.cal, fam: 'titulo' })}${T(80, 750, 'seguidas.', { tam: 104, peso: 800, color: C.cal, fam: 'titulo' })}${T(80, 860, 'Ya es costumbre.', { tam: 104, peso: 800, color: C.menta, fam: 'titulo' })}
-${firma(80, 1000, 30, C.cal, C.rojo, C.tinta)}</svg>`;
+${firma(80, 1000, 30, C.cal, C.rojo, C.tinta)}`;
+const post = `<svg viewBox="0 0 1080 1420" role="img" aria-label="Publicación cuadrada en el feed de la cuenta fitlab">
+<rect width="1080" height="1420" fill="#fff"/>
+<circle cx="84" cy="70" r="46" fill="${C.rojo}"/>${minimaG(52, 40, 0.66, C.cal, C.rojo)}
+${T(152, 64, 'fitlab', { tam: 34, peso: 700 })}${T(152, 104, 'Fit Lab · San Borja', { tam: 28, color: C.pizarra })}
+<g fill="${C.tinta}"><circle cx="964" cy="70" r="6"/><circle cx="990" cy="70" r="6"/><circle cx="1016" cy="70" r="6"/></g>
+<g transform="translate(0 140)">${postArte}</g>
+<g fill="none" stroke="${C.tinta}" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" transform="translate(0 16)">
+<path d="M84 1300 C40 1268 40 1236 64 1230 C76 1228 84 1236 84 1244 C84 1236 92 1228 104 1230 C128 1236 128 1268 84 1300 Z"/>
+<path d="M190 1262 a32 30 0 1 1 14 26 l-20 6 l6 -18 z"/><path d="M290 1240 L354 1240 L312 1300 L312 1268 Z M312 1268 L354 1240"/>
+<path d="M990 1236 H1036 V1300 L1013 1282 L990 1300 Z"/></g>
+${T(40, 1392, '<tspan font-weight="700">fitlab</tspan> Tres semanas seguidas. Ya es costumbre.', { tam: 30 })}</svg>`;
 // Historia 9:16: lo importante queda entre los 250 px de arriba y los 340 de abajo que tapa la interfaz de la red
 const historia = `<svg viewBox="0 0 1080 1920" role="img" aria-label="Historia vertical para redes">
 <rect width="1080" height="1920" fill="${C.rojo}"/>${poseG('madruga', 250, 300, 5.6, { ...SOBRE_ROJO, acento: C.tinta })}
@@ -253,14 +264,14 @@ ${T(110, 608, legal1, { tam: 21, color: C.pizarra })}
 ${T(110, 638, legal2, { tam: 21, color: C.pizarra })}
 ${firma(f(1140 - 50 - anchoFirma(38)), 520, 38, C.tinta)}</svg>`;
 // Vertical tipo mupi (120 × 176 cm): el formato de los paraderos de Lima. Afiche de cal con margen de 40 por lado.
-const mupiPose = poseEn('hola', f(530 - anchoPose('hola', 1.9)), 70, 1.9);
+const mupiPose = poseEn('hola', f(530 - anchoPose('hola', 1.6)), 70, 1.6);
 const mupi = `<svg viewBox="0 0 600 900" role="img" aria-label="Panel vertical tipo mupi con precio y condiciones visibles">
 <rect width="600" height="900" fill="#1d1f26"/><rect x="30" y="30" width="540" height="790" rx="6" fill="${C.cal}"/>
 ${mupiPose}
-${T(70, 290, 'Primera clase', { tam: 54, peso: 800, fam: 'titulo' })}${T(70, 350, 'por nuestra', { tam: 54, peso: 800, color: C.rojo, fam: 'titulo' })}${T(70, 410, 'cuenta.', { tam: 54, peso: 800, color: C.rojo, fam: 'titulo' })}
-${T(70, 462, 'Un coach te acompaña', { tam: 25 })}${T(70, 494, 'la primera semana.', { tam: 25 })}
-<rect x="70" y="522" width="460" height="128" rx="14" fill="${C.tinta}"/>${T(94, 582, 'S/ 89 al mes', { tam: 46, peso: 800, color: C.cal, fam: 'titulo' })}${T(94, 620, 'Precio final con IGV', { tam: 20, color: C.cal })}${T(506, 620, 'sin permanencia mínima', { tam: 20, color: C.cal, ancla: 'end' })}
-${T(70, 690, 'Sin matrícula hasta el 30 de noviembre de 2026', { tam: 18, color: C.pizarra })}${T(70, 714, 'o hasta agotar 300 cupos. Condiciones en la web.', { tam: 18, color: C.pizarra })}${T(70, 738, 'Precio de ejemplo: Fit Lab es una marca ficticia.', { tam: 18, color: C.pizarra })}
+${T(70, 262, 'Primera clase', { tam: 54, peso: 800, fam: 'titulo' })}${T(70, 318, 'por nuestra', { tam: 54, peso: 800, color: C.rojo, fam: 'titulo' })}${T(70, 374, 'cuenta.', { tam: 54, peso: 800, color: C.rojo, fam: 'titulo' })}
+${T(70, 420, 'Un coach te acompaña', { tam: 25 })}${T(70, 450, 'la primera semana.', { tam: 25 })}
+<rect x="70" y="476" width="460" height="132" rx="14" fill="${C.tinta}"/>${T(94, 530, 'S/ 89 al mes', { tam: 46, peso: 800, color: C.cal, fam: 'titulo' })}${T(94, 566, 'Precio final con IGV', { tam: 20, color: C.cal })}${T(94, 592, 'Sin permanencia mínima', { tam: 20, color: C.cal })}
+${T(70, 646, 'Sin matrícula hasta el 30 de noviembre de 2026', { tam: 18, color: C.pizarra })}${T(70, 670, 'o hasta agotar 300 cupos. Condiciones en la web.', { tam: 18, color: C.pizarra })}${T(70, 694, 'Precio de ejemplo: Fit Lab es una marca ficticia.', { tam: 18, color: C.pizarra })}
 ${firma(70, 780, 22, C.tinta)}</svg>`;
 
 // Toalla: pose Siesta (el mensaje es de descanso). Aire parejo entre franja, pose, titular, firma y franja.
@@ -277,7 +288,7 @@ ${firmaCentrada(200, f(372 + 34 + altoFirma(18)), 18, C.cal, C.rojo, C.tinta)}</
 // La escala es lineal (cuerpo recto): 750 ml en el hombro (y 128), cero en el fondo interior (y 530).
 // A la izquierda la escala; a la derecha la pose y el logotipo solo, en el canto, separados de la escala.
 const mlY = (ml) => f(530 - ((530 - 128) * ml) / 750);
-const tomatodoPose = poseEn('hidrata', f(266 - anchoPose('hidrata', 0.85)), 150, 0.85, { ...SOBRE_ROJO, acento: C.tinta });
+const tomatodoPose = poseEn('hidrata', f(266 - anchoPose('hidrata', 0.95)), 150, 0.95, { ...SOBRE_ROJO, acento: C.tinta });
 const tomatodo = `<svg viewBox="0 0 400 560" role="img" aria-label="Tomatodo de 750 ml">
 <path d="M176 8 Q200 -4 224 8" fill="none" stroke="${C.tinta}" stroke-width="8" stroke-linecap="round"/>
 <rect x="150" y="14" width="100" height="40" rx="12" fill="${C.tinta}"/><rect x="132" y="50" width="136" height="18" rx="7" fill="${C.menta}"/>
@@ -313,7 +324,7 @@ const correo = `<div class="correo"><div class="correo-cab"><div style="margin-l
 <div class="correo-cuerpo">${pose('hola', 76, { cara: C.cal, acento: C.tinta, ajustada: true })}<h4>Bienvenida, Nombre</h4><p>Tu primera clase es el <b>jueves a las 19:00 en San Borja</b>. Llega diez minutos antes: un coach te muestra la sala y te arma una rutina para tu primera semana.</p><p>Si algo cambia, reprograma desde la app. Sin multas.</p><a class="boton" href="#aplicaciones">Ver mi reserva</a><p class="firma">El equipo de Fit Lab San Borja</p></div>
 <div class="correo-pie"><p>Te escribimos porque te inscribiste en Fit Lab: es un correo sobre tu membresía, no publicidad.</p><p>[Razón social] · RUC [11 dígitos] · [Dirección de la sede], San Borja, Lima. Tratamos tus datos según la Ley 29733; puedes pedir acceso, cambio o retiro en [correo de privacidad].</p><p>Fit Lab es una marca ficticia de demostración.</p></div></div>`;
 // Contrato: sin humor ni poses. Los corchetes son campos que se llenan al firmar.
-const documento = `<div class="documento"><div class="doc-cab">${leer('fit-lab-horizontal.svg')}<span>Contrato de membresía</span></div>
+const documento = `<div class="documento"><div class="doc-cab"><div style="margin-left:${f((-geo.reserva * geo.e * 34) / geo.horiz.h)}px">${leer('fit-lab-horizontal.svg')}</div><span>Contrato de membresía</span></div>
 <p><b>Partes:</b> [Razón social], RUC [11 dígitos], con domicilio en [dirección], y [nombre de la socia o del socio], DNI [número].</p>
 <p><b>Fecha:</b> [día] de [mes] de [año] · <b>Sede:</b> [sede]</p>
 <ol class="clausulas"><li><b>Precio mensual:</b> S/ 89, con IGV incluido.</li><li><b>Matrícula:</b> S/ 0 hasta el 30 de noviembre de 2026 o hasta agotar 300 cupos, lo que ocurra primero. Después, la matrícula del tarifario vigente, informada antes de firmar.</li><li><b>Permanencia mínima:</b> ninguna.</li><li><b>Renovación:</b> la membresía se renueva cada mes y se cobra el día [día de cobro] a la tarjeta que indiques, hasta que la canceles.</li><li><b>Cómo cancelar:</b> desde la app o en recepción, con efecto al cierre del mes en curso, sin penalidad.</li></ol>
@@ -413,6 +424,8 @@ section.parte { padding-block: 72px 24px; display: grid; gap: 28px; scroll-margi
 .parte h3 { font-size: 24px; margin-bottom: 8px; }
 .lead { font-size: 20px; color: var(--texto-2); }
 .rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.rejilla.dos { grid-template-columns: repeat(2, minmax(0, 1fr)); } .rejilla.dos > .entera { grid-column: 1 / -1; }
+@media (max-width: 700px) { .rejilla.dos { grid-template-columns: minmax(0, 1fr); } }
 .carta { background: var(--superficie); border: 1px solid var(--borde); border-radius: 18px; padding: 22px; display: grid; gap: 10px; align-content: start; min-width: 0; }
 .carta .dato { font-family: var(--f-titulo); font-weight: 800; font-size: 44px; line-height: 1; color: var(--acento-texto); }
 .carta small, .fuente { font-size: 13px; color: var(--texto-2); }
@@ -424,7 +437,8 @@ section.parte { padding-block: 72px 24px; display: grid; gap: 28px; scroll-margi
 .versiones figure { margin: 0; display: grid; gap: 8px; }
 .versiones .lienzo { display: grid; place-items: center; min-height: 170px; }
 .versiones .lienzo svg { max-height: 120px; width: auto; max-width: 100%; }
-.versiones .iconos { display: flex; gap: 18px; justify-content: center; align-items: end; } .iconos > div { display: grid; gap: 6px; justify-items: center; } .iconos small { font-size: 12px; color: var(--fl-pizarra); }
+.versiones .iconos { display: flex; gap: 18px; justify-content: center; align-items: end; } .iconos > div { display: grid; gap: 6px; justify-items: center; } .iconos small { font-size: 12px; color: var(--fl-pizarra); white-space: nowrap; }
+.versiones .lienzo.logotipo svg { max-height: 64px; }
 .iconos svg { display: block; }
 figcaption { font-size: 14px; color: var(--texto-2); }
 .g-linea { stroke: var(--linea-grilla); stroke-width: .25; } .g-cota { stroke: var(--texto); fill: var(--texto); stroke-width: .4; } .g-cota text, .g-num { font: 3.6px var(--f-texto); stroke: none; fill: var(--texto-2); }
@@ -462,6 +476,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 .escala p { overflow-wrap: anywhere; }
 .escala { display: grid; gap: 14px; } .escala div { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 16px; align-items: baseline; border-bottom: 1px solid var(--borde); padding-bottom: 12px; }
 .escala span { font-size: 13px; color: var(--texto-2); }
+@media (max-width: 560px) { .escala div { grid-template-columns: minmax(0, 1fr); gap: 4px; } .escala p { overflow-wrap: normal; } }
 .poses { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
 .pose-carta { margin: 0; background: var(--superficie); border: 1px solid var(--borde); border-radius: 18px; padding: 16px; display: grid; gap: 8px; justify-items: center; align-content: start; text-align: center; }
 .pose-carta figcaption { display: grid; gap: 2px; } .pose-carta b { font-family: var(--f-titulo); font-size: 18px; color: var(--texto); }
@@ -469,7 +484,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 .anim .saluda { animation: saludo 1.8s ease-in-out infinite; transform-origin: 50% 85%; }
 @keyframes saludo { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 50% { transform: rotate(4deg) translateY(-6px); } 75% { transform: rotate(-2deg); } }
 .aplic { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
-.aplic figure { margin: 0; display: grid; gap: 8px; align-content: start; }
+.aplic figure { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-content: start; min-width: 0; }
 .ancho2 { grid-column: span 2; } @media (max-width: 640px) { .ancho2 { grid-column: auto; } }
 /* Piezas anchas en celular: se muestran ampliadas (760 px) dentro de su marco y se deslizan, para que el texto de la
    pieza no baje de unos 11 px. La sombra del borde derecho y la nota avisan que hay más. */
@@ -482,15 +497,16 @@ figcaption { font-size: 14px; color: var(--texto-2); }
   .marco-amp::after { content: ''; position: absolute; top: 1px; right: 1px; bottom: 1px; width: 28px; border-radius: 0 17px 17px 0; pointer-events: none; background: linear-gradient(to left, var(--sombra-borde), transparent); }
   .desliza { display: inline; }
 }
-.stickers { display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: center; padding: 18px; background: #e8e6df; border-radius: 18px; }
-.stickers svg { flex: none; max-width: 30%; height: auto; }
+/* Plancha de stickers: dos por fila */
+.stickers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; justify-items: center; padding: 16px; background: #e8e6df; border-radius: 18px; }
+.stickers svg { width: 100%; max-width: 150px; height: auto; }
 .correo { background: #fff; color: var(--fl-tinta); border-radius: 18px; overflow: hidden; border: 1px solid var(--borde); --cara: var(--fl-cal); --acento: var(--fl-tinta); }
 .correo-cab { padding: 18px 24px; border-bottom: 4px solid var(--fl-rojo); } .correo-cab svg { height: 40px; width: auto; display: block; }
 .correo-cuerpo { padding: 24px; display: grid; gap: 12px; justify-items: start; } .correo-cuerpo h4 { font-size: 30px; }
 .correo .boton { display: inline-block; background: var(--fl-rojo); color: var(--fl-tinta); font-weight: 700; text-decoration: none; padding: 12px 22px; border-radius: 999px; margin-block: 4px; }
 .correo .firma { color: var(--fl-pizarra); } .correo-pie { padding: 14px 24px; font-size: 13px; line-height: 1.5; color: var(--fl-pizarra); background: var(--fl-cal); display: grid; gap: 6px; }
 .documento { background: #fff; color: var(--fl-tinta); border-radius: 12px; padding: 28px; border: 1px solid var(--borde); display: grid; gap: 12px; font-size: 15px; }
-.doc-cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #dcdcd6; padding-bottom: 14px; } .doc-cab svg { height: 34px; width: auto; }
+.doc-cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #dcdcd6; padding-bottom: 14px; } .doc-cab svg { height: 34px; width: auto; display: block; }
 .doc-cab span { font-weight: 700; } .clausulas { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 .firmas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 28px; font-size: 13px; color: var(--fl-pizarra); }
 .firmas span { display: block; border-top: 1px solid var(--fl-tinta); margin-bottom: 6px; }
@@ -531,8 +547,8 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 <section class="parte" id="voz"><header><span class="num">2 · Voz</span><h2>Hablamos de lo que el cuerpo hace y de lo que el socio decide.</h2>
 <p class="lead">Nunca de cómo debería verse ni de cuánto debería pesar. Y toda cifra medible (kilos, plazos, precios, cupos) sale con sustento y con sus condiciones a la vista.</p></header>
 <div class="tabla-marco">${tablaVoz}</div>
-<div class="rejilla">
-  <div class="carta"><h3>Tono por situación</h3><table class="tabla"><tbody>${tonos.map(([s, t]) => `<tr><th scope="row">${s}</th><td>${t}</td></tr>`).join('')}</tbody></table></div>
+<div class="rejilla dos">
+  <div class="carta entera"><h3>Tono por situación</h3><table class="tabla"><tbody>${tonos.map(([s, t]) => `<tr><th scope="row">${s}</th><td>${t}</td></tr>`).join('')}</tbody></table></div>
   <div class="carta"><h3>Humor</h3><ul class="reglas"><li>Un guiño por pieza, seco, sobre la situación (el despertador, la escalera después del día de pierna) o sobre la propia pesa.</li><li>Nunca sobre el cuerpo de nadie, el peso, la comida, el dolor, los precios, los contratos, la salud ni la seguridad.</li><li>Nunca a costa de un competidor: la burla comparativa es desleal (D. Leg. 1044, art. 12).</li><li>Si hay duda, sin chiste. Ser claro importa más que ser gracioso.</li></ul></div>
   <div class="carta"><h3>Español de Lima</h3><ul class="reglas"><li>Tuteo en toda la comunicación de marca; usted solo si la persona lo usa primero.</li><li>«Chamba», «bacán», «al toque», con moderación. Nunca apelativos sobre el cuerpo, aunque sean cariñosos.</li><li>Signos de apertura ¿¡, tildes y «setiembre».</li><li>«Socio», «socia», o el nombre. Nunca «cliente» en lo que lee el socio.</li></ul></div>
 </div>
@@ -546,8 +562,8 @@ figcaption { font-size: 14px; color: var(--texto-2); }
   <figure><div class="lienzo oscuro">${leer('fit-lab-horizontal-negativo.svg')}</div><figcaption>Horizontal sobre tinta.</figcaption></figure>
   <figure><div class="lienzo claro">${leer('fit-lab-apilada.svg')}</div><figcaption>Apilada: para formatos verticales.</figcaption></figure>
   <figure><div class="lienzo oscuro">${leer('fit-lab-simbolo-negativo.svg')}</div><figcaption>Solo la pesa: cuando el nombre ya está cerca.</figcaption></figure>
-  <figure><div class="lienzo claro">${leer('fit-lab-logotipo.svg')}</div><figcaption>Solo logotipo: bordados en la espalda, cantos de tomatodo y lugares donde el símbolo ya aparece cerca.</figcaption></figure>
-  <figure><div class="lienzo oscuro">${leer('fit-lab-logotipo-negativo.svg')}</div><figcaption>Solo logotipo sobre tinta.</figcaption></figure>
+  <figure><div class="lienzo claro logotipo">${leer('fit-lab-logotipo.svg')}</div><figcaption>Solo logotipo: bordados en la espalda, cantos de tomatodo y lugares donde el símbolo ya aparece cerca.</figcaption></figure>
+  <figure><div class="lienzo oscuro logotipo">${leer('fit-lab-logotipo-negativo.svg')}</div><figcaption>Solo logotipo sobre tinta.</figcaption></figure>
   <figure><div class="lienzo claro iconos">${[96, 48, 32].map((t) => `<div><div style="width:${t}px;border-radius:${f(t * 0.225)}px;overflow:hidden">${leer('fit-lab-icono.svg')}</div><small>${t} px</small></div>`).join('')}<div><div style="width:16px">${leer('fit-lab-favicon.svg')}</div><small>16 px</small></div></div><figcaption>Ícono de app y favicon: la versión mínima, sin sonrisa y con brazos más gruesos (sin brazos se leía como un candado). El favicon de 16 px va sin el cuadrado rojo: dentro del cuadrado la pesa mediría 11 px; sola ocupa 15.</figcaption></figure>
   <figure><div class="lienzo claro" style="color:var(--fl-tinta)">${leer('fit-lab-horizontal-monocromo.svg')}</div><figcaption>Monocromo: una tinta, para sellos, grabados y para The Algorithm, donde el color es dato.</figcaption></figure>
 </div>
@@ -568,7 +584,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
   ['Niebla', C.niebla, 'Texto secundario sobre tinta e íconos inactivos.'],
 ].map(([n, h, u]) => `<div class="color"><div class="m" style="background:${h}"></div><div class="t"><b>${n}</b><span>${h.toUpperCase()}</span><span>${u}</span></div></div>`).join('')}</div>
 <div class="proporcion" role="img" aria-label="Proporción de uso: 60 % cal o tinta, 30 % rojo, 10 % menta"><span style="flex:60;background:${C.cal}"></span><span style="flex:30;background:${C.rojo}"></span><span class="sep" style="background:${C.tinta}"></span><span style="flex:10;background:${C.menta}"></span></div>
-<ul class="leyenda" aria-hidden="true"><li><i style="background:${C.cal}"></i>60 % cal o tinta</li><li><i style="background:${C.rojo}"></i>30 % rojo</li><li><i style="background:${C.menta}"></i>10 % menta</li><li>Entre rojo y menta, siempre tinta.</li></ul>
+<ul class="leyenda" aria-hidden="true"><li><i style="background:linear-gradient(135deg, ${C.cal} 50%, ${C.tinta} 50%)"></i>60 % cal o tinta</li><li><i style="background:${C.rojo}"></i>30 % rojo</li><li><i style="background:${C.menta}"></i>10 % menta</li><li>Entre rojo y menta, siempre tinta.</li></ul>
 <div class="tabla-marco">${tablaColor}</div>
 <p class="fuente">Contrastes medidos al armar esta guía (WCAG 2.x). La columna de deuteranopía usa la simulación de Machado y otros, 2009. El color nunca es la única señal: «clase llena» lleva palabra e ícono.</p>
 </section>
@@ -587,7 +603,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 <p class="lead">El logo no cambia; la pesa sí se mueve. Cada pose tiene su momento. Los objetos van en tinta sobre fondo claro y en menta sobre fondo oscuro, y nunca tocan el rojo: lo que la pesa sostiene va pegado a la mano, con un filete de fondo de 2 unidades de la grilla. Las poses rotan por temporada para que el chiste no se gaste.</p></header>
 ${poses}
 <div class="rejilla">
-  <div class="carta"><h3>La pesa siempre</h3><ul class="reglas"><li>Tiene la cara mínima: dos puntos y, si hace falta, una boca.</li><li>Hace algo: celebra, saluda, duerme, levanta.</li><li>Comparte el espacio con el texto, no lo tapa.</li></ul></div>
+  <div class="carta"><h3>La pesa siempre</h3><ul class="reglas"><li>Tiene la cara mínima: dos puntos y, si hace falta, una boca.</li><li>Hace algo: celebra, saluda, duerme, levanta.</li><li>Comparte el espacio con el texto, no lo tapa.</li><li>Sostiene sus objetos de cerca: pegados a la mano, con el filete de fondo de por medio.</li></ul></div>
   <div class="carta"><h3>La pesa nunca</h3><ul class="reglas"><li>Se sube a una balanza ni mide cinturas.</li><li>Come comida «culpable» ni se castiga por comer.</li><li>Sufre, llora o se burla de nadie.</li><li>Aparece en cobros, contratos, cancelaciones o avisos de seguridad.</li><li>Lleva torso, ni piernas fuera de la pose Corre, donde son un gesto.</li><li>Va roja sobre fondo rojo: ahí va en cal con cara roja.</li></ul></div>
 </div>
 </section>
@@ -612,8 +628,8 @@ ${poses}
   <figure class="ancho2"><div class="marco-amp"><div class="lienzo ampliable" style="padding:0">${fachada}</div></div><figcaption>Fachada de sede, de noche: letrero con la firma en negativo, bandera con la versión mínima y horario en Atkinson.<span class="desliza"> En celular se ve ampliada: desliza para recorrerla.</span></figcaption></figure>
   <figure><div class="lienzo" style="padding:0">${senal('Pesas', ['Vuelve la pesa a su sitio.', 'Ella también quiere', 'descansar.'], 'siesta', C.cal, C.tinta, C.tinta, 'Sala de pesas · piso 1')}</div><figcaption>Norma de sala con un guiño.</figcaption></figure>
   <figure><div class="lienzo" style="padding:0">${senal('Agua', ['Hay un bebedero cada', '20 metros. Llena tu', 'tomatodo cuando quieras.'], 'hidrata', C.tinta, C.cal, C.menta, 'Zona de cardio · piso 2')}</div><figcaption>Señal de servicio sobre tinta: los objetos van en menta.</figcaption></figure>
-  <figure><div class="lienzo" style="padding:0">${salida}</div><figcaption>Seguridad: sin pesa y sin humor. En obra va el pictograma de la norma técnica peruana vigente; este es de referencia.</figcaption></figure>
   <figure class="ancho2"><div class="marco-amp"><div class="lienzo ampliable" style="padding:0">${panel}</div></div><figcaption>Panel horizontal de paradero: precio total con IGV, duración y cupos de la promoción a la vista (Ley 29571, art. 14).<span class="desliza"> En celular se ve ampliada: desliza para recorrerla.</span></figcaption></figure>
+  <figure><div class="lienzo" style="padding:0">${salida}</div><figcaption>Seguridad: sin pesa y sin humor. En obra va el pictograma de la norma técnica peruana vigente; este es de referencia.</figcaption></figure>
   <figure><div class="lienzo" style="padding:0">${mupi}</div><figcaption>Panel vertical tipo mupi, para paraderos con caja de luz vertical: el mismo contenido, en columna.</figcaption></figure>
   <figure class="ancho2"><div class="marco-amp"><div class="lienzo ampliable claro">${polos('Coach', C.tinta, C.cal, C.menta, C.rojo)}</div></div><figcaption>Polo de coach: tinta con cuello menta. Pesa chica en el pecho; en la espalda, solo logotipo y el rol grande.<span class="desliza"> En celular se ve ampliada: desliza para recorrerla.</span></figcaption></figure>
   <figure class="ancho2"><div class="marco-amp"><div class="lienzo ampliable claro">${polos('Recepción', C.rojo, C.tinta, C.tinta, SOBRE_ROJO.pesa)}</div></div><figcaption>Polo de recepción: rojo, para encontrarlo al toque. Sobre rojo, la pesa va en cal con cara roja; nunca roja sobre rojo.<span class="desliza"> En celular se ve ampliada: desliza para recorrerla.</span></figcaption></figure>
@@ -624,10 +640,10 @@ ${poses}
   <figure><div class="lienzo claro" style="display:grid;place-items:center">${appVacio}</div><figcaption>App: estado vacío con la pesa en siesta.</figcaption></figure>
   <figure><div class="lienzo claro" style="display:grid;place-items:center">${appCargando}</div><figcaption>App: cargando, la pesa piensa.</figcaption></figure>
   <figure><div class="lienzo claro" style="display:grid;place-items:center"><div style="max-width:260px">${historia}</div></div><figcaption>Historia: la sede abre a las 5:00, sin culpa para quien no madruga. Todo queda fuera de las zonas que tapa la interfaz de la red.</figcaption></figure>
-  <figure class="ancho2"><div class="lienzo" style="padding:0">${post}</div><figcaption>Publicación: el logro como mensaje.</figcaption></figure>
-  <figure><div>${correo}</div><figcaption>Correo de bienvenida, con botón a la reserva y pie legal.</figcaption></figure>
-  <figure><div>${documento}</div><figcaption>Contrato: solo el logo y la información completa; los corchetes se llenan al firmar. En contratos, cobros, cancelaciones y avisos de seguridad no hay humor ni poses.</figcaption></figure>
-  <figure class="ancho2"><div>${stickers}</div><figcaption>Stickers troquelados de bienvenida: seis poses por temporada.</figcaption></figure>
+  <figure class="ancho2"><div>${correo}</div><figcaption>Correo de bienvenida, con botón a la reserva y pie legal.</figcaption></figure>
+  <figure class="ancho2"><div>${documento}</div><figcaption>Contrato: solo el logo y la información completa; los corchetes se llenan al firmar. En contratos, cobros, cancelaciones y avisos de seguridad no hay humor ni poses.</figcaption></figure>
+  <figure><div class="lienzo claro" style="display:grid;place-items:center">${post}</div><figcaption>Publicación en el feed: el logro como mensaje.</figcaption></figure>
+  <figure><div>${stickers}</div><figcaption>Stickers troquelados de bienvenida: seis poses por temporada.</figcaption></figure>
   <figure><div class="lienzo claro">${toalla}</div><figcaption>Toalla de sala: la pesa en Siesta, porque el mensaje es de descanso.</figcaption></figure>
   <figure><div class="lienzo claro">${tomatodo}</div><figcaption>Tomatodo de 750 ml: la escala a un lado; al otro, la pose y el logotipo solo, en el canto.</figcaption></figure>
 </div>
