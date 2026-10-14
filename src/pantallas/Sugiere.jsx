@@ -1,12 +1,12 @@
 // Capa 3 · Sugiere: qué se salió de lo esperado, qué va bien, qué mover y qué pasaría si nada cambia.
 // No calcula: pinta las alertas y sugerencias de src/calculo y los textos de src/textos/sugiere.js.
 import { ArrowUpRight } from 'lucide-react';
-import { Bloque, Alerta, Datos, Resumen } from '../sistema/Componentes.jsx';
+import { Bloque, Alerta, Resumen, SugerenciaModelo } from '../sistema/Componentes.jsx';
 import { Proyeccion, Barras } from '../sistema/graficos/Graficos.jsx';
-import { numero } from '../sistema/formato.js';
+import { numero, dolares, porcentaje } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, alertasDe, buenasDe } from './comun.jsx';
-import { sugerencia, escenarioTexto } from '../textos/sugiere.js';
-import { periodoTexto } from '../textos/comun.js';
+import { sugerencia, sinReasignar, escenarioTexto } from '../textos/sugiere.js';
+import { periodoTexto, mesTexto } from '../textos/comun.js';
 
 const GRUPOS = [
   { nivel: 'atencion', titulo: 'Atención', bajada: 'Afecta los leads o la inversión de este mes.' },
@@ -36,6 +36,12 @@ export default function Sugiere({ capa, vista: v }) {
   const e = v.sugiere.escenario;
   const et = e?.estado === 'ok' ? escenarioTexto(e) : null;
   const ix = v.sugiere.indice;
+  // Al costado de la sugerencia: cuánto se lleva hoy cada plataforma y cuánto cuesta por lead y por inscripción
+  const r = v.analiza.rendimiento;
+  const columnas = r.estado !== 'ok' ? [] : r.canales.map((c) => ({
+    nombre: c.nombre, valor: porcentaje(c.pctInversion), unidad: 'del presupuesto',
+    nota: `${dolares(c.cpl, 2)} por lead${c.cohorte?.cpa != null ? ` · ${dolares(c.cohorte.cpa)} por inscripción` : ''}`,
+  }));
   return (
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={`Qué mirar en ${periodoTexto(v.periodo)}`}
@@ -47,13 +53,13 @@ export default function Sugiere({ capa, vista: v }) {
       </SeccionDe>
 
       <SeccionDe def={s32} vista={v} conAvisos={false}>
-        {sugerencias.length === 0 && <Bloque titulo="El modelo no propone mover el reparto" universo="modelo" lectura="Este mes la plataforma y el CRM no coinciden en qué canal es el más caro." />}
+        {sugerencias.length === 0 && <SugerenciaModelo {...sinReasignar(r, periodoTexto(v.periodo))} columnas={columnas}
+          ayuda={<p>Solo propone mover inversión cuando una plataforma pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción.</p>}
+          pie={<span>Inversión de {periodoTexto(v.periodo)} · inscripciones de la cohorte de {mesTexto(r.cohorteDesde?.slice(0, 7))}</span>} />}
         {sugerencias.map((s) => (
-          <Bloque key={s.titulo} universo="modelo" titulo={s.titulo} lectura={s.dato}
-            pie={<a className="q-alerta-ir" href={'#' + s.ir}>Ver el dato en {s.irTexto}<ArrowUpRight size={14} aria-hidden="true" /></a>}>
-            <p className="q-estimacion">{s.estimacion}</p>
-            <Datos pares={[['Por qué', s.sostiene], ...s.supuestos.map((x, i) => [i === 0 ? 'Supuestos' : '', x])]} />
-          </Bloque>
+          <SugerenciaModelo key={s.titulo} titulo={s.titulo} detalle={`${s.dato} ${s.estimacion}`} columnas={columnas}
+            ayuda={<><p>{s.sostiene}</p><ul>{s.supuestos.map((x) => <li key={x}>{x}</li>)}</ul></>}
+            pie={<a className="q-alerta-ir" href={'#' + s.ir}>Ver el dato en {s.irTexto}<ArrowUpRight size={14} aria-hidden="true" /></a>} />
         ))}
       </SeccionDe>
 

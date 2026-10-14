@@ -1,7 +1,7 @@
 // Capa 1 · Lee: lo que dice cada fuente, por separado. No calcula: pinta la vista y las lecturas de src/textos.
 import { Bloque, Cifra, Tabla, Resumen } from '../sistema/Componentes.jsx';
 import { useState } from 'react';
-import { Linea, Multiplos, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion, MapaCalor } from '../sistema/graficos/Graficos.jsx';
+import { Linea, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion, MapaCalor } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, compacto, variacion, rangoFechas, fecha, diaSemanaLargo, mesCorto, NO_MEDIDO } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe } from './comun.jsx';
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
@@ -95,10 +95,13 @@ export default function Lee({ capa, vista: v }) {
                   bandas: [{ hasta: p.objetivo }],
                   estado: p.cpl > p.objetivo ? 'sobre el objetivo' : 'bajo el objetivo', tono: p.cpl > p.objetivo ? 'empeora' : null,
                 }))} />
+              <Tabla etiqueta="Inversión, leads y CTR de cada plataforma" numericas={[1, 2, 3]}
+                columnas={['Plataforma', 'Inversión', 'Leads', 'CTR']}
+                filas={v.lee.plataformas.plataformas.map((p) => [p.nombre, dolares(p.inversion), numero(p.leads), porcentaje(p.ctr * 100, 2)])} />
             </Bloque>
-            <Bloque universo="pauta" ancho="mitad" titulo="Leads por canal, día por día" lectura="Cada canal en su panel, con la misma escala para que se comparen."
-              pie={<span>El hueco de una línea es un día sin dato, no un cero.</span>}>
-              <Multiplos etiqueta="Leads por día de cada canal" paneles={pa.porCanal.map((c) => ({ nombre: c.nombre, serie: c.serie, nota: c.cambio == null ? '' : variacion(c.cambio) }))} />
+            <Bloque universo="pauta" ancho="mitad" {...L.inversionDia(v)}
+              pie={<span>Google Ads, Meta Ads y TikTok Ads juntos. Un día sin dato de alguna plataforma queda como hueco, no como cero.</span>}>
+              <Linea serie={pa.serieInversion} alto={320} formato={(n) => (n == null ? 'sin dato' : dolares(n))} etiqueta="Inversión en pauta por día, en dólares" />
             </Bloque>
             <Bloque universo="pauta" {...L.campanasLectura(v)}>
               <Tabla etiqueta="Campañas con gasto en el período" numericas={[3, 4, 5, 6]}
@@ -149,8 +152,8 @@ export default function Lee({ capa, vista: v }) {
                 </Bloque>
               : <Bloque universo="crm" titulo="Del lead a la inscripción" estado={sinDato(v.lee.crm.estado)} />}
             <Bloque universo="crm" ancho="mitad" {...L.crmAtencion(v)}>
-              <Histograma etiqueta="Tiempo al primer contacto" formato={(n) => `${numero(n)} leads`}
-                barras={v.lee.crmDetalle.atencion.tramos.map((t) => ({ nombre: t.nombre, corto: t.nombre.replace('menos de ', '< ').replace('más de ', '> '), valor: t.valor }))} resaltar={[]} />
+              <Histograma etiqueta="Tiempo al primer contacto" formato={(n) => `${numero(n)} leads`} rotulo={(b) => `${numero(b.pct)} %`}
+                barras={v.lee.crmDetalle.atencion.tramos.map((t) => ({ nombre: t.nombre, corto: t.nombre.replace('menos de ', '< ').replace('más de ', '> '), valor: t.valor, pct: t.pct }))} resaltar={[]} />
               <p className="q-nota-bloque">La mitad de los leads tuvo {numero(v.lee.crmDetalle.atencion.medianaIntentos)} {v.lee.crmDetalle.atencion.medianaIntentos === 1 ? 'intento' : 'intentos'} de contacto o menos. {numero(v.lee.crmDetalle.atencion.sinRegistro)} contactos sin registro de hora.</p>
             </Bloque>
             <Bloque universo="crm" ancho="mitad" {...L.crmDescarte(v)}>

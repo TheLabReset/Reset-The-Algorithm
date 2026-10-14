@@ -27,7 +27,7 @@ export function reasignacion(cfg, canales) {
   return {
     id: 'reasignar', sostiene: ['2.1'], tipo: 'estimacion',
     desde: sobre, hacia: destino, monto, leads, inscripciones,
-    acuerdo: 'La plataforma y el CRM coinciden en que es el canal más caro; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada canal se mantiene'],
+    acuerdo: 'La plataforma y el CRM coinciden en que es la más cara; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada plataforma se mantiene'],
   };
 }
 

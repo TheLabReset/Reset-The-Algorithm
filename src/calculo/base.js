@@ -71,6 +71,28 @@ export function ventanaCanal(data, canal, desde, hasta) {
   return { inversion, impresiones, clics, leads, medidos, dias, cobertura: medidos / dias, sinDato, leadsPorDia: razon(leads, medidos), cpl: razon(inversion, leads), ctr: razon(clics, impresiones) };
 }
 
+// ── Pauta: una plataforma (Google Ads junta Search y Display). Un día cuenta solo si todos sus canales lo midieron ──
+export const plataformaDe = (cfg, canal) => cfg.plataformas.find((p) => p.canales.includes(canal));
+export function ventanaPlataforma(data, pl, desde, hasta) {
+  const ix = indices(data);
+  let inversion = 0, impresiones = 0, clics = 0, leads = 0, medidos = 0;
+  const sinDato = [];
+  for (const d of rango(desde, hasta)) {
+    const filas = pl.canales.map((c) => ix.pautaDia[c].get(d));
+    if (filas.some((p) => !p)) continue; // fuera de la serie
+    if (filas.some((p) => p.sinDato)) { sinDato.push(d); continue; }
+    for (const p of filas) { inversion += p.inversion; impresiones += p.impresiones; clics += p.clics; leads += p.leads; }
+    medidos++;
+  }
+  const dias = diasEntre(desde, hasta) + 1;
+  return { inversion, impresiones, clics, leads, medidos, dias, cobertura: medidos / dias, sinDato, leadsPorDia: razon(leads, medidos), cpl: razon(inversion, leads), ctr: razon(clics, impresiones) };
+}
+// Objetivo de costo por lead de una plataforma: el que cumpliría cada canal con su propia inversión (Σ/Σ)
+export function objetivoPlataforma(cfg, pl, inversionDe) {
+  const inv = suma(pl.canales, inversionDe);
+  return razon(inv, suma(pl.canales, (id) => inversionDe(id) / cfg.canales.find((c) => c.id === id).metaCpl));
+}
+
 // ── Pauta total: un día cuenta solo si TODOS los canales lo midieron ──
 export function ventanaPauta(data, desde, hasta) {
   const ix = indices(data);

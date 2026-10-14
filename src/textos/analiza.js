@@ -5,9 +5,10 @@ import { periodoTexto, mesTexto, capital, lista } from './comun.js';
 export function veredicto(v) {
   const r = v.analiza.rendimiento;
   if (r.estado !== 'ok' || !r.masBaratoPorLead) return null;
-  if (!r.masBaratoPorInscripcion) return `${r.masBaratoPorLead.nombre} es el canal más barato por lead. Por inscripción todavía no hay casos suficientes para decirlo.`;
-  if (r.masBaratoPorLead.id === r.masBaratoPorInscripcion.id) return `${r.masBaratoPorLead.nombre} es el canal más barato por lead y también por inscripción.`;
-  return `${r.masBaratoPorLead.nombre} es el canal más barato por lead; ${r.masBaratoPorInscripcion.nombre}, por inscripción.`;
+  if (!r.masBaratoPorInscripcion) return `${r.masBaratoPorLead.nombre} consigue el lead más barato. Por inscripción todavía no hay casos suficientes para decirlo.`;
+  if (r.cpaParecido) return `${r.masBaratoPorLead.nombre} consigue el lead más barato. Por inscripción, las plataformas cuestan parecido.`;
+  if (r.masBaratoPorLead.id === r.masBaratoPorInscripcion.id) return `${r.masBaratoPorLead.nombre} consigue el lead y la inscripción más baratos.`;
+  return `${r.masBaratoPorLead.nombre} consigue el lead más barato; ${r.masBaratoPorInscripcion.nombre}, la inscripción más barata.`;
 }
 
 export function inversionContraLeads(v) {
@@ -44,8 +45,9 @@ export function costos(v) {
   const titulo = 'Costo por lead y costo por inscripción';
   if (!r.cohorteCerrada) return { titulo, lectura: `El costo por inscripción usa la cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}, que todavía no cierra: se muestra solo el costo por lead.` };
   const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
-  if (!b) return { titulo, lectura: 'Ningún canal tiene inscripciones suficientes para comparar el costo por inscripción.' };
-  return { titulo, lectura: a.id === b.id ? `${a.nombre} gana en las dos columnas.` : `La plataforma y el CRM no coinciden: ${a.nombre} sale más barato por lead (${dolares(a.cpl, 2)}) y ${b.nombre} por inscripción (${dolares(b.cohorte.cpa)}).` };
+  if (!b) return { titulo, lectura: 'Ninguna plataforma tiene inscripciones suficientes para comparar el costo por inscripción.' };
+  if (r.cpaParecido) return { titulo, lectura: `Por lead, ${a.nombre} es la más barata (${dolares(a.cpl, 2)}). Por inscripción cuestan parecido, entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}, porque sus leads se inscriben en menor proporción.` };
+  return { titulo, lectura: a.id === b.id ? `${a.nombre} es la más barata por lead y por inscripción.` : `La plataforma y el CRM no coinciden: ${a.nombre} consigue el lead más barato (${dolares(a.cpl, 2)}) y ${b.nombre}, la inscripción más barata (${dolares(b.cohorte.cpa)}).` };
 }
 
 export function demanda(v) {

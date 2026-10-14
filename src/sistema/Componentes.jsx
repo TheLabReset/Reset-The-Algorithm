@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, Wallet, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
-  Eye, TrendingUp, ArrowUpRight as Ir,
+  Eye, TrendingUp, Bot, ArrowUpRight as Ir,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
 
@@ -136,6 +136,39 @@ export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance,
         {u && <span className="q-pie-universo"><u.icono size={13} aria-hidden="true" />{u.nombre}</span>}
         {pie}
       </footer>
+    </article>
+  );
+}
+
+// ── Sugerencia del modelo: una frase que se puede decidir, su detalle y, al costado, una columna por plataforma.
+// Se distingue de un dato leído: lleva el robot y el rótulo, y sus supuestos van en la ayuda ──
+export function SugerenciaModelo({ titulo, detalle, columnas = [], ayuda, pie }) {
+  return (
+    <article className="q-bloque q-completo q-modelo">
+      <header className="q-modelo-cab">
+        <span className="q-modelo-icono" aria-hidden="true"><Bot size={16} /></span>
+        <span className="q-modelo-rotulo">Sugerencia del modelo</span>
+        {ayuda && <Ayuda>{ayuda}</Ayuda>}
+      </header>
+      <div className="q-modelo-cuerpo">
+        <div className="q-modelo-texto">
+          <p className="q-modelo-titulo">{titulo}</p>
+          {detalle && <p className="q-modelo-detalle">{detalle}</p>}
+        </div>
+        {columnas.length > 0 && (
+          <ul className="q-modelo-columnas">
+            {columnas.map((c, i) => (
+              <li key={c.nombre}>
+                <span className="q-modelo-nombre"><span className={`q-muestra q-p${i}`} aria-hidden="true" />{c.nombre}</span>
+                <span className="q-modelo-valor">{c.valor}</span>
+                <span className="q-modelo-unidad">{c.unidad}</span>
+                {c.nota && <span className="q-modelo-nota">{c.nota}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <footer className="q-bloque-pie">{pie}</footer>
     </article>
   );
 }

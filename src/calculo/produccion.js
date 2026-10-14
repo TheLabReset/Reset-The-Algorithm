@@ -3,25 +3,10 @@
 
 import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js';
 import { detallar } from '../muestra/detalle.js';
-import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarMeses, semanaEn, ETAPAS } from './base.js';
+import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarMeses, semanaEn, ETAPAS, plataformaDe, objetivoPlataforma } from './base.js';
 
 const cache = new WeakMap();
 export const detalleDe = (data) => { if (!cache.has(data)) cache.set(data, detallar(data)); return cache.get(data); };
-
-// Plataformas como las ve el cliente: Google Ads agrupa Search y Display
-export const PLATAFORMAS = [
-  { id: 'google', nombre: 'Google Ads', canales: ['search', 'display'] },
-  { id: 'meta', nombre: 'Meta Ads', canales: ['meta'] },
-  { id: 'tiktok', nombre: 'TikTok Ads', canales: ['tiktok'] },
-];
-const NOMBRE_FUENTE = { meta: 'Meta Ads', search: 'Google Search', tiktok: 'TikTok Ads', display: 'Google Display' };
-
-// Objetivo combinado de varios canales: el CPL que cumpliría cada uno su objetivo con su propia inversión (Σ/Σ)
-const objetivoCombinado = (cfg, ids, inversionDe) => {
-  const inv = suma(ids, inversionDe);
-  const leadsMeta = suma(ids, (id) => inversionDe(id) / cfg.canales.find((c) => c.id === id).metaCpl);
-  return razon(inv, leadsMeta);
-};
 
 // ══════════ 1.1 Pauta pagada: plataformas, campañas, palabras, programática ══════════
 export function leePlataformas(data, P) {
@@ -39,7 +24,7 @@ export function leePlataformas(data, P) {
     });
     return { campanas: acc, medidos, sinDato };
   };
-  const plataformas = PLATAFORMAS.map((pl) => {
+  const plataformas = cfg.plataformas.map((pl) => {
     const actual = pl.canales.map((c) => sumaCampanas(c, P.desde, P.hasta));
     const previo = pl.canales.map((c) => sumaCampanas(c, P.compararDesde, P.compararHasta));
     const campanas = actual.flatMap((a) => a.campanas).filter((c) => c.inversion > 0)
@@ -50,10 +35,10 @@ export function leePlataformas(data, P) {
     const medidos = Math.min(...actual.map((a) => a.medidos)), medidosPrevio = Math.min(...previo.map((a) => a.medidos));
     const invCanal = (id) => suma(actual[pl.canales.indexOf(id)].campanas, (c) => c.inversion);
     return {
-      id: pl.id, nombre: pl.nombre, canales: pl.canales, inversion, leads, cpl: razon(inversion, leads),
+      id: pl.id, nombre: pl.nombre, canales: pl.canales, inversion, leads, cpl: razon(inversion, leads), ctr: razon(tot(actual, 'clics'), tot(actual, 'impresiones')),
       cplPrevio: medidosPrevio ? razon(invPrevio, leadsPrevio) : null,
       cambioCpl: medidosPrevio && P.compararDesde >= cfg.desde ? cambioPct(razon(inversion, leads), razon(invPrevio, leadsPrevio)) : null,
-      objetivo: objetivoCombinado(cfg, pl.canales, invCanal),
+      objetivo: objetivoPlataforma(cfg, pl, invCanal),
       diasSinDato: Math.max(...actual.map((a) => a.sinDato)), medidos,
       campanas,
       porDia: fechas.map((d) => {
@@ -109,7 +94,7 @@ export function leeCrmDetalle(data, P) {
   const total = suma(serie, (p) => p.valor ?? 0);
   const totalPrevio = seriePrevia.every((p) => p.valor != null) ? suma(seriePrevia, (p) => p.valor) : null;
 
-  // De dónde llegan: último clic (pauta por canal; el sitio por su fuente)
+  // De dónde llegan: último clic (pauta por plataforma; el sitio por su fuente)
   // det.crm[i] detalla a data.cohortes[i] (mismo orden, que no es por fecha)
   const cohortes = data.cohortes;
   const filas = [];
@@ -119,10 +104,11 @@ export function leeCrmDetalle(data, P) {
     if (x.fecha < P.desde || x.fecha > P.hasta) return;
     filas.push(x);
     if (x.porFuente) Object.entries(x.porFuente).forEach(([f, v]) => sumar(f, v));
-    else sumar(x.canal, cohortes[i]);
+    else sumar(plataformaDe(cfg, x.canal).id, cohortes[i]);
   });
-  const nombreFuente = (id) => NOMBRE_FUENTE[id] || cfg.web.fuentes.find((f) => f.id === id)?.nombre || id;
-  const fuentes = Object.entries(porFuente).map(([id, v]) => ({ id, nombre: nombreFuente(id), pauta: !!NOMBRE_FUENTE[id], ...v })).sort((p, q) => q.leads - p.leads);
+  const plataforma = (id) => cfg.plataformas.find((p) => p.id === id);
+  const nombreFuente = (id) => plataforma(id)?.nombre || cfg.web.fuentes.find((f) => f.id === id)?.nombre || id;
+  const fuentes = Object.entries(porFuente).map(([id, v]) => ({ id, nombre: nombreFuente(id), pauta: !!plataforma(id), ...v })).sort((p, q) => q.leads - p.leads);
   const pctFuentes = mayorResto(fuentes.map((f) => f.leads));
 
   // Etapas hoy: dónde están los leads creados en el período

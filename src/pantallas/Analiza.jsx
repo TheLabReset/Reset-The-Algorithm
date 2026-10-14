@@ -24,8 +24,8 @@ export default function Analiza({ capa, vista: v }) {
         )}
         {r.estado === 'ok' && <>
           <Bloque universo="pauta" ancho="mitad" {...A.inversionContraLeads(v)}
-            pie={<span>De cada 100 dólares y de cada 100 leads reportados en el mes, por canal.</span>}>
-            <Columnas etiqueta="Parte de la inversión y parte de los leads de cada canal" tituloA="De cada 100 dólares" tituloB="De cada 100 leads"
+            pie={<span>De cada 100 dólares y de cada 100 leads reportados en el mes, por plataforma.</span>}>
+            <Columnas etiqueta="Parte de la inversión y parte de los leads de cada plataforma" tituloA="De cada 100 dólares" tituloB="De cada 100 leads"
               filas={r.canales.map((c) => ({ nombre: c.nombre, a: c.pctInversion, b: c.pctLeads, resaltarB: c.id === [...r.canales].sort((x, y) => y.pctLeads / y.pctInversion - x.pctLeads / x.pctInversion)[0].id }))} />
           </Bloque>
           <Bloque universo="pauta" ancho="mitad" {...A.productos(v)}
@@ -53,9 +53,9 @@ export default function Analiza({ capa, vista: v }) {
         {r.estado !== 'ok' ? <Bloque titulo="Costo por inscripción" universo="crm" estado={sinDato(r.estado)} /> : (
           <Bloque universo="crm" ancho="mitad" {...A.costos(v)} alcance={`Cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}${r.cohorteCerrada ? '' : ' · abierta'}`}
             pie={<span>Costo por lead: lo que reporta la plataforma en el mes. Costo por inscripción: inversión de la cohorte entre sus inscripciones del CRM. Rayado: pocos casos.</span>}>
-            <Columnas etiqueta="Costo por lead y costo por inscripción de cada canal" tituloA="Por lead" tituloB="Por inscripción"
+            <Columnas etiqueta="Costo por lead y costo por inscripción de cada plataforma" tituloA="Por lead" tituloB="Por inscripción"
               formatoA={(n) => dolares(n, 2)} formatoB={(n) => dolares(n)}
-              filas={r.canales.map((c) => ({ nombre: c.nombre, a: c.cpl, metaA: c.metaCpl, b: c.cohorte?.cpa ?? null, pocosB: c.cohorte?.pocosCasos, resaltarB: r.masBaratoPorInscripcion?.id === c.id }))} />
+              filas={r.canales.map((c) => ({ nombre: c.nombre, a: c.cpl, metaA: c.metaCpl, b: c.cohorte?.cpa ?? null, pocosB: c.cohorte?.pocosCasos, resaltarB: !r.cpaParecido && r.masBaratoPorInscripcion?.id === c.id }))} />
           </Bloque>
         )}
       </SeccionDe>

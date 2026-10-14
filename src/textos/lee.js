@@ -1,6 +1,6 @@
 // Lecturas de la capa Lee. Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
-import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo } from '../sistema/formato.js';
+import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo, fecha } from '../sistema/formato.js';
 import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase } from './comun.js';
 
 const P = (v) => v.periodo;
@@ -10,6 +10,15 @@ export function pautaResumen(v) {
   const titulo = 'Leads que reportan las plataformas';
   if (p.cambio == null) return { titulo, lectura: `Un lead cada ${dolares(p.cpl, 2)}. No hay días medidos suficientes para comparar con ${comparacionTexto(P(v))}.` };
   return { titulo, lectura: `${variacionFrase('Los leads por día', p.cambio, P(v))}. Cada lead costó ${dolares(p.cpl, 2)}.` };
+}
+
+export function inversionDia(v) {
+  const s = v.lee.pauta.serieInversion.filter((p) => p.valor != null);
+  const titulo = 'Inversión por día';
+  if (!s.length) return { titulo, lectura: 'Ningún día del período tiene el dato de las tres plataformas.' };
+  const prom = s.reduce((t, p) => t + p.valor, 0) / s.length;
+  const alto = s.reduce((a, p) => (p.valor > a.valor ? p : a));
+  return { titulo, lectura: `Unos ${dolares(Math.round(prom))} al día. El más alto fue el ${fecha(alto.fecha).replace(/ de \d{4}$/, '')}, con ${dolares(Math.round(alto.valor))}.` };
 }
 
 export function plataformasLectura(v) {
@@ -35,7 +44,7 @@ export function campanasLectura(v) {
 
 export function palabrasLectura(v) {
   const k = v.lee.plataformas.palabras;
-  const titulo = 'Palabras clave de Google Search';
+  const titulo = 'Palabras clave en Google Ads';
   if (!k.sinConversion.length) return { titulo, lectura: 'Todas las palabras con gasto trajeron leads en una proporción parecida a la del resto.' };
   return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${dolares(k.gastoSinConversion)} en el mes y casi no ${k.sinConversion.length === 1 ? 'trajo' : 'trajeron'} leads.` };
 }

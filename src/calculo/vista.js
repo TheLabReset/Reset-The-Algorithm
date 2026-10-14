@@ -4,7 +4,7 @@
 import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js';
 import { planDelDia } from '../muestra/generador.js';
 import {
-  suma, razon, cambioPct, mayorResto, correlacion, indices, dentro, ventanaCanal, ventanaPauta, leadsPautaDia,
+  suma, razon, cambioPct, mayorResto, correlacion, indices, dentro, ventanaPlataforma, objetivoPlataforma, ventanaPauta, leadsPautaDia,
   ventanaCrm, ventanaWeb, sumarMeses, finDeMes, semanaEn, ETAPAS,
 } from './base.js';
 import { calcularIndice, bandaDe } from './indice.js';
@@ -45,9 +45,10 @@ export function armarVista(data, filtros, estado = {}) {
   };
 
   // ── Fuentes y su frescura ──
-  const ultimoMedido = (c) => [...data.pauta[c.id]].reverse().find((p) => !p.sinDato)?.fecha;
+  // Una plataforma está al día hasta el último día que midieron todos sus canales
+  const ultimoMedido = (pl) => [...data.pauta[pl.canales[0]]].reverse().find((p) => pl.canales.every((c) => !ix.pautaDia[c].get(p.fecha)?.sinDato))?.fecha;
   const fuentes = [
-    ...cfg.canales.map((c) => ({ id: c.id, grupo: 'pauta', nombre: c.nombre, corte: ultimoMedido(c), sinDato: ventanaCanal(data, c.id, desde, hasta).sinDato })),
+    ...cfg.plataformas.map((pl) => ({ id: pl.id, grupo: 'pauta', nombre: pl.nombre, corte: ultimoMedido(pl), sinDato: ventanaPlataforma(data, pl, desde, hasta).sinDato })),
     { id: 'crm', grupo: 'crm', nombre: 'CRM', corte: cfg.corte, sinDato: [] },
     { id: 'web', grupo: 'web', nombre: 'GA4', corte: cfg.corte, sinDato: [] },
     { id: 'busquedas', grupo: 'busquedas', nombre: 'Google Trends', corte: sumarDias(data.semanas.at(-1), 6), sinDato: [], semanal: true },
@@ -67,13 +68,10 @@ export function armarVista(data, filtros, estado = {}) {
     serie: fechas.map((d) => ({ fecha: d, valor: leadsPautaDia(data, d) })),
     seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: dentro(data, f) ? leadsPautaDia(data, f) : null }; }),
     eventos: cfg.eventos.filter((e) => e.fecha >= desde && e.fecha <= hasta),
-    porCanal: cfg.canales.map((c) => {
-      const a = ventanaCanal(data, c.id, desde, hasta), b = ventanaCanal(data, c.id, compararDesde, compararHasta);
-      return {
-        id: c.id, nombre: c.nombre, leads: a.leads, sinDato: a.sinDato,
-        cambio: !compFuera && a.cobertura >= minCob && b.cobertura >= minCob ? cambioPct(a.leadsPorDia, b.leadsPorDia) : null,
-        serie: fechas.map((d) => { const p = ix.pautaDia[c.id].get(d); return { fecha: d, valor: p && !p.sinDato ? p.leads : null }; }),
-      };
+    // Inversión total por día: un día con una plataforma sin dato queda como hueco, no como cero
+    serieInversion: fechas.map((d) => {
+      const filas = cfg.canales.map((c) => ix.pautaDia[c.id].get(d));
+      return { fecha: d, valor: filas.every((p) => p && !p.sinDato) ? suma(filas, (p) => p.inversion) : null };
     }),
   };
 
@@ -101,8 +99,9 @@ export function armarVista(data, filtros, estado = {}) {
       cerrada, cohorteDesde, cohorteHasta,
       etapas: ETAPAS.map((e) => ({ id: e, valor: co[e] })), exclusivas: exclusivas.map((e, i) => ({ ...e, de100: de100[i] })),
       tasaAlta: razon(Al, L),
-      porOrigen: [...cfg.canales, cfg.organico].map((c) => {
-        const o = co.porOrigen[c.id] || { leads: 0, contactos: 0, citas: 0, asisten: 0, altas: 0 };
+      porOrigen: [...cfg.plataformas, { ...cfg.organico, canales: [cfg.organico.id] }].map((c) => {
+        const o = { leads: 0, contactos: 0, citas: 0, asisten: 0, altas: 0 };
+        for (const id of c.canales) for (const e of ETAPAS) o[e] += co.porOrigen[id]?.[e] || 0;
         return { id: c.id, nombre: c.nombre, ...o, tasaAlta: razon(o.altas, o.leads), destinos: { alta: o.altas, asistio: o.asisten - o.altas, cita: o.citas - o.asisten, contacto: o.contactos - o.citas, sin: o.leads - o.contactos } };
       }),
       periodo: { leads: enPeriodo.leads, dePauta: enPeriodo.leads - deSitio, deSitio },
@@ -160,16 +159,18 @@ export function armarVista(data, filtros, estado = {}) {
 
   // ══════════════ CAPA 2 · ANALIZA ══════════════
   const diasComunes = fechas.filter((d) => leadsPautaDia(data, d) != null);
-  const sumaComun = (id, k) => suma(diasComunes, (d) => ix.pautaDia[id].get(d)[k]);
-  const pctInv = mayorResto(cfg.canales.map((c) => sumaComun(c.id, 'inversion')));
-  const pctLeads = mayorResto(cfg.canales.map((c) => sumaComun(c.id, 'leads')));
+  const sumaComun = (pl, k) => suma(diasComunes, (d) => suma(pl.canales, (id) => ix.pautaDia[id].get(d)[k]));
+  const pctInv = mayorResto(cfg.plataformas.map((pl) => sumaComun(pl, 'inversion')));
+  const pctLeads = mayorResto(cfg.plataformas.map((pl) => sumaComun(pl, 'leads')));
   const coCanal = cohorteFuera || !cerrada ? null : ventanaCrm(data, cohorteDesde, cohorteHasta);
-  const canales = cfg.canales.map((c, i) => {
-    const a = ventanaCanal(data, c.id, desde, hasta);
-    const invCoh = ventanaCanal(data, c.id, cohorteDesde, cohorteHasta);
-    const o = coCanal?.porOrigen[c.id];
+  // Rendimiento por plataforma, como la ve el cliente: Google Ads junta Search y Display
+  const canales = cfg.plataformas.map((pl, i) => {
+    const a = ventanaPlataforma(data, pl, desde, hasta);
+    const invCoh = ventanaPlataforma(data, pl, cohorteDesde, cohorteHasta);
+    const o = coCanal ? pl.canales.reduce((t, id) => { const x = coCanal.porOrigen[id] || {}; return { leads: t.leads + (x.leads || 0), altas: t.altas + (x.altas || 0) }; }, { leads: 0, altas: 0 }) : null;
+    const invCanal = (id) => suma(diasComunes, (d) => ix.pautaDia[id].get(d).inversion);
     return {
-      id: c.id, nombre: c.nombre, inversion: a.inversion, leads: a.leads, cpl: a.cpl, metaCpl: c.metaCpl, sinDato: a.sinDato,
+      id: pl.id, nombre: pl.nombre, inversion: a.inversion, leads: a.leads, cpl: a.cpl, metaCpl: objetivoPlataforma(cfg, pl, invCanal), sinDato: a.sinDato,
       pctInversion: pctInv[i], pctLeads: pctLeads[i],
       cohorte: o ? { leads: o.leads, altas: o.altas, tasaAlta: razon(o.altas, o.leads), cpa: razon(invCoh.inversion, o.altas), pocosCasos: o.altas < cfg.metodo.casosMinimos, cobertura: invCoh.cobertura } : null,
     };
@@ -178,6 +179,8 @@ export function armarVista(data, filtros, estado = {}) {
   const porCpa = [...canales].filter((c) => c.cohorte?.cpa != null && !c.cohorte.pocosCasos).sort((a, b) => a.cohorte.cpa - b.cohorte.cpa);
   const rendimiento = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : {
     estado: 'ok', universo: 'Pauta × CRM: inversión de cada plataforma, inscripciones del CRM',
+    // si el costo por inscripción de todas cae dentro de un margen chico, no hay «más barata»: se dice que cuestan parecido
+    cpaParecido: porCpa.length > 1 && porCpa.at(-1).cohorte.cpa / porCpa[0].cohorte.cpa - 1 < cfg.metodo.margenParecido ? { min: porCpa[0].cohorte.cpa, max: porCpa.at(-1).cohorte.cpa } : null,
     canales, masBaratoPorLead: porCpl[0] || null, masBaratoPorInscripcion: porCpa[0] || null,
     sobreMeta: canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl), cohorteDesde, cohorteHasta, cohorteCerrada: !!coCanal,
   };

@@ -161,3 +161,19 @@ cada('cada aviso de qué mirar apunta a una sección que existe', (v, id) => {
 cada('lo que va bien apunta a una sección y trae su dato', (v, id) => {
   (v.sugiere.queVaBien || []).forEach((b) => { assert.ok(SECCIONES.includes(b.sostiene), `${id} ${b.id}`); assert.ok(b.datos && Object.keys(b.datos).length, `${id} ${b.id}`); });
 });
+
+// Como en producción: el cliente ve plataformas (Google Ads junta Search y Display), nunca los canales internos
+const PLATAFORMAS = CONFIG.plataformas.map((p) => p.nombre);
+cada('pauta, CRM y rendimiento se leen por plataforma', (v, id) => {
+  assert.deepEqual(v.fuentes.filter((f) => f.grupo === 'pauta').map((f) => f.nombre), PLATAFORMAS, id);
+  if (v.analiza.rendimiento.estado === 'ok') assert.deepEqual(v.analiza.rendimiento.canales.map((c) => c.nombre), PLATAFORMAS, id);
+  if (v.lee.crm.estado === 'ok') for (const o of v.lee.crm.porOrigen.slice(0, -1)) assert.ok(PLATAFORMAS.includes(o.nombre), id);
+});
+cada('la inversión por día de pauta suma la inversión del período', (v, id) => {
+  if (v.lee.pauta.estado !== 'ok') return;
+  const s = suma(v.lee.pauta.serieInversion.filter((p) => p.valor != null), (p) => p.valor);
+  assert.ok(Math.abs(s - v.lee.pauta.inversion) < 0.01, `${id}: ${s} contra ${v.lee.pauta.inversion}`);
+});
+cada('con costos por inscripción parecidos no hay alerta de desacuerdo', (v, id) => {
+  if (v.analiza.rendimiento.cpaParecido) assert.ok(!v.sugiere.queMirar.some((a) => a.id === 'plataforma-vs-crm'), id);
+});

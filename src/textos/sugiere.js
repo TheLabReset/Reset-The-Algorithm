@@ -36,9 +36,9 @@ const ALERTAS = {
     mirar: 'Ver con Fit Lab si conviene poner más inversión de lunes a jueves, cuando el equipo responde en el día.',
   }),
   'plataforma-vs-crm': (d) => ({
-    titulo: 'La plataforma y el CRM no coinciden en qué canal rinde más',
+    titulo: 'La plataforma y el CRM no coinciden en cuál rinde más',
     dato: `${d.porLead} trae el lead más barato; ${d.porInscripcion}, la inscripción más barata.`,
-    mirar: 'El costo por inscripción, en Analiza, antes de mover inversión entre estos dos canales.',
+    mirar: 'El costo por inscripción, en Analiza, antes de mover inversión entre estas dos plataformas.',
   }),
   'llega-poco': (d) => ({
     titulo: `De ${d.plataforma} llegan al CRM menos leads de los que reporta`,
@@ -96,7 +96,7 @@ export function bien(b) {
   return f ? { ...f(b.datos), fuente: b.fuente, sostiene: b.sostiene, id: b.id } : null;
 }
 
-// Qué mover: el modelo solo propone mover inversión cuando la plataforma y el CRM coinciden en el canal más caro
+// Qué mover: el modelo solo propone mover inversión cuando la plataforma y el CRM coinciden en la plataforma más cara
 export function sugerencia(s) {
   if (s.id !== 'reasignar') return null;
   const d = s.desde, h = s.hacia, r = (x) => numero(Math.round(x));
@@ -104,9 +104,23 @@ export function sugerencia(s) {
     titulo: `Pasar ${dolares(s.monto)} al mes de ${d.nombre} a ${h.nombre}`,
     dato: `${d.nombre} cuesta ${dolares(d.cpl, 2)} por lead y ${dolares(d.cohorte.cpa)} por inscripción; ${h.nombre}, ${dolares(h.cpl, 2)} y ${dolares(h.cohorte.cpa)}.`,
     estimacion: `Podría sumar entre ${r(s.leads.baja)} y ${r(s.leads.alta)} leads al mes y unas ${r(s.inscripciones.central)} inscripciones. Es una estimación con rango, no una promesa.`,
-    sostiene: `La plataforma y el CRM coinciden en que ${d.nombre} es el canal más caro.${d.cohorte.pocosCasos ? ` Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción puede cambiar mucho de un mes a otro.` : ''}`,
+    sostiene: `La plataforma y el CRM coinciden en que ${d.nombre} es la más cara.${d.cohorte.pocosCasos ? ` Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción puede cambiar mucho de un mes a otro.` : ''}`,
     supuestos: s.supuestos, ir: 's-2-2', irTexto: 'De la pauta al CRM',
   };
+}
+
+// Cuando el modelo no propone mover inversión, la frase dice por qué, con el motivo que de verdad aplica
+export function sinReasignar(r, periodo) {
+  const base = 'El modelo no propone mover el reparto';
+  if (r.estado !== 'ok') return { titulo: `${base}: falta el dato de pauta del período.` };
+  if (!r.cohorteCerrada) return { titulo: `${base}: la cohorte que mide el costo por inscripción todavía no cierra.` };
+  const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
+  const detalle = !a ? null : !b ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción todavía no hay casos suficientes.`
+    : r.cpaParecido ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción, las ${enLetras(r.canales.length, true)} cuestan parecido (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
+    : a.id === b.id ? `${capital(periodo)}. ${a.nombre} consigue el lead y la inscripción más baratos.`
+    : `${capital(periodo)}. Por lo que reporta la plataforma, ${a.nombre} consigue el lead más barato; por inscripción en el CRM, ${b.nombre}.`;
+  if (!r.sobreMeta.length) return { titulo: `${base}: las ${enLetras(r.canales.length, true)} plataformas quedan bajo su objetivo de costo por lead.`, detalle };
+  return { titulo: `${base}: la plataforma y el CRM no coinciden en cuál es la más cara.`, detalle };
 }
 
 // Escenario si nada cambia: con pinzas. Dice cuánto acertó el método antes y qué meses no muestra

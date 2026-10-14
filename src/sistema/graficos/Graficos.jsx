@@ -71,7 +71,8 @@ export function Linea({ serie, previa, eventos = [], formato = numero, alto: alt
         const x = lineal(0, serie.length - 1, m.l, ancho - m.r), y = lineal(0, ys.at(-1), alto - m.b, m.t);
         const iu = ultimoConValor(serie);
         const ip = previa ? ultimoConValor(previa) : -1;
-        const [ya, yb] = iu >= 0 && ip >= 0 ? separar([y(serie[iu].valor) + 4, y(previa[ip].valor) + 4], 14) : [];
+        // sin serie previa, el rótulo final va a la altura de su punto
+        const [ya, yb] = iu >= 0 && ip >= 0 ? separar([y(serie[iu].valor) + 4, y(previa[ip].valor) + 4], 14) : [iu >= 0 ? y(serie[iu].valor) + 4 : 0];
         const paso = Math.max(1, Math.ceil(56 / ((ancho - m.l - m.r) / Math.max(1, serie.length - 1))));
         return (
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
@@ -491,7 +492,8 @@ export function Proyeccion({ historia, meses, formato = numero, etiqueta }) {
 }
 
 // ─────────────── Columnas verticales: una medida por categoría ordenada (horas, días, tramos) ───────────────
-export function Histograma({ barras, formato = numero, resaltar = [], etiqueta, alto: altoPedido = 180 }) {
+// rotulo: si se pasa, cada barra lleva su cifra encima (pocas barras); si no, solo la más alta de las resaltadas
+export function Histograma({ barras, formato = numero, rotulo, resaltar = [], etiqueta, alto: altoPedido = 180 }) {
   const tabla = { columnas: ['', 'Valor'], filas: barras.map((b) => [b.nombre, formato(b.valor)]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
@@ -512,7 +514,7 @@ export function Histograma({ barras, formato = numero, resaltar = [], etiqueta, 
                   <Zona x={m.l + i * paso} y={m.t} w={paso} h={alto - m.b - m.t} pista={`${b.nombre}\n${formato(b.valor)}`} />
                   {b.valor > 0 && <rect className={r ? 'q-barra-acento' : 'q-barra'} x={x} y={y(b.valor)} width={w} height={y(0) - y(b.valor)} rx="2" data-valor={b.valor} />}
                   {(i % cada === 0 || r) && <text className={`q-eje${r ? ' q-fuerte' : ''}`} x={x + w / 2} y={alto - 8} textAnchor="middle">{b.corto ?? b.nombre}</text>}
-                  {i === tope && <text className="q-rotulo-valor" x={x + w / 2} y={y(b.valor) - 6} textAnchor="middle">{formato(b.valor)}</text>}
+                  {(rotulo || i === tope) && <text className="q-rotulo-valor" x={x + w / 2} y={y(b.valor ?? 0) - 6} textAnchor="middle">{rotulo ? rotulo(b) : formato(b.valor)}</text>}
                 </g>
               );
             })}

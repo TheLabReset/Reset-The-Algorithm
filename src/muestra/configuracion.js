@@ -30,10 +30,17 @@ export const CONFIG = {
   // Montos en dólares: los supuestos se calibraron en soles para Lima y se pasaron a 3,75 soles por dólar (asumo;
   // es muestra fija, no sigue el tipo de cambio del día).
   canales: [
-    { id: 'meta', nombre: 'Meta', cpm: 3.2, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 3.2, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
-    { id: 'search', nombre: 'Google Search', cpm: 24, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 6.7, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
-    { id: 'tiktok', nombre: 'TikTok', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25, inflacion: 0.18 },
-    { id: 'display', nombre: 'Google Display', cpm: 1.6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 12, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
+    { id: 'meta', nombre: 'Meta Ads', cpm: 3.2, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 3.2, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
+    { id: 'search', nombre: 'Search', cpm: 24, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 6.7, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
+    { id: 'tiktok', nombre: 'TikTok Ads', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25, inflacion: 0.18 },
+    { id: 'display', nombre: 'Display', cpm: 1.6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 12, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
+  ],
+  // Plataformas como las ve el cliente y como reporta cada una: Google Ads junta sus campañas de Search y de Display.
+  // Los canales de arriba son el detalle interno del generador; en pantalla todo se lee por plataforma.
+  plataformas: [
+    { id: 'google', nombre: 'Google Ads', canales: ['search', 'display'] },
+    { id: 'meta', nombre: 'Meta Ads', canales: ['meta'] },
+    { id: 'tiktok', nombre: 'TikTok Ads', canales: ['tiktok'] },
   ],
   // webPropia: fracción de los leads del canal que entra por un formulario del sitio (el resto, formulario dentro de la plataforma)
   // inflacion: cuánto de más reporta la plataforma sobre los leads que llegan al CRM (duplicados, pruebas, conversiones
@@ -287,6 +294,7 @@ export const CONFIG = {
 
   // Umbrales de método, declarados para que ningún número quede suelto en la pantalla
   metodo: {
+    margenParecido: 0.1, // asumo: costos por inscripción a menos de 10 % entre sí se leen como parecidos (la cohorte tiene ruido)
     coberturaMinima: 0.6, // un delta se publica con al menos 60 % de días medidos en las dos ventanas
     casosMinimos: 30, // una tasa con menos casos en el denominador se marca «pocos casos»
     bandasIndice: [{ hasta: 40, nombre: 'baja' }, { hasta: 70, nombre: 'media' }, { hasta: 100, nombre: 'alta' }], // asumo

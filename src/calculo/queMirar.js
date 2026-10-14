@@ -55,7 +55,7 @@ export function queMirar(data, P, v) {
   }
 
   const r = v.analiza.rendimiento;
-  if (r.estado === 'ok' && r.masBaratoPorLead && r.masBaratoPorInscripcion && r.masBaratoPorLead.id !== r.masBaratoPorInscripcion.id) {
+  if (r.estado === 'ok' && !r.cpaParecido && r.masBaratoPorLead && r.masBaratoPorInscripcion && r.masBaratoPorLead.id !== r.masBaratoPorInscripcion.id) {
     add({ id: 'plataforma-vs-crm', nivel: 'revisar', fuente: 'CRM', sostiene: '2.2', datos: { porLead: r.masBaratoPorLead.nombre, porInscripcion: r.masBaratoPorInscripcion.nombre } });
   }
   const pc = v.analiza.pautaCrm;
