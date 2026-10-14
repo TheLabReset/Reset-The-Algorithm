@@ -96,17 +96,6 @@ export function bien(b) {
   return f ? { ...f(b.datos), fuente: b.fuente, sostiene: b.sostiene, id: b.id } : null;
 }
 
-// Una línea para el resumen de la capa Lee
-export function conteo(alertas, buenas) {
-  const at = alertas.filter((a) => a.nivel === 'atencion').length, re = alertas.filter((a) => a.nivel === 'revisar').length, op = alertas.filter((a) => a.nivel === 'oportunidad').length;
-  const partes = [];
-  if (at) partes.push(`${numero(at)} de atención`);
-  if (re) partes.push(`${numero(re)} para revisar`);
-  if (op) partes.push(`${numero(op)} ${op === 1 ? 'oportunidad' : 'oportunidades'}`);
-  if (buenas) partes.push(`${numero(buenas)} que ${buenas === 1 ? 'va' : 'van'} bien`);
-  return partes.length ? `Este mes: ${lista(partes)}.` : 'Este mes nada se sale de lo esperado.';
-}
-
 // Qué mover: el modelo solo propone mover inversión cuando la plataforma y el CRM coinciden en el canal más caro
 export function sugerencia(s) {
   if (s.id !== 'reasignar') return null;

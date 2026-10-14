@@ -202,7 +202,7 @@ export function AvisosCapitulo({ avisos }) {
 }
 
 // ── Resumen de la capa: pocas cifras, cada una lleva a su capítulo ──
-export function Resumen({ titulo, items, pie, avisos }) {
+export function Resumen({ titulo, items, pie }) {
   return (
     <section className="q-resumen" aria-labelledby="resumen-t" id="resumen">
       <h2 id="resumen-t" className="q-resumen-titulo">{titulo}</h2>
@@ -219,7 +219,6 @@ export function Resumen({ titulo, items, pie, avisos }) {
           );
         })}
       </ul>
-      {avisos}
       {pie && <footer className="q-bloque-pie">{pie}</footer>}
     </section>
   );

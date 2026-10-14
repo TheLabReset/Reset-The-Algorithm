@@ -3,9 +3,7 @@ import { Bloque, Cifra, Tabla, Resumen } from '../sistema/Componentes.jsx';
 import { useState } from 'react';
 import { Linea, Multiplos, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion, MapaCalor } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, compacto, variacion, rangoFechas, fecha, diaSemanaLargo, mesCorto, NO_MEDIDO } from '../sistema/formato.js';
-import { MarcoCapa, SeccionDe, alertasDe, buenasDe } from './comun.jsx';
-import { conteo } from '../textos/sugiere.js';
-import { ArrowRight } from 'lucide-react';
+import { MarcoCapa, SeccionDe } from './comun.jsx';
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 
@@ -73,7 +71,6 @@ export default function Lee({ capa, vista: v }) {
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={`Resumen de ${periodoTexto(v.periodo)}`}
         pie={<span>Cada variación compara los días medidos de {periodoTexto(v.periodo)} con los mismos días de {comparacionTexto(v.periodo)}. Pauta, CRM y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
-        avisos={<p className="q-resumen-avisos"><span>{conteo(alertasDe(v), buenasDe(v).length)}</span><a href="#s-3-1">Ver qué mirar<ArrowRight size={14} aria-hidden="true" /></a></p>}
         items={[
           { rotulo: 'Leads de las plataformas', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? numero(pa.leads) : null, delta: ok(pa) ? deltaCorto(pa.cambio, 'sube', v) : null, dataClave: 'pauta-leads' },
           { rotulo: 'Inversión en pauta', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? dolares(pa.inversion) : null, nota: `en ${numero(v.lee.plataformas.plataformas.length)} plataformas` },

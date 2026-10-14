@@ -241,8 +241,6 @@
 @media (max-width: 640px) { .q-aviso a { flex-wrap: wrap; gap: var(--e-1) var(--e-3); } .q-aviso .q-nivel { min-width: 0; } }
 
 /* Línea de alertas en el resumen */
-.q-resumen-avisos { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-4); padding: var(--e-3) var(--e-4); border-radius: var(--r-control); background: var(--superficie-capitulo); font-size: var(--t-13); color: var(--texto-1); }
-.q-resumen-avisos a { display: inline-flex; align-items: center; gap: var(--e-1); color: var(--texto-1); font-weight: var(--peso-rotulo); }
 
 /* Grupos de alertas dentro de Qué mirar */
 .q-grupo-alertas { grid-column: 1 / -1; display: grid; gap: 2px; margin-top: var(--e-2); }
