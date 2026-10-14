@@ -53,7 +53,7 @@ export function tasaDeConteo(casos, total) {
   return porcentaje(p, p < 10 ? 1 : 0);
 }
 
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'];
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'];
 const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
@@ -62,10 +62,12 @@ const partes = (iso) => ({ a: Number(iso.slice(0, 4)), m: Number(iso.slice(5, 7)
 export const fecha = (iso) => { const { a, m, d } = partes(iso); return `${d} de ${MESES[m]} de ${a}`; };
 export const fechaCorta = (iso) => { const { m, d } = partes(iso); return `${d} ${MESES_CORTOS[m]}`; };
 export const mesCorto = (m1) => MESES_CORTOS[m1 - 1];
+export const mesAnio = (aaaamm) => `${MESES_CORTOS[+aaaamm.slice(5, 7) - 1]} ${aaaamm.slice(2, 4)}`;
+export const fechaSinAnio = (iso) => { const { m, d } = partes(iso); return `${d} de ${MESES[m]}`; };
 export const mesLargo = (m1) => MESES[m1 - 1];
 export const diaSemanaLargo = (i) => DIAS[i];
 
-// «1 al 30 de septiembre de 2026», «14 de septiembre al 13 de octubre de 2026», «20 de diciembre de 2025 al 3 de enero de 2026»
+// «1 al 30 de setiembre de 2026», «14 de setiembre al 13 de octubre de 2026», «20 de diciembre de 2025 al 3 de enero de 2026»
 export function rangoFechas(desde, hasta) {
   const a = partes(desde), b = partes(hasta);
   if (a.a !== b.a) return `${fecha(desde)} al ${fecha(hasta)}`;

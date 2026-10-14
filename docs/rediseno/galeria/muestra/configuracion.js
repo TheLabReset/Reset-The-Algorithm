@@ -22,7 +22,8 @@ export const CONFIG = {
     '2026-08-06', '2026-08-30',
   ],
 
-  // Canales pagados. Costos en soles; CPL = CPM / (1000 · CTR · CVR), derivado, nunca fijado (informe 06 §4.3)
+  // Canales pagados. Costos en soles; CPL = CPM / (1000 · CTR · CVR), derivado, nunca fijado (informe 06 §4.3).
+  // metaCpl: asumo. En una demo real la fija el cliente; sin meta del cliente, el bloque no dibuja meta.
   canales: [
     { id: 'meta', nombre: 'Meta', cpm: 12, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 12 },
     { id: 'search', nombre: 'Google Search', cpm: 90, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 25 },
@@ -40,19 +41,23 @@ export const CONFIG = {
 
   // 12 sedes; col y fila ubican la tesela del distrito (no es un mapa a escala)
   sedes: [
-    { id: 'lo', distrito: 'Los Olivos', corto: 'Los Olivos', col: 1, fila: 0, peso: 0.9, abre: '2026-03-02' },
-    { id: 'in', distrito: 'Independencia', corto: 'Independ.', col: 2, fila: 0, peso: 0.7 },
-    { id: 'sm', distrito: 'San Miguel', corto: 'San Miguel', col: 0, fila: 1, peso: 1.0 },
-    { id: 'jm', distrito: 'Jesús María', corto: 'Jesús María', col: 1, fila: 1, peso: 0.9 },
-    { id: 'li', distrito: 'Lince', corto: 'Lince', col: 2, fila: 1, peso: 0.8 },
-    { id: 'mg', distrito: 'Magdalena del Mar', corto: 'Magdalena', col: 0, fila: 2, peso: 0.85 },
-    { id: 'si', distrito: 'San Isidro', corto: 'San Isidro', col: 1, fila: 2, peso: 1.2 },
-    { id: 'sb', distrito: 'San Borja', corto: 'San Borja', col: 2, fila: 2, peso: 1.0 },
-    { id: 'at', distrito: 'Ate', corto: 'Ate', col: 3, fila: 2, peso: 0.75 },
-    { id: 'mi', distrito: 'Miraflores', corto: 'Miraflores', col: 1, fila: 3, peso: 1.4 },
-    { id: 'su', distrito: 'Santiago de Surco', corto: 'Surco', col: 2, fila: 3, peso: 1.3 },
-    { id: 'lm', distrito: 'La Molina', corto: 'La Molina', col: 3, fila: 3, peso: 1.0 },
+    { id: 'lo', distrito: 'Los Olivos', corto: 'Los Olivos', col: 1, fila: 0, zona: 'Lima Norte', peso: 0.9, abre: '2026-03-02' },
+    { id: 'in', distrito: 'Independencia', corto: 'Independ.', col: 2, fila: 0, zona: 'Lima Norte', peso: 0.7 },
+    { id: 'sm', distrito: 'San Miguel', corto: 'San Miguel', col: 0, fila: 1, zona: 'Lima Moderna', peso: 1.0 },
+    { id: 'jm', distrito: 'Jesús María', corto: 'Jesús María', col: 1, fila: 1, zona: 'Lima Moderna', peso: 0.9 },
+    { id: 'li', distrito: 'Lince', corto: 'Lince', col: 2, fila: 1, zona: 'Lima Moderna', peso: 0.8 },
+    { id: 'mg', distrito: 'Magdalena del Mar', corto: 'Magdalena', col: 0, fila: 2, zona: 'Lima Moderna', peso: 0.85 },
+    { id: 'si', distrito: 'San Isidro', corto: 'San Isidro', col: 1, fila: 2, zona: 'Lima Moderna', peso: 1.2 },
+    { id: 'sb', distrito: 'San Borja', corto: 'San Borja', col: 2, fila: 2, zona: 'Lima Moderna', peso: 1.0 },
+    { id: 'at', distrito: 'Ate', corto: 'Ate', col: 3, fila: 2, zona: 'Lima Este', peso: 0.75 },
+    { id: 'mi', distrito: 'Miraflores', corto: 'Miraflores', col: 1, fila: 3, zona: 'Lima Moderna', peso: 1.4 },
+    { id: 'su', distrito: 'Santiago de Surco', corto: 'Surco', col: 2, fila: 3, zona: 'Lima Moderna', peso: 1.3 },
+    { id: 'lm', distrito: 'La Molina', corto: 'La Molina', col: 3, fila: 3, zona: 'Lima Este', peso: 1.0 },
   ],
+
+  // Bandas de lectura (asumo: no hay norma; se declaran para que no sean números sueltos en la pantalla)
+  bandasIndice: [{ hasta: 40, nombre: 'baja' }, { hasta: 70, nombre: 'media' }, { hasta: 100, nombre: 'alta' }],
+  bandasCpl: [{ fraccion: 0.85, nombre: 'holgado' }, { fraccion: 1, nombre: 'en meta' }], // fracciones de la meta de cada canal
 
   // Hora del día en que entra el lead: perfiles de laborable y fin de semana (asumo; no hay fuente)
   perfilHora: {

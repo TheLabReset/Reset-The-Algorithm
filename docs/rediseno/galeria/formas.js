@@ -2,7 +2,7 @@
 // cruce lo dibujado contra la capa de cálculo. Los colores son variables CSS (tokens).
 // Ningún componente calcula: reciben la vista ya armada.
 
-import { numero, compacto, porcentaje, fechaCorta, mesCorto, soles, variacion } from './muestra/formato.js';
+import { numero, compacto, porcentaje, fechaCorta, mesCorto, mesAnio, soles, variacion } from './muestra/formato.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const diasEntreIso = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
@@ -80,10 +80,10 @@ export function pequenosMultiplos({ paneles, ancho = 200, alto = 90, formatoY = 
     const y = lineal(0, ys[ys.length - 1], alto - m.b, m.t);
     let d = '', ab = false;
     p.serie.forEach((s, i) => { if (s.valor == null) { ab = false; return; } d += `${ab ? 'L' : 'M'}${x(i).toFixed(1)},${y(s.valor).toFixed(1)}`; ab = true; });
-    const u = p.serie[p.serie.length - 1];
-    const c = `<line class="rejilla" x1="${m.l}" x2="${ancho - m.r}" y1="${y(0)}" y2="${y(0)}"/><path class="serie-1" d="${d}"/>` +
-      `<circle class="punto-final" cx="${x(p.serie.length - 1)}" cy="${y(u.valor)}" r="3" data-valor="${u.valor}"/>` +
-      `<text class="rotulo-final" x="${x(p.serie.length - 1) + 6}" y="${y(u.valor) + 4}">${formatoY(u.valor)}</text>`;
+    const iu = p.serie.map((s) => s.valor).lastIndexOf(p.serie.map((s) => s.valor).filter((v) => v != null).at(-1));
+    const u = p.serie[iu];
+    let c = `<line class="rejilla" x1="${m.l}" x2="${ancho - m.r}" y1="${y(0)}" y2="${y(0)}"/><path class="serie-1" d="${d}"/>`;
+    if (u) c += `<circle class="punto-final" cx="${x(iu)}" cy="${y(u.valor)}" r="3" data-valor="${u.valor}"/><text class="rotulo-final" x="${x(iu) + 6}" y="${y(u.valor) + 4}">${formatoY(u.valor)}</text>`;
     return `<figure class="multiplo"><figcaption><span class="nombre">${esc(p.nombre)}</span><span class="cambio ${p.tono || ''}">${esc(p.cambio || '')}</span></figcaption>${svg(ancho, alto, c, p.nombre)}</figure>`;
   }).join('')}</div>`;
 }
@@ -136,7 +136,7 @@ export function bump({ series, semanas, etiqueta, ancho = 640, alto = 240 }) {
   const y = lineal(1, n, m.t, alto - m.b);
   let c = '';
   for (let r = 1; r <= n; r++) c += `<text class="eje" x="${m.l - 10}" y="${y(r) + 4}" text-anchor="end">${r}</text>`;
-  semanas.forEach((s, i) => { if (i % 4 === 0) c += `<text class="eje" x="${x(i)}" y="${alto - 6}" text-anchor="middle">${fechaCorta(s)}</text>`; });
+  semanas.forEach((s, i) => { if (i % 3 === 0) c += `<text class="eje" x="${x(i)}" y="${alto - 6}" text-anchor="middle">${mesAnio(s.slice(0, 7))}</text>`; });
   series.forEach((s) => {
     const d = s.rangos.map((r, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(r).toFixed(1)}`).join('');
     c += `<path class="${s.propia ? 'bump-propia' : 'bump'}" d="${d}"/>`;
@@ -147,28 +147,32 @@ export function bump({ series, semanas, etiqueta, ancho = 640, alto = 240 }) {
   return svg(ancho, alto, c, etiqueta);
 }
 
+function leyendaEscala(min, max, formato) {
+  return `<div class="escala"><span>${formato(min)}</span>${[0, 1, 2, 3, 4, 5, 6].map((k) => `<i class="q q${k}"></i>`).join('')}<span>${formato(max)}</span></div>`;
+}
+
 // ───────────────────────── Mapa de calor hora × día ─────────────────────────
 // matriz[dia 0..6][hora]; filas = días, columnas = horas
 export function calorHoraDia({ matriz, horas, etiqueta, ancho = 640, formato = numero }) {
   const m = { t: 22, r: 8, b: 8, l: 76 };
   const cw = (ancho - m.l - m.r) / horas.length, ch = 24;
   const alto = m.t + 7 * ch + m.b;
-  const max = Math.max(...matriz.flat());
+  const max = Math.max(...matriz.flat().filter((v) => v != null));
   const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
   let c = '';
   horas.forEach((h, j) => { if (h % 3 === 0) c += `<text class="eje" x="${m.l + j * cw + cw / 2}" y="14" text-anchor="middle">${h} h</text>`; });
   matriz.forEach((fila, i) => {
     c += `<text class="rotulo-fila" x="${m.l - 8}" y="${m.t + i * ch + ch / 2 + 4}" text-anchor="end">${dias[i]}</text>`;
     fila.forEach((v, j) => {
-      const paso = Math.min(6, Math.floor((v / max) * 7)); // 7 escalones de un solo tono
-      c += `<rect class="celda sec-${paso}" x="${m.l + j * cw + 1}" y="${m.t + i * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="2" data-valor="${v}"><title>${dias[i]} ${horas[j]} h: ${formato(v)}</title></rect>`;
+      const paso = v == null ? null : Math.min(6, Math.floor((v / max) * 7)); // 7 escalones de un solo tono
+      c += `<rect class="celda ${paso == null ? 'sin-dato' : 'sec-' + paso}" x="${m.l + j * cw + 1}" y="${m.t + i * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="2" data-valor="${v ?? ''}"><title>${dias[i]} ${horas[j]} h: ${formato(v)}</title></rect>`;
     });
   });
-  return svg(ancho, alto, c, etiqueta);
+  return svg(ancho, alto, c, etiqueta) + leyendaEscala(0, max, formato);
 }
 
 // ───────────────────────── Calendario de un año (día como celda) ─────────────────────────
-export function calendario({ dias, etiqueta, ancho = 760, formato = numero }) {
+export function calendario({ dias, etiqueta, ancho = 760, formato = numero, marcados = [] }) {
   // dias: [{fecha, valor, diaSemana, semana}] semana = índice de columna
   const cols = Math.max(...dias.map((d) => d.semana)) + 1;
   const m = { t: 18, l: 30 }, celda = Math.min(13, (ancho - m.l) / cols);
@@ -181,9 +185,11 @@ export function calendario({ dias, etiqueta, ancho = 760, formato = numero }) {
   dias.forEach((d) => {
     if (d.fecha.endsWith('-01') && (d.semana - ultimoRotulo) * celda >= 26 && (ultimoRotulo = d.semana) >= 0) c += `<text class="eje" x="${m.l + d.semana * celda}" y="12">${mesCorto(+d.fecha.slice(5, 7))}</text>`;
     const cls = d.valor == null ? 'celda sin-dato' : `celda sec-${Math.min(6, Math.floor((d.valor / max) * 7))}`;
-    c += `<rect class="${cls}" x="${m.l + d.semana * celda}" y="${m.t + d.diaSemana * celda}" width="${celda - 1.5}" height="${celda - 1.5}" rx="1.5" data-fecha="${d.fecha}" data-valor="${d.valor ?? ''}"><title>${d.fecha}: ${formato(d.valor)}</title></rect>`;
+    const marca = marcados.find((e) => e.fecha === d.fecha);
+    c += `<rect class="${cls}${marca ? ' marcada' : ''}" x="${m.l + d.semana * celda}" y="${m.t + d.diaSemana * celda}" width="${celda - 1.5}" height="${celda - 1.5}" rx="1.5" data-fecha="${d.fecha}" data-valor="${d.valor ?? ''}"><title>${d.fecha}: ${formato(d.valor)}${marca ? ' · ' + esc(marca.texto) : ''}</title></rect>`;
   });
-  return svg(m.l + cols * celda + 4, alto, c, etiqueta);
+  return svg(m.l + cols * celda + 4, alto, c, etiqueta) + leyendaEscala(0, max, formato) +
+    (marcados.length ? `<ul class="leyenda marcados">${marcados.map((e) => `<li><span class="muestra marco"></span>${esc(e.texto)}</li>`).join('')}</ul>` : '');
 }
 
 // ───────────────────────── Bullet graph (Few 2013) ─────────────────────────
@@ -199,7 +205,7 @@ export function bala({ filas, max, formato = (v) => soles(v), etiqueta, ancho = 
     let desde = 0;
     f.bandas.forEach((b, k) => { c += `<rect class="banda b-${k}" x="${x(desde)}" y="${cy + 4}" width="${x(Math.min(b.hasta, max)) - x(desde)}" height="${fila - 14}"/>`; desde = b.hasta; });
     const pasa = menosEsMejor == null ? false : menosEsMejor ? f.valor > f.meta : f.valor < f.meta;
-    c += `<rect class="${pasa ? 'barra-empeora' : 'barra-valor'}" x="${x(0)}" y="${cy + 12}" width="${x(f.valor) - x(0)}" height="${fila - 30}" data-valor="${f.valor}"/>`;
+    c += `<rect class="barra-valor" x="${x(0)}" y="${cy + 12}" width="${x(f.valor) - x(0)}" height="${fila - 30}" data-valor="${f.valor}"/>`;
     c += `<line class="marca-meta" x1="${x(f.meta)}" x2="${x(f.meta)}" y1="${cy + 6}" y2="${cy + fila - 12}" data-valor="${f.meta}"/>`;
     c += `<text class="rotulo-fila" x="${m.l - 10}" y="${cy + fila / 2 + 1}" text-anchor="end">${esc(recortar(f.nombre, m.l))}</text>`;
     c += `<text class="${pasa ? 'rotulo-valor empeora' : 'rotulo-valor'}" x="${x(Math.max(f.valor, f.meta)) + 8}" y="${cy + fila / 2 + 1}">${formato(f.valor)}${pasa ? ' ▲ sobre meta' : ''}</text>`;
@@ -209,15 +215,16 @@ export function bala({ filas, max, formato = (v) => soles(v), etiqueta, ancho = 
 }
 
 // ───────────────────────── Barras horizontales ordenadas, con período anterior ─────────────────────────
-export function barras({ filas, formato = numero, etiqueta, ancho = 640, resaltar = null }) {
-  const fila = 28, m = { t: 6, r: filas.some((f) => f.nota) ? 150 : 70, b: 6, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
+export function barras({ filas, formato = numero, etiqueta, ancho = 640, resaltar = null, max: maxComun = null, margen = null, margenDer = null }) {
+  const fila = 28, m = { t: 6, r: margenDer ?? (filas.some((f) => f.nota) ? 150 : 70), b: 6, l: margen ?? margenRotulos(filas.map((f) => f.nombre), ancho) };
   const alto = m.t + filas.length * fila + m.b;
-  const max = Math.max(...filas.flatMap((f) => [f.valor, f.previo ?? 0]));
+  const max = maxComun ?? Math.max(...filas.flatMap((f) => [f.valor ?? 0, f.previo ?? 0]));
   const x = lineal(0, max, m.l, ancho - m.r);
   let c = '';
   filas.forEach((f, i) => {
     const cy = m.t + i * fila;
     const r = resaltar === f.nombre;
+    if (f.valor == null) { c += `<text class="rotulo-fila" x="${m.l - 10}" y="${cy + fila / 2 + 4}" text-anchor="end">${esc(recortar(f.nombre, m.l))}</text><text class="nota" x="${m.l}" y="${cy + fila / 2 + 4}">${esc(f.nota || 'sin dato')}</text>`; return; }
     c += `<text class="rotulo-fila ${r ? 'fuerte' : ''}" x="${m.l - 10}" y="${cy + fila / 2 + 4}" text-anchor="end">${esc(recortar(f.nombre, m.l))}</text>`;
     if (f.valor > 0) c += `<rect class="${r ? 'barra-acento' : 'barra'}" x="${x(0)}" y="${cy + 6}" width="${x(f.valor) - x(0)}" height="${fila - 12}" rx="2" data-valor="${f.valor}"/>`;
     if (f.previo != null) c += `<line class="marca-previa" x1="${x(f.previo)}" x2="${x(f.previo)}" y1="${cy + 3}" y2="${cy + fila - 3}" data-valor="${f.previo}"/>`;
@@ -230,18 +237,17 @@ export function barras({ filas, formato = numero, etiqueta, ancho = 640, resalta
 export function franja({ partes, etiqueta, ancho = 640, formato = (p) => porcentaje(p), leyenda = false }) {
   const total = partes.reduce((s, p) => s + p.valor, 0);
   const alto = 64;
+  const pct = partes.map((p) => p.pct); // el reparto lo trae la capa de cálculo (mayor resto); rótulo y leyenda dicen lo mismo
   let x0 = 0, c = '';
   partes.forEach((p, i) => {
     const w = (p.valor / total) * ancho;
-    c += `<rect class="parte p-${i}" x="${x0 + (i ? 1 : 0)}" y="26" width="${Math.max(0, w - (i ? 1 : 0))}" height="22" data-valor="${p.valor}"/>`;
-    if (w > 70) c += `<text class="rotulo-fila" x="${x0 + 2}" y="18">${esc(p.nombre)} ${formato((p.valor / total) * 100)}</text>`;
+    const clase = p.clase || `p-${i}`;
+    c += `<rect class="parte ${clase}" x="${x0 + (i ? 1 : 0)}" y="26" width="${Math.max(0, w - (i ? 1 : 0))}" height="22" data-valor="${p.valor}"/>`;
+    if (w > 90 && pct[i] != null) c += `<text class="rotulo-fila" x="${x0 + 2}" y="18">${esc(p.nombre)} ${formato(pct[i])}</text>`;
     x0 += w;
   });
-  const pct = mayorRestoLocal(partes.map((p) => p.valor));
-  return svg(ancho, alto, c, etiqueta) + (leyenda ? `<ul class="leyenda">${partes.map((p, i) => `<li><span class="muestra p-${i}"></span>${esc(p.nombre)} <b data-valor="${pct[i]}">${porcentaje(pct[i])}</b></li>`).join('')}</ul>` : '');
+  return svg(ancho, alto, c, etiqueta) + (leyenda ? `<ul class="leyenda">${partes.map((p, i) => `<li><span class="muestra ${p.clase || 'p-' + i}"></span>${esc(p.nombre)} <b data-valor="${pct[i]}">${porcentaje(pct[i])}</b></li>`).join('')}</ul>` : '');
 }
-// solo para rotular: el reparto oficial lo hace la capa de cálculo; acá se reusa el mismo método
-function mayorRestoLocal(v) { const s = v.reduce((a, b) => a + b, 0); const e = v.map((x) => (x / s) * 100); const b = e.map(Math.floor); let r = 100 - b.reduce((a, c) => a + c, 0); e.map((x, i) => [x - Math.floor(x), i]).sort((a, c) => c[0] - a[0]).forEach(([, i]) => { if (r > 0) { b[i]++; r--; } }); return b; }
 
 // ───────────────────────── Dispersión con rótulo directo ─────────────────────────
 export function dispersion({ puntos, fx, fy, rx, ry, refX, refY, etiqueta, ancho = 560, alto = 340, resaltar = [] }) {
@@ -303,7 +309,8 @@ export function teselas({ items, etiqueta, lado = 74, formato = numero }) {
     c += `<rect class="${paso == null ? 'celda sin-dato' : 'celda sec-' + paso}" x="${x + 2}" y="${y + 2}" width="${lado - 4}" height="${lado - 4}" rx="4" data-valor="${t.valor ?? ''}"/>`;
     const claro = paso != null && paso >= 4;
     c += `<text class="tesela-nombre ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 20}">${esc(t.corto || t.nombre)}</text>`;
-    c += `<text class="tesela-valor ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 42}">${formato(t.valor)}</text>`;
+    c += t.valor == null ? `<text class="tesela-cambio" x="${x + 8}" y="${y + 42}">${esc(t.nota || 'sin dato')}</text>` : `<text class="tesela-valor ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 42}">${formato(t.valor)}</text>`;
+    if (t.cambio == null && t.valor != null && t.nota) c += `<text class="tesela-cambio ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 60}">${esc(t.nota)}</text>`;
     if (t.cambio != null) c += `<text class="tesela-cambio ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 60}">${variacion(t.cambio)}</text>`;
   });
   return svg(cols * lado, filas * lado, c, etiqueta);
@@ -313,7 +320,7 @@ export function teselas({ items, etiqueta, lado = 74, formato = numero }) {
 // origenes: [{nombre, destinos:{id:n}}]; destinos: [{id, nombre}]. Cada cinta es un conteo real de la cohorte.
 export function aluvial({ origenes, destinos, etiqueta, ancho = 640, alto = 300 }) {
   const m = { t: 8, b: 8 }, nodoW = 10, hueco = 8;
-  const colIzq = Math.min(130, ancho * 0.28), colDer = ancho - Math.min(170, ancho * 0.36);
+  const colIzq = Math.min(130, ancho * 0.28), reservaDer = Math.min(220, ancho * 0.44), colDer = ancho - reservaDer;
   const total = origenes.reduce((s, o) => s + Object.values(o.destinos).reduce((a, b) => a + b, 0), 0);
   const util = alto - m.t - m.b - hueco * (Math.max(origenes.length, destinos.length) - 1);
   const k = util / total;
@@ -330,7 +337,7 @@ export function aluvial({ origenes, destinos, etiqueta, ancho = 640, alto = 300 
       c += `<path class="cinta ${d.id === 'alta' ? 'cinta-alta' : ''}" d="M${x0},${y0}C${xm},${y0} ${xm},${y1} ${x1},${y1}L${x1},${y1 + h}C${xm},${y1 + h} ${xm},${y0 + h} ${x0},${y0 + h}Z" data-valor="${n}"><title>${esc(o.nombre)} → ${esc(d.nombre)}: ${numero(n)}</title></path>`;
     });
   });
-  origenes.forEach((o, i) => { c += `<rect class="nodo" x="${colIzq}" y="${yo[i].y}" width="${nodoW}" height="${Math.max(1, yo[i].h)}"/><text class="rotulo-fila" x="${colIzq - 8}" y="${yo[i].y + yo[i].h / 2 + 4}" text-anchor="end">${esc(o.nombre)}</text>`; });
-  destinos.forEach((d, j) => { c += `<rect class="${d.id === 'alta' ? 'nodo nodo-alta' : 'nodo'}" x="${colDer}" y="${yd[j].y}" width="${nodoW}" height="${Math.max(1, yd[j].h)}"/><text class="rotulo-fila ${d.id === 'alta' ? 'fuerte' : ''}" x="${colDer + nodoW + 8}" y="${yd[j].y + yd[j].h / 2 + 4}">${esc(d.nombre)} ${numero(totD[j])}</text>`; });
+  origenes.forEach((o, i) => { c += `<rect class="nodo" x="${colIzq}" y="${yo[i].y}" width="${nodoW}" height="${Math.max(1, yo[i].h)}"/><text class="rotulo-fila" x="${colIzq - 8}" y="${yo[i].y + yo[i].h / 2 + 4}" text-anchor="end">${esc(recortar(o.nombre, colIzq))}</text>`; });
+  destinos.forEach((d, j) => { c += `<rect class="${d.id === 'alta' ? 'nodo nodo-alta' : 'nodo'}" x="${colDer}" y="${yd[j].y}" width="${nodoW}" height="${Math.max(1, yd[j].h)}"/><text class="rotulo-fila ${d.id === 'alta' ? 'fuerte' : ''}" x="${colDer + nodoW + 8}" y="${yd[j].y + yd[j].h / 2 + 4}">${esc(recortar(d.nombre, reservaDer - nodoW - 50))} ${numero(totD[j])}</text>`; });
   return svg(ancho, alto, c, etiqueta);
 }

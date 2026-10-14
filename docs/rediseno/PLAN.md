@@ -10,7 +10,7 @@ Etiquetas: **confirmé** (medido ejecutando), **se deduce**, **asumo**. La audit
 
 **Propongo rehacer la demo sobre una data de muestra con tiempo y una capa de cálculo única, y recién encima cambiar la forma.** Lo que más pesa, en este orden:
 
-1. **Hoy la demo se contradice a sí misma** (share of voice que suma 105 %, un índice que no es la suma de sus partes, el presupuesto al 100 % en una capa y al 93 % en otra, el período sacado del reloj) y no tiene ninguna serie de tiempo salvo siete días escritos a mano (confirmé, `auditoria/AUDITORIA.md`). Ninguna forma nueva arregla eso. El generador con semilla y `armarVista` ya existen como prototipo en `galeria/muestra/` y pasan sus invariantes (confirmé: subconjunto ≤ conjunto, totales = suma de partes, aportes del índice = índice, prueba de humo con prueba negativa).
+1. **Hoy la demo se contradice a sí misma** (share of voice que suma 105 %, un índice que no es la suma de sus partes, el presupuesto al 100 % en una capa y al 93 % en otra, el período sacado del reloj) y no tiene ninguna serie de tiempo salvo siete días escritos a mano (confirmé, `auditoria/AUDITORIA.md`). Ninguna forma nueva arregla eso. El generador con semilla y `armarVista` ya existen como prototipo en `galeria/muestra/`. Un verificador adversarial les encontró 10 defectos graves fuera del período por defecto (por ejemplo, el día en que Meta no entregó datos se sumaba como dato); están corregidos y hoy pasan 12 reglas en 33 períodos, con prueba negativa (confirmé, `galeria/pruebas/`). Esa es la mejor evidencia de por qué esta pieza va primero.
 2. **La forma la elige la pregunta, y el título dice la lectura calculada.** Cada bloque abre con una conclusión escrita a partir del dato, que cae al título descriptivo si el dato no la sostiene. Es lo que alguien que ve dashboards cada semana nota en los primeros diez segundos (se deduce del informe de referencias, patrones 1 y 2).
 
 Antes de construir necesito cinco decisiones (sección 10). La más urgente no es de diseño: **el repo es público y tiene data y nombres de un cliente real** (confirmé).
@@ -22,11 +22,11 @@ Antes de construir necesito cinco decisiones (sección 10). La más urgente no e
 | Hoy | Después | Por qué |
 |---|---|---|
 | Números escritos dentro de 4 componentes (236 literales) | Generador con semilla fija (`src/muestra/`), configuración con el origen de cada parámetro, y `armarVista(data, filtros)` pura | Una sola implementación de cada regla; se prueba sin navegador; cambiar la configuración cambia la pantalla |
-| Una foto de enero y 7 días | 638 días (1 de enero de 2025 al 30 de septiembre de 2026), 4 canales, 12 sedes, embudo de cohorte, hora del lead, búsquedas y conversación semanales | Período anterior y año anterior comparables para cualquier corte; estacionalidad real de Google Trends (informe 06 §4.4) |
+| Una foto de enero y 7 días | 638 días (1 de enero de 2025 al 30 de setiembre de 2026), 4 canales, 12 sedes, embudo de cohorte, hora del lead, búsquedas y conversación semanales | Período anterior y año anterior comparables para cualquier corte; estacionalidad real de Google Trends (informe 06 §4.4) |
 | Competidores reales con juicios inventados («masificación», «nivel de amenaza») | Competidores reales (Smart Fit, b2, Bio Ritmo, KO, Mega Force) solo con conversación de muestra que suma 100 % con «Otros», sin sentimiento ni atributos, con la marca «dato de muestra» en el mismo bloque | Pedido del usuario (competencia real) dentro del límite que sostiene el D. Leg. 1044: la data sintética no es verdadera, así que ningún juicio sobre una marca real queda amparado (informe 06 §3; no reemplaza a un abogado) |
 | «FitZone» (existe un gimnasio y un software con ese nombre) | Marca ficticia de trabajo «Vitalto», verificada sin homónimo en Perú en web y dominios | Falta revisar Indecopi a mano: su buscador dio error 502 desde este entorno (informe 06 §1) |
 | Dólares y soles mezclados | Todo en soles | Una sola moneda (regla R13) |
-| Recharts 2 (deprecado, 115 kB gzip en la app real, 2 gráficos) | SVG propio con d3 modular (≈ 15 kB) y `data-valor` en cada marca | Medido en el informe 05: 15 contra 109 kB para línea más barras; y la prueba de humo cruza pantalla contra cálculo |
+| Recharts 2 (deprecado; su chunk pesa 155,8 kB gzip y quitarlo baja la app en 115 kB, porque parte de ese chunk lo comparte la app; 2 gráficos) | SVG propio con d3 modular (≈ 15 kB) y `data-valor` en cada marca | Medido en la auditoría (chunk) y en el informe 05 (app con y sin Recharts; 15 contra 109 kB para línea más barras); y la prueba de humo cruza pantalla contra cálculo |
 
 ---
 
@@ -43,7 +43,7 @@ Dos capas, como en la investigación de referencia: **primitivos** (paleta en OK
 | Bordes | `--borde` (decorativo), `--borde-control` (≥ 3:1) | |
 | Acento | `--acento`, `--foco` | Marca y selección. **Nunca estado** |
 | Estado | `--mejora`, `--empeora`, `--atencion` | Siempre con flecha y signo escritos; nunca como relleno de serie |
-| Series | `--s1` a `--s5` en orden fijo, `--previa` gris | Validadas con el validador de la skill de dataviz en claro y oscuro (A: peor ΔE adyacente con daltonismo 16,7 y 17,5; B: 13,0). Dispersión y small multiples: 3 series como máximo |
+| Series | `--s1` a `--s5` en orden fijo, `--previa` gris | Validadas con el validador de la skill de dataviz en claro y oscuro (A: peor ΔE adyacente con daltonismo 16,7 y 17,5, informe 04; B: 13,0, salida en `galeria/README.md`). Dispersión y pequeños múltiplos: 3 series como máximo |
 | Secuencial | `--q0` a `--q6`, un solo tono | Mapas de calor, teselas, calendario |
 | Tipografía | `--f-cifra` Bebas Neue (solo la cifra protagonista y el título de capa), `--f-texto` Montserrat variable con `tnum` | Montserrat con `tnum` deja los 10 dígitos en un solo ancho en los pesos 400, 600 y 700 (confirmé en el archivo, informe 04). Escala de texto 12, 13, 15, 17, 22, 28; cifras 22, 34, 48, 64. Nada bajo 12 px |
 | Espacio | Base 4: 4 a 16 dentro de un componente, 16 a 32 entre componentes, 40 a 64 entre secciones | |
@@ -55,15 +55,15 @@ Un chequeo automático (`npm run sistema`) rechaza colores, tamaños de letra, r
 
 ### 2.2 Formato de números y fechas
 
-Formateador propio (el `Intl.NumberFormat('es-PE')` da punto decimal y coma de miles, al revés de la norma peruana; confirmé ejecutando en el proyecto anterior). Prototipo con 20 casos en `galeria/muestra/formato.js` (confirmé 20 de 20).
+Formateador propio (el `Intl.NumberFormat('es-PE')` da punto decimal y coma de miles, al revés de la norma peruana; confirmé ejecutando en el proyecto anterior). Prototipo en `galeria/muestra/formato.js` con 22 casos en `galeria/pruebas/formato.prueba.mjs` (confirmé 22 de 22; con el separador cambiado, 15 de 22).
 
 | Caso | Hoy | Después |
 |---|---|---|
 | Conteo | 1,850 | 1850 · 12 500 (espacio duro desde 5 cifras) |
-| Dinero | $11.2 | S/ 15,78 en CPL; S/ 58 521 en inversión, sin céntimos (septiembre de 2026 en la muestra) |
+| Dinero | $11.2 | S/ 15,78 en CPL; S/ 58 521 en inversión, sin céntimos (setiembre de 2026 en la muestra) |
 | Porcentaje | 2.7% | 2,7 % |
 | Variación | -17.0 | −17 % (menos tipográfico; el cero sin signo ni color) |
-| Período | «1-14 Octubre 2026» del reloj | «1 al 30 de septiembre de 2026», de los filtros |
+| Período | «1-14 Octubre 2026» del reloj | «1 al 30 de setiembre de 2026», de los filtros |
 | No medido | 0 o nada | «sin dato», nunca cero |
 | Conteo chico | 0 % | «<1 %» si hay casos |
 
@@ -110,11 +110,11 @@ Una fila por bloque del catálogo. La forma elegida y por qué le gana a las otr
 
 | Bloque | Forma elegida | Le gana a | Por qué |
 |---|---|---|---|
-| G1 Cabecera | Barra con período escrito, frescura por fuente y «datos de muestra al 30 de septiembre de 2026» | Reloj; «actualizado hace X» | La única fecha verdadera es la de corte de cada fuente |
+| G1 Cabecera | Barra con período escrito, frescura por fuente y «datos de muestra al 30 de setiembre de 2026» | Reloj; «actualizado hace X» | La única fecha verdadera es la de corte de cada fuente |
 | G2 Navegación | Cuatro pestañas numeradas (es un recorrido) | Botones de colores; menú lateral | El número dice que hay un orden; el color no decía nada |
 | G3 Pie | Crédito en texto | Punto que late | Nada vivo |
 | D1 Veredicto de señales | `Cifra`: demanda de la categoría (índice de «gimnasio», 4 semanas) contra el año anterior + frescura por fuente | Puntaje global /10; cuatro puntajes /10 | Un dato medible con comparación, en vez de un puntaje inventado |
-| D2 Cuatro fuentes | Small multiples con eje común, una línea por fuente y la frase que la línea no dice | Cuatro tarjetas de texto; una línea con cuatro series | Se ve qué fuente se mueve sin leer párrafos |
+| D2 Cuatro fuentes | Pequeños múltiplos con eje común, una línea por fuente y la frase que la línea no dice | Cuatro tarjetas de texto; una línea con cuatro series | Se ve qué fuente se mueve sin leer párrafos |
 | D3 Multi-fuente | Se funde con la capa 2 como «sugerencia del modelo» | Bloque con degradado | Es una decisión, no una señal |
 | D4 Búsquedas | Dumbbell: interés de cada término, año anterior contra ahora | Tabla con «↑»; bump chart | La pregunta es cuánto cambió; con 6 términos el bump se enreda |
 | D5 Hashtags | Se borra; si se conserva, dot plot de crecimiento solo local | Tabla con vistas globales | «2,5 B globales» no dice nada sobre Lima |
@@ -136,7 +136,7 @@ Una fila por bloque del catálogo. La forma elegida y por qué le gana a las otr
 | E6 Cuándo pautar | **Mapa de calor hora × día** | Líneas por día; barras por franja | Una pieza, un tono; galería, bloque 7 |
 | E7 Sedes (nuevo) | **Lista ordenada por zona** con raya del año anterior | Teselas; dumbbell | Galería, bloque 5: largo sobre escala común; las teselas quedan para el recorrido |
 | O2 KPIs | `Cifra` protagonista: leads del período con año anterior; CPL y inversión en texto | Cuatro tarjetas | Una cifra grande por bloque |
-| O3 Evolución | **Línea diaria con el año anterior en gris** y eventos al pie | Small multiples; calendario | Galería, bloque 1 |
+| O3 Evolución | **Línea diaria con el año anterior en gris** y eventos al pie | Pequeños múltiplos; calendario | Galería, bloque 1 |
 | O4 Leads por canal | Se funde con E3 | Torta | Ya lo responde el dumbbell |
 | O5 Embudo | **Etapas** de una cohorte cerrada | Retícula; aluvial | Galería, bloque 3; la retícula va como resumen «de cada 100» y el aluvial como momento del recorrido |
 | O6 Umbrales CPL | `Bala` por audiencia con bandas meta, alerta y pausa | Listas de umbrales | Hoy no muestra el CPL actual |
@@ -167,7 +167,7 @@ Cada uno responde dos preguntas: qué hace que un cliente diga «esto no lo hab�
 | Momento | Qué ve el cliente | Por qué comunica mejor |
 |---|---|---|
 | **1. Recorrido guiado «modo sala»** | 6 a 8 pasos con teclado o clicker (flechas, AvPág y RePág), cada paso con su URL. Un paso «adivinen primero» oculta cuánto trae Meta antes de revelarlo | Obliga a formular la comparación antes de verla; nada depende del hover, que en sala nadie ve (Tse 2016, informe 02). El movimiento expresivo (400 ms) vive solo aquí |
-| **2. Títulos que se reescriben con el filtro** | Cambia el período y la lectura cambia («Meta trae el 62 % de los leads con el 44 % de la inversión» pasa a otra frase), y cada marca viaja a su nuevo lugar en 240 ms | La conclusión está escrita y es verdad en todos los estados (si no lo es, cae al descriptivo). El movimiento sirve para seguir la marca (Heer y Robertson 2007), no para decorar |
+| **2. Títulos que se reescriben con el filtro** | Cambia el período y la lectura cambia («Meta trae el 62 % de los leads con el 44 % de la inversión» pasa a otra frase, o al título descriptivo si el dato no la sostiene), y cada marca viaja a su nuevo lugar en 240 ms | La conclusión está escrita y es verdad en todos los estados (si no lo es, cae al descriptivo). El movimiento sirve para seguir la marca (Heer y Robertson 2007), no para decorar |
 | **3. Honestidad visible** | El selector «Estados» muestra el día que Meta no entregó datos, la cohorte en maduración y la sede nueva sin comparación | Un cliente que ya se quemó con un dashboard que mentía reconoce el problema al instante. Es el argumento de venta de Reset, mostrado y no dicho |
 | **4. Aluvial de una cohorte cerrada** (condicional) | De canal a destino, cada cinta es un conteo real | Solo como paso del recorrido y con la cohorte cerrada escrita; en el tablero va `Etapas`. Riesgo: invita a comparar tasas de canales con pocos casos (Display tiene alrededor de 100 leads en un mes) |
 
@@ -177,7 +177,9 @@ Se cayeron por impresionar sin comunicar: medidor radial, contadores que suben, 
 
 ## 6. La galería
 
-`docs/rediseno/galeria/index.html`: seis bloques con tres formas cada uno, más el mapa de calor, dibujados con la data de muestra y la misma `armarVista`. Se conmutan la identidad (A guía, B reset.com.pe) y el tema (oscuro, claro). 792 marcas con `data-valor`; sin scroll horizontal a 390 px; sin errores de consola (confirmé en Chromium). Prueba de humo: etapas, teselas y título cruzados contra la vista, verde; con una etapa sembrada 10 % más larga, rojo (confirmé).
+`docs/rediseno/galeria/index.html`: seis bloques con tres formas cada uno, más el mapa de calor, dibujados con la data de muestra y la misma `armarVista`. Se conmutan la identidad (A guía, B reset.com.pe) y el tema (oscuro, claro). 789 marcas con `data-valor`; sin scroll horizontal a 390 px; sin errores de consola (confirmé en Chromium).
+
+Pruebas en `galeria/pruebas/`, cada una con su prueba negativa (confirmé): `vista.prueba.mjs` barre 33 períodos con 12 reglas; `humo.mjs` cruza en Chromium etapas, teselas, escala común de sedes, rótulo contra leyenda y título a 1440 y 390 px; `formato.prueba.mjs`. La galería muestra el período por defecto (setiembre de 2026 contra setiembre de 2025); los otros períodos se prueban en la capa de cálculo, no en pantalla.
 
 **Lo que te pido elegir:** una forma por bloque (mi recomendación va primero, con borde) y una identidad.
 
@@ -193,12 +195,12 @@ Se cayeron por impresionar sin comunicar: medidor radial, contadores que suben, 
 | Quitar `date-fns` (nadie lo importa) | 0 | Ninguno | PR aparte, ya |
 | Netlify: Node 18 (sin soporte desde el 30/04/2025) → 22 | 0 | Bajo | PR aparte, ya |
 | Vite 5 → 8 | build de 5,4 a 1,6 s | Falla `manualChunks`; probado solo el build de producción | PR aparte |
-| Tailwind 4 | | Borra `tailwind.config.js`, que usa el playbook, y cambió el 23 % de los píxeles en la prueba | No ahora |
+| Tailwind 4 | | Borra `tailwind.config.js`, que usa el playbook, y cambió el 23 % de los píxeles de la capa 1 en la prueba (las otras capas, menos del 2 %) | No ahora |
 | React 19 | +23 kB | lucide 0.294 no lo declara compatible | No ahora |
 
 Todo medido en el informe 05 (confirmé ahí). La licencia de cada paquete nuevo es MIT o ISC.
 
-**Presupuesto declarado:** JS inicial ≤ 100 kB gzip (hoy 181,6 kB), CSS ≤ 15 kB, fuentes ≤ 55 kB, LCP móvil ≤ 2,5 s, Lighthouse ≥ 90 en rendimiento y accesibilidad en escritorio y móvil (hoy la accesibilidad da 90 y 75).
+**Presupuesto declarado:** JS inicial ≤ 100 kB gzip (hoy 181,7 kB: 25,9 de la app más 155,8 de Recharts), CSS ≤ 15 kB, fuentes ≤ 55 kB, LCP móvil ≤ 2,5 s, Lighthouse ≥ 90 en rendimiento y accesibilidad en escritorio y móvil (hoy la accesibilidad da 90 y 75).
 
 ---
 
@@ -239,7 +241,7 @@ Al cierre de 4.4 y 4.5: verificadores adversariales en paralelo, de solo lectura
 4. **Separador decimal: coma (norma peruana, 11,20) o punto (como lo muestran Meta y Google, 11.20).** **Recomiendo** la coma con espacio de miles: es la norma y el formateador lo resuelve en una constante. Señal de alarma: que en la primera reunión alguien lea mal una cifra.
 5. **Tema por defecto: oscuro con «modo sala» claro a un clic, o claro por defecto.** **Recomiendo** oscuro por defecto si la demo se muestra sobre todo en laptop o pantalla, y claro si se proyecta en salas iluminadas: con luz ambiente el gris de texto más claro cae a 3,4:1 en oscuro y a 4,0:1 en claro (modelado en el informe 04, no medido con un proyector).
 
-Supuestos que tomo si no dices otra cosa (asumo): fecha de corte de la muestra 30 de septiembre de 2026; período por defecto, el último mes cerrado contra el mismo mes del año anterior; enero queda como mes histórico destacado.
+Supuestos que tomo si no dices otra cosa (asumo): las metas de costo por lead y las bandas del índice son supuestos de la muestra y se rotulan así en pantalla; meses escritos «setiembre», como se usa en Perú; fecha de corte de la muestra 30 de setiembre de 2026; período por defecto, el último mes cerrado contra el mismo mes del año anterior; enero queda como mes histórico destacado.
 
 ---
 

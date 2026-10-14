@@ -109,6 +109,8 @@ body { margin: 0; background: var(--fondo); color: var(--texto-1); font: 400 15p
 .lienzo.ancho { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--r-bloque); padding: 16px; overflow-x: auto; }
 .grupo { margin: 10px 0 2px; font-size: 12px; font-weight: 600; color: var(--texto-3); }
 .grupo:first-child { margin-top: 0; }
+.nota-estado { margin: 0; padding: 16px; border: 1px dashed var(--borde-control); border-radius: var(--r-bloque); color: var(--texto-2); font-size: 13px; }
+.grupo-botones button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Gráficos: todo color sale de los tokens */
 svg.g { display: block; overflow: visible; }
@@ -161,6 +163,11 @@ svg.g { display: block; overflow: visible; }
 .g .cinta { fill: var(--previa); opacity: 0.35; }
 .g .cinta-alta { fill: var(--s1); opacity: 0.75; }
 .g .nodo { fill: var(--texto-3); } .g .nodo-alta { fill: var(--s1); }
+.escala { display: flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 12px; color: var(--texto-3); }
+.escala span { padding: 0 6px; } .escala .q { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.q0 { background: var(--q0); } .q1 { background: var(--q1); } .q2 { background: var(--q2); } .q3 { background: var(--q3); } .q4 { background: var(--q4); } .q5 { background: var(--q5); } .q6 { background: var(--q6); }
+.g .celda.marcada { stroke: var(--texto-1); stroke-width: 1.5; }
+.muestra.marco { border: 1.5px solid var(--texto-1); background: transparent; }
 .multiplos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
 .multiplo { margin: 0; min-width: 0; }
 .multiplo figcaption { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
@@ -198,7 +205,7 @@ svg.g { display: block; overflow: visible; }
   <div id="bloques" style="display:grid;gap:64px"></div>
   <div id="extra"></div>
   <footer class="pie">
-    <p>Toda cifra sale de un generador con semilla fija y de una función pura que arma la vista; ningún número está escrito en esta página. Los competidores son marcas reales con data de muestra: solo conversación, sin sentimiento ni juicios.</p>
+    <p>Toda cifra de dato sale de un generador con semilla fija y de una función pura que arma la vista; los umbrales de método (60 % de días medidos, 120 días, bandas) están declarados en la configuración o en el texto. Los competidores son marcas reales con data de muestra: solo conversación, sin sentimiento ni juicios.</p>
     <p>THE LAB · Reset · rama claude/modest-tesla-a7501f · docs/rediseno/galeria</p>
   </footer>
 </div>
@@ -335,7 +342,7 @@ function tasaDeConteo(casos, total) {
   return porcentaje(p, p < 10 ? 1 : 0);
 }
 
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'];
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'];
 const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
@@ -344,10 +351,12 @@ const partes = (iso) => ({ a: Number(iso.slice(0, 4)), m: Number(iso.slice(5, 7)
 const fecha = (iso) => { const { a, m, d } = partes(iso); return `${d} de ${MESES[m]} de ${a}`; };
 const fechaCorta = (iso) => { const { m, d } = partes(iso); return `${d} ${MESES_CORTOS[m]}`; };
 const mesCorto = (m1) => MESES_CORTOS[m1 - 1];
+const mesAnio = (aaaamm) => `${MESES_CORTOS[+aaaamm.slice(5, 7) - 1]} ${aaaamm.slice(2, 4)}`;
+const fechaSinAnio = (iso) => { const { m, d } = partes(iso); return `${d} de ${MESES[m]}`; };
 const mesLargo = (m1) => MESES[m1 - 1];
 const diaSemanaLargo = (i) => DIAS[i];
 
-// «1 al 30 de septiembre de 2026», «14 de septiembre al 13 de octubre de 2026», «20 de diciembre de 2025 al 3 de enero de 2026»
+// «1 al 30 de setiembre de 2026», «14 de setiembre al 13 de octubre de 2026», «20 de diciembre de 2025 al 3 de enero de 2026»
 function rangoFechas(desde, hasta) {
   const a = partes(desde), b = partes(hasta);
   if (a.a !== b.a) return `${fecha(desde)} al ${fecha(hasta)}`;
@@ -355,7 +364,7 @@ function rangoFechas(desde, hasta) {
   return `${a.d} al ${b.d} de ${MESES[b.m]} de ${b.a}`;
 }
 
-return { DECIMAL, MILES, MENOS, NO_MEDIDO, numero, compacto, soles, porcentaje, variacion, tasaDeConteo, fecha, fechaCorta, mesCorto, mesLargo, diaSemanaLargo, rangoFechas };
+return { DECIMAL, MILES, MENOS, NO_MEDIDO, numero, compacto, soles, porcentaje, variacion, tasaDeConteo, fecha, fechaCorta, mesCorto, mesAnio, fechaSinAnio, mesLargo, diaSemanaLargo, rangoFechas };
 })();
 __m['configuracion'] = (() => {
 // Configuración de la data de muestra. Todo número que el generador usa como parámetro
@@ -382,7 +391,8 @@ const CONFIG = {
     '2026-08-06', '2026-08-30',
   ],
 
-  // Canales pagados. Costos en soles; CPL = CPM / (1000 · CTR · CVR), derivado, nunca fijado (informe 06 §4.3)
+  // Canales pagados. Costos en soles; CPL = CPM / (1000 · CTR · CVR), derivado, nunca fijado (informe 06 §4.3).
+  // metaCpl: asumo. En una demo real la fija el cliente; sin meta del cliente, el bloque no dibuja meta.
   canales: [
     { id: 'meta', nombre: 'Meta', cpm: 12, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 12 },
     { id: 'search', nombre: 'Google Search', cpm: 90, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 25 },
@@ -400,19 +410,23 @@ const CONFIG = {
 
   // 12 sedes; col y fila ubican la tesela del distrito (no es un mapa a escala)
   sedes: [
-    { id: 'lo', distrito: 'Los Olivos', corto: 'Los Olivos', col: 1, fila: 0, peso: 0.9, abre: '2026-03-02' },
-    { id: 'in', distrito: 'Independencia', corto: 'Independ.', col: 2, fila: 0, peso: 0.7 },
-    { id: 'sm', distrito: 'San Miguel', corto: 'San Miguel', col: 0, fila: 1, peso: 1.0 },
-    { id: 'jm', distrito: 'Jesús María', corto: 'Jesús María', col: 1, fila: 1, peso: 0.9 },
-    { id: 'li', distrito: 'Lince', corto: 'Lince', col: 2, fila: 1, peso: 0.8 },
-    { id: 'mg', distrito: 'Magdalena del Mar', corto: 'Magdalena', col: 0, fila: 2, peso: 0.85 },
-    { id: 'si', distrito: 'San Isidro', corto: 'San Isidro', col: 1, fila: 2, peso: 1.2 },
-    { id: 'sb', distrito: 'San Borja', corto: 'San Borja', col: 2, fila: 2, peso: 1.0 },
-    { id: 'at', distrito: 'Ate', corto: 'Ate', col: 3, fila: 2, peso: 0.75 },
-    { id: 'mi', distrito: 'Miraflores', corto: 'Miraflores', col: 1, fila: 3, peso: 1.4 },
-    { id: 'su', distrito: 'Santiago de Surco', corto: 'Surco', col: 2, fila: 3, peso: 1.3 },
-    { id: 'lm', distrito: 'La Molina', corto: 'La Molina', col: 3, fila: 3, peso: 1.0 },
+    { id: 'lo', distrito: 'Los Olivos', corto: 'Los Olivos', col: 1, fila: 0, zona: 'Lima Norte', peso: 0.9, abre: '2026-03-02' },
+    { id: 'in', distrito: 'Independencia', corto: 'Independ.', col: 2, fila: 0, zona: 'Lima Norte', peso: 0.7 },
+    { id: 'sm', distrito: 'San Miguel', corto: 'San Miguel', col: 0, fila: 1, zona: 'Lima Moderna', peso: 1.0 },
+    { id: 'jm', distrito: 'Jesús María', corto: 'Jesús María', col: 1, fila: 1, zona: 'Lima Moderna', peso: 0.9 },
+    { id: 'li', distrito: 'Lince', corto: 'Lince', col: 2, fila: 1, zona: 'Lima Moderna', peso: 0.8 },
+    { id: 'mg', distrito: 'Magdalena del Mar', corto: 'Magdalena', col: 0, fila: 2, zona: 'Lima Moderna', peso: 0.85 },
+    { id: 'si', distrito: 'San Isidro', corto: 'San Isidro', col: 1, fila: 2, zona: 'Lima Moderna', peso: 1.2 },
+    { id: 'sb', distrito: 'San Borja', corto: 'San Borja', col: 2, fila: 2, zona: 'Lima Moderna', peso: 1.0 },
+    { id: 'at', distrito: 'Ate', corto: 'Ate', col: 3, fila: 2, zona: 'Lima Este', peso: 0.75 },
+    { id: 'mi', distrito: 'Miraflores', corto: 'Miraflores', col: 1, fila: 3, zona: 'Lima Moderna', peso: 1.4 },
+    { id: 'su', distrito: 'Santiago de Surco', corto: 'Surco', col: 2, fila: 3, zona: 'Lima Moderna', peso: 1.3 },
+    { id: 'lm', distrito: 'La Molina', corto: 'La Molina', col: 3, fila: 3, zona: 'Lima Este', peso: 1.0 },
   ],
+
+  // Bandas de lectura (asumo: no hay norma; se declaran para que no sean números sueltos en la pantalla)
+  bandasIndice: [{ hasta: 40, nombre: 'baja' }, { hasta: 70, nombre: 'media' }, { hasta: 100, nombre: 'alta' }],
+  bandasCpl: [{ fraccion: 0.85, nombre: 'holgado' }, { fraccion: 1, nombre: 'en meta' }], // fracciones de la meta de cada canal
 
   // Hora del día en que entra el lead: perfiles de laborable y fin de semana (asumo; no hay fuente)
   perfilHora: {
@@ -592,9 +606,11 @@ return { generar };
 __m['vista'] = (() => {
 // Capa de cálculo pura: armarVista(data, opciones) devuelve todo lo que la pantalla pinta.
 // Reglas (heredadas del método de referencia y del informe 06):
-//  - las razones se calculan Σ/Σ, nunca promediando razones diarias (R4)
-//  - un día sin fila no es un cero; un delta solo con ≥ 60 % de días medidos en las DOS ventanas
-//  - el embudo se lee en cohortes cerradas; una cohorte que no maduró se declara, no se compara
+//  - las razones se calculan Σ/Σ, nunca promediando razones (R4)
+//  - un día sin fila no es un cero: si una fuente no entregó, el total de ese día no existe
+//  - las comparaciones son por día medido (ventanas de distinto largo o con huecos no se comparan en sumas)
+//  - un delta solo con ≥ 60 % de días medidos en las DOS ventanas
+//  - el embudo se lee en cohortes cerradas; una cohorte que no maduró se declara
 //  - proporciones visibles con el método del mayor resto, para que sumen 100
 
 const { rango, sumarDias, diaSemana, diasEntre, mes } = __m['calendario'];
@@ -602,8 +618,9 @@ const { rango, sumarDias, diaSemana, diasEntre, mes } = __m['calendario'];
 const suma = (a, f) => a.reduce((s, x) => s + f(x), 0);
 const razon = (num, den) => (den > 0 ? num / den : null);
 const cambioPct = (actual, previo) => (actual != null && previo > 0 ? ((actual - previo) / previo) * 100 : null);
+const COBERTURA_MINIMA = 0.6;
 
-// Reparte 100 entre partes por el mayor resto: la suma visible da 100 exacto
+// Reparte un total entre partes por el mayor resto: la suma visible da el total exacto
 function mayorResto(valores, total = 100) {
   const s = valores.reduce((a, b) => a + b, 0);
   if (!(s > 0)) return valores.map(() => 0);
@@ -614,33 +631,12 @@ function mayorResto(valores, total = 100) {
   return base;
 }
 
-function ventanaPauta(data, canal, desde, hasta) {
-  const filas = data.pauta[canal].filter((p) => p.fecha >= desde && p.fecha <= hasta);
-  const medidas = filas.filter((p) => !p.sinDato);
-  const dias = diasEntre(desde, hasta) + 1;
-  return {
-    inversion: suma(medidas, (p) => p.inversion), impresiones: suma(medidas, (p) => p.impresiones),
-    clics: suma(medidas, (p) => p.clics), leads: suma(medidas, (p) => p.leads),
-    cobertura: medidas.length / dias, diasSinDato: filas.filter((p) => p.sinDato).map((p) => p.fecha),
-  };
-}
-
-function totalPauta(data, desde, hasta) {
-  const partes = data.config.canales.map((c) => ventanaPauta(data, c.id, desde, hasta));
-  return {
-    inversion: suma(partes, (p) => p.inversion), clics: suma(partes, (p) => p.clics), leads: suma(partes, (p) => p.leads),
-    impresiones: suma(partes, (p) => p.impresiones), cobertura: Math.min(...partes.map((p) => p.cobertura)),
-  };
-}
-
-const COBERTURA_MINIMA = 0.6;
-
 // Índices por fecha, armados una vez por data (no cambian el resultado, solo el costo)
 const cache = new WeakMap();
 function indices(data) {
   if (cache.has(data)) return cache.get(data);
   const pautaDia = {};
-  for (const c of data.config.canales) { pautaDia[c.id] = new Map(data.pauta[c.id].map((p) => [p.fecha, p])); }
+  for (const c of data.config.canales) pautaDia[c.id] = new Map(data.pauta[c.id].map((p) => [p.fecha, p]));
   const cohDia = new Map();
   for (const x of data.cohortes) { const k = cohDia.get(x.fecha) || { leads: 0, altas: 0 }; k.leads += x.leads; k.altas += x.altas; cohDia.set(x.fecha, k); }
   const ix = { pautaDia, cohDia };
@@ -648,35 +644,73 @@ function indices(data) {
   return ix;
 }
 
+// Una ventana de un canal: sumas solo de días medidos, y cuántos días se midieron
+function ventanaCanal(data, canal, desde, hasta) {
+  const ix = indices(data);
+  let inversion = 0, impresiones = 0, clics = 0, leads = 0, medidos = 0;
+  const sinDato = [];
+  for (const d of rango(desde, hasta)) {
+    const p = ix.pautaDia[canal].get(d);
+    if (!p) continue; // fuera de la serie
+    if (p.sinDato) { sinDato.push(d); continue; }
+    inversion += p.inversion; impresiones += p.impresiones; clics += p.clics; leads += p.leads; medidos++;
+  }
+  const dias = diasEntre(desde, hasta) + 1;
+  return { inversion, impresiones, clics, leads, medidos, dias, cobertura: medidos / dias, sinDato, leadsPorDia: razon(leads, medidos) };
+}
+
+// Total de todos los canales: un día cuenta solo si TODOS los canales lo midieron
+function ventanaTotal(data, desde, hasta) {
+  const ix = indices(data);
+  const canales = data.config.canales;
+  let inversion = 0, clics = 0, leads = 0, medidos = 0;
+  const parciales = [];
+  for (const d of rango(desde, hasta)) {
+    const filas = canales.map((c) => ix.pautaDia[c.id].get(d));
+    if (filas.some((p) => !p)) continue;
+    if (filas.some((p) => p.sinDato)) { parciales.push(d); continue; }
+    inversion += suma(filas, (p) => p.inversion); clics += suma(filas, (p) => p.clics); leads += suma(filas, (p) => p.leads); medidos++;
+  }
+  const dias = diasEntre(desde, hasta) + 1;
+  return { inversion, clics, leads, medidos, dias, cobertura: medidos / dias, parciales, leadsPorDia: razon(leads, medidos) };
+}
+
+const esMesCompleto = (desde, hasta) => desde.endsWith('-01') && sumarDias(hasta, 1).endsWith('-01') && desde.slice(0, 7) === hasta.slice(0, 7);
+
 function armarVista(data, { desde, hasta, compararDesde, compararHasta, cohorteDesde, cohorteHasta }) {
   const cfg = data.config;
   if (hasta > cfg.corte) throw new Error('El período no puede pasar el corte de la muestra');
-  const dias = diasEntre(desde, hasta) + 1;
-  const actual = totalPauta(data, desde, hasta);
-  const previo = totalPauta(data, compararDesde, compararHasta);
-  const comparable = actual.cobertura >= COBERTURA_MINIMA && previo.cobertura >= COBERTURA_MINIMA;
-
-  // ── 1. Resultados: leads diarios contra el mismo tramo del año anterior ──
   const ix = indices(data);
+  const actual = ventanaTotal(data, desde, hasta);
+  const previo = ventanaTotal(data, compararDesde, compararHasta);
+  const comparable = actual.cobertura >= COBERTURA_MINIMA && previo.cobertura >= COBERTURA_MINIMA;
+  const tipoComparacion = compararDesde.slice(5) === desde.slice(5) && compararHasta.slice(5) === hasta.slice(5) && +desde.slice(0, 4) - +compararDesde.slice(0, 4) === 1 ? 'anio' : 'otro';
+
+  // ── 1. Resultados ──
   const leadsDia = (d) => {
-    let total = 0, alguno = false;
-    for (const c of cfg.canales) { const p = ix.pautaDia[c.id].get(d); if (p && !p.sinDato) { total += p.leads; alguno = true; } }
-    return alguno ? total : null;
+    const filas = cfg.canales.map((c) => ix.pautaDia[c.id].get(d));
+    if (filas.some((p) => !p || p.sinDato)) return null; // un canal sin dato: el total del día no se conoce
+    return suma(filas, (p) => p.leads);
   };
   const fechas = rango(desde, hasta);
   const desfase = diasEntre(compararDesde, desde);
   const resultados = {
-    leads: actual.leads, leadsPrevio: previo.leads, cambio: comparable ? cambioPct(actual.leads, previo.leads) : null,
+    leads: actual.leads, leadsPrevio: previo.leads, diasMedidos: actual.medidos, diasParciales: actual.parciales,
+    cambio: comparable ? cambioPct(actual.leadsPorDia, previo.leadsPorDia) : null, // por día medido
+    porDia: actual.leadsPorDia, mismoLargo: actual.medidos === previo.medidos,
     cpl: razon(actual.inversion, actual.leads), cplPrevio: razon(previo.inversion, previo.leads),
     inversion: actual.inversion,
     serie: fechas.map((d) => ({ fecha: d, valor: leadsDia(d) })),
     seriePrevia: fechas.map((d) => ({ fecha: sumarDias(d, -desfase), valor: leadsDia(sumarDias(d, -desfase)) })),
-    porCanal: cfg.canales.map((c) => ({
-      id: c.id, nombre: c.nombre,
-      serie: fechas.map((d) => { const p = ix.pautaDia[c.id].get(d); return { fecha: d, valor: p && !p.sinDato ? p.leads : null }; }),
-      total: ventanaPauta(data, c.id, desde, hasta).leads,
-      previo: ventanaPauta(data, c.id, compararDesde, compararHasta).leads,
-    })).map((c) => ({ ...c, cambio: comparable ? cambioPct(c.total, c.previo) : null })),
+    porCanal: cfg.canales.map((c) => {
+      const a = ventanaCanal(data, c.id, desde, hasta), b = ventanaCanal(data, c.id, compararDesde, compararHasta);
+      const ok = a.cobertura >= COBERTURA_MINIMA && b.cobertura >= COBERTURA_MINIMA;
+      return {
+        id: c.id, nombre: c.nombre, total: a.leads, previo: b.leads, sinDato: a.sinDato,
+        cambio: ok ? cambioPct(a.leadsPorDia, b.leadsPorDia) : null,
+        serie: fechas.map((d) => { const p = ix.pautaDia[c.id].get(d); return { fecha: d, valor: p && !p.sinDato ? p.leads : null }; }),
+      };
+    }),
     calendario: (() => {
       const inicio = sumarDias(cfg.corte, -364);
       const lunes0 = sumarDias(inicio, -diaSemana(inicio));
@@ -685,16 +719,19 @@ function armarVista(data, { desde, hasta, compararDesde, compararHasta, cohorteD
     eventos: cfg.eventos.filter((e) => e.fecha >= desde && e.fecha <= hasta),
   };
 
-  // ── 2. Canales: peso en inversión contra peso en leads, CPL contra meta ──
+  // ── 2. Canales ──
   const porCanal = cfg.canales.map((c) => {
-    const a = ventanaPauta(data, c.id, desde, hasta), b = ventanaPauta(data, c.id, compararDesde, compararHasta);
-    return { id: c.id, nombre: c.nombre, inversion: a.inversion, leads: a.leads, cpl: razon(a.inversion, a.leads), cplPrevio: razon(b.inversion, b.leads), metaCpl: c.metaCpl, cobertura: a.cobertura };
+    const a = ventanaCanal(data, c.id, desde, hasta), b = ventanaCanal(data, c.id, compararDesde, compararHasta);
+    return { id: c.id, nombre: c.nombre, inversion: a.inversion, leads: a.leads, cpl: razon(a.inversion, a.leads), cplPrevio: razon(b.inversion, b.leads), metaCpl: c.metaCpl, cobertura: a.cobertura, sinDato: a.sinDato };
   });
-  const pctInv = mayorResto(porCanal.map((c) => c.inversion));
-  const pctLeads = mayorResto(porCanal.map((c) => c.leads));
+  // Las participaciones solo se calculan sobre días que todos los canales midieron: un canal caído no «pierde» peso
+  const diasComunes = fechas.filter((d) => leadsDia(d) != null);
+  const sumaComun = (id, k) => suma(diasComunes, (d) => ix.pautaDia[id].get(d)[k]);
+  const pctInv = mayorResto(porCanal.map((c) => sumaComun(c.id, 'inversion')));
+  const pctLeads = mayorResto(porCanal.map((c) => sumaComun(c.id, 'leads')));
   const canales = porCanal.map((c, i) => ({ ...c, pctInversion: pctInv[i], pctLeads: pctLeads[i] }));
 
-  // ── 3. Embudo de una cohorte cerrada (todas sus altas ya pudieron ocurrir al corte) ──
+  // ── 3. Embudo de cohorte ──
   const coh = data.cohortes.filter((x) => x.fecha >= cohorteDesde && x.fecha <= cohorteHasta);
   const cerrada = diasEntre(cohorteHasta, cfg.corte) >= cfg.embudo.rezagoAltaMax;
   const etapas = ['leads', 'contactos', 'citas', 'asisten', 'altas'].map((k) => ({ id: k, valor: suma(coh, (x) => x[k]) }));
@@ -710,35 +747,48 @@ function armarVista(data, { desde, hasta, compararDesde, compararHasta, cohorteD
   const porCanalCohorte = cfg.canales.map((c) => {
     const cc = coh.filter((x) => x.canal === c.id);
     const t = { leads: suma(cc, (x) => x.leads), contactos: suma(cc, (x) => x.contactos), citas: suma(cc, (x) => x.citas), asisten: suma(cc, (x) => x.asisten), altas: suma(cc, (x) => x.altas) };
-    // los mismos cinco destinos excluyentes, por canal: suman los leads del canal
     const destinos = { alta: t.altas, asistio: t.asisten - t.altas, cita: t.citas - t.asisten, contacto: t.contactos - t.citas, sin: t.leads - t.contactos };
     return { id: c.id, nombre: c.nombre, ...t, destinos, tasaAlta: razon(t.altas, t.leads) };
   });
   const embudo = { cerrada, desde: cohorteDesde, hasta: cohorteHasta, etapas, exclusivas: exclusivas.map((e, i) => ({ ...e, de100: deCada100[i] })), porCanal: porCanalCohorte, tasaAlta: razon(Al, L) };
 
-  // ── 4. Índice de oportunidad: suma ponderada exacta de componentes 0 a 100 ──
+  // ── 4. Índice: contra el día anterior al período, con esa fecha nombrada ──
   const indice = calcularIndice(data, hasta);
-  const indicePrevio = calcularIndice(data, sumarDias(desde, -1));
+  const fechaPrevio = sumarDias(desde, -1);
+  const indicePrevio = fechaPrevio >= cfg.desde ? calcularIndice(data, fechaPrevio) : { valor: null };
   const historia = [];
   for (let k = 11; k >= 0; k--) {
     const fin = finDeMes(sumarMeses(hasta.slice(0, 7), -k));
-    if (fin <= cfg.corte) historia.push({ fecha: fin, valor: calcularIndice(data, fin).valor });
+    if (fin > cfg.corte || fin < cfg.desde) continue;
+    const i = calcularIndice(data, fin);
+    historia.push({ fecha: fin, valor: i.completo ? i.valor : null }); // un mes con un componente sin medir no se grafica junto a los completos
   }
 
-  // ── 5. Sedes ──
+  // ── 5. Sedes: una sede que no abrió no tiene valor; una que abrió dentro de una ventana no se compara ──
+  const parcialA = new Set(actual.parciales), parcialB = new Set(previo.parciales);
   const sedes = cfg.sedes.map((s) => {
-    const a = data.cohortes.filter((x) => x.sede === s.id && x.fecha >= desde && x.fecha <= hasta);
-    const b = data.cohortes.filter((x) => x.sede === s.id && x.fecha >= compararDesde && x.fecha <= compararHasta);
-    const abiertaEnComparacion = !s.abre || s.abre <= compararDesde;
-    const leads = suma(a, (x) => x.leads), leadsPrevio = abiertaEnComparacion ? suma(b, (x) => x.leads) : null;
-    return { id: s.id, nombre: s.distrito, corto: s.corto, col: s.col, fila: s.fila, abre: s.abre || null, leads, leadsPrevio, cambio: leadsPrevio != null ? cambioPct(leads, leadsPrevio) : null, zona: s.fila <= 0 ? 'Lima Norte' : s.col >= 3 ? 'Lima Este' : 'Lima Moderna' };
+    const abiertaTodo = (d0) => !s.abre || s.abre <= d0;
+    const abiertaAlgo = (d1) => !s.abre || s.abre <= d1;
+    // los mismos días que el total: un día con una fuente caída no entra (así las sedes suman el total)
+    const a = data.cohortes.filter((x) => x.sede === s.id && x.fecha >= desde && x.fecha <= hasta && !parcialA.has(x.fecha));
+    const b = data.cohortes.filter((x) => x.sede === s.id && x.fecha >= compararDesde && x.fecha <= compararHasta && !parcialB.has(x.fecha));
+    const leads = abiertaAlgo(hasta) ? suma(a, (x) => x.leads) : null;
+    const leadsPrevio = abiertaTodo(compararDesde) ? suma(b, (x) => x.leads) : null;
+    const seCompara = comparable && abiertaTodo(desde) && leadsPrevio != null && leadsPrevio > 0;
+    return {
+      id: s.id, nombre: s.distrito, corto: s.corto, col: s.col, fila: s.fila, zona: s.zona, abre: s.abre || null,
+      leads, leadsPrevio, cambio: seCompara ? cambioPct(leads / actual.medidos, leadsPrevio / previo.medidos) : null,
+      estado: leads == null ? 'sin-abrir' : !abiertaTodo(desde) ? 'abrio-en-el-periodo' : leadsPrevio == null ? 'sin-anterior' : 'normal',
+    };
   });
 
-  // ── 6. Conversación: share of voice mensual (marcas reales, dato de muestra) ──
+  // ── 6. Conversación (marcas reales, dato de muestra). Solo meses con data ──
   const meses = [];
   for (let k = 11; k >= 0; k--) meses.push(sumarMeses(hasta.slice(0, 7), -k));
   const sovMes = meses.map((m) => {
     const tot = data.conversacion.map((b) => suma(b.semanas.filter((s) => sumarDias(s.semana, 3).slice(0, 7) === m), (s) => s.menciones));
+    return { mes: m, tot };
+  }).filter((x) => x.tot.reduce((a, b) => a + b, 0) > 0).map(({ mes: m, tot }) => {
     const pct = mayorResto(tot);
     return { mes: m, marcas: data.conversacion.map((b, i) => ({ id: b.id, nombre: b.nombre, propia: b.propia, menciones: tot[i], pct: pct[i] })) };
   });
@@ -748,33 +798,45 @@ function armarVista(data, { desde, hasta, compararDesde, compararHasta, cohorteD
     rangos: sovMes.map((mm) => sinOtros(mm).findIndex((x) => x.id === b.id) + 1),
   }));
 
-  // ── 7. Hora × día de la semana ──
-  const matriz = Array.from({ length: 7 }, () => new Array(24).fill(0));
-  data.porHora.filter((h) => h.fecha >= desde && h.fecha <= hasta).forEach((h) => { h.horas.forEach((v, j) => { matriz[diaSemana(h.fecha)][j] += v; }); });
+  // ── 7. Hora × día: promedio por día (un mes tiene 4 o 5 de cada día de la semana) ──
+  const sumaHD = Array.from({ length: 7 }, () => new Array(24).fill(0));
+  const veces = new Array(7).fill(0);
+  data.porHora.filter((h) => h.fecha >= desde && h.fecha <= hasta && leadsDia(h.fecha) != null).forEach((h) => {
+    veces[diaSemana(h.fecha)]++;
+    h.horas.forEach((v, j) => { sumaHD[diaSemana(h.fecha)][j] += v; });
+  });
+  const matriz = sumaHD.map((fila, i) => fila.map((v) => (veces[i] ? v / veces[i] : null)));
 
   // ── Lecturas: lo que dicen los títulos. Si la condición no se cumple, el título cae al descriptivo ──
   const brecha = canales.map((c) => ({ ...c, brecha: c.pctLeads - c.pctInversion })).sort((a, b) => b.brecha - a.brecha);
   const comparables = sedes.filter((s) => s.cambio != null).sort((a, b) => b.cambio - a.cambio);
-  const ultimoMes = sovMes[sovMes.length - 1], primerMes = sovMes[0];
-  const propia = (mm) => mm.marcas.find((x) => x.propia);
-  const rangoPropio = ranking.find((x) => x.propia);
+  const mediana = (v) => { const o = [...v].sort((a, b) => a - b); return o[Math.floor(o.length / 2)]; };
+  const rp = ranking.find((x) => x.propia).rangos;
+  const sostenido = rp.length >= 6 ? { antes: mediana(rp.slice(0, 3)), ahora: mediana(rp.slice(-3)), mejor3: Math.min(...rp.slice(-3)), peor3: Math.max(...rp.slice(-3)), actual: rp[rp.length - 1] } : null; // el puesto tiene que sostenerse 3 meses
+  const ultimo = sovMes[sovMes.length - 1], primero = sovMes[0];
+  const etapas2 = embudo.etapas;
+  let caida = null;
+  for (let i = 1; i < etapas2.length; i++) { const p = 1 - etapas2[i].valor / etapas2[i - 1].valor; if (!caida || p > caida.proporcion) caida = { de: etapas2[i - 1].id, a: etapas2[i].id, proporcion: p }; }
+  const enPersonas = [...embudo.exclusivas].filter((e) => e.id !== 'alta').sort((a, b) => b.valor - a.valor)[0];
+  let pico = { v: -1 };
+  matriz.forEach((f, i) => f.forEach((v, j) => { if (v != null && v > pico.v) pico = { v, dia: i, hora: j }; }));
   const lecturas = {
     canalQueRinde: brecha[0].brecha >= 5 ? brecha[0] : null,
-    canalQueNoRinde: brecha[brecha.length - 1].brecha <= -5 ? brecha[brecha.length - 1] : null,
     sobreMeta: canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl),
     sedeQueMasCrece: comparables[0] && comparables[0].cambio > 0 ? comparables[0] : null,
-    sedesNuevas: sedes.filter((s) => s.leadsPrevio == null),
-    sedesQueBajan: comparables.filter((s) => s.cambio < 0).length,
-    etapaConMasPerdida: (() => { const e = embudo.etapas; let peor = null; for (let i = 1; i < e.length; i++) { const p = 1 - e[i].valor / e[i - 1].valor; if (!peor || p > peor.perdida) peor = { de: e[i - 1].id, a: e[i].id, perdida: p }; } return peor; })(),
-    sovPropio: { actual: propia(ultimoMes).pct, inicio: propia(primerMes).pct, rangoActual: rangoPropio.rangos.at(-1), rangoInicio: rangoPropio.rangos[0], mejorRango: Math.min(...rangoPropio.rangos) },
-    horaPico: (() => { let m = { v: -1 }; matriz.forEach((f, i) => f.forEach((v, j) => { if (v > m.v) m = { v, dia: i, hora: j }; })); return m; })(),
+    sedesNuevas: sedes.filter((s) => s.estado === 'abrio-en-el-periodo' || s.estado === 'sin-anterior'),
+    sedesSinAbrir: sedes.filter((s) => s.estado === 'sin-abrir'),
+    caidaProporcional: caida,
+    caidaEnPersonas: enPersonas,
+    sovPropio: { actual: ultimo?.marcas.find((x) => x.propia).pct ?? null, inicio: primero?.marcas.find((x) => x.propia).pct ?? null, sostenido, meses: sovMes.length },
+    horaPico: pico,
   };
 
   return {
     lecturas,
-    periodo: { desde, hasta, dias, compararDesde, compararHasta, comparable, corte: cfg.corte },
+    periodo: { desde, hasta, dias: actual.dias, compararDesde, compararHasta, comparable, tipoComparacion, mesCompleto: esMesCompleto(desde, hasta), corte: cfg.corte, fechaPrevioIndice: fechaPrevio },
     resultados, canales, embudo,
-    indice: { ...indice, previo: indicePrevio.valor, cambio: indice.valor - indicePrevio.valor, historia },
+    indice: { ...indice, previo: indicePrevio.valor, cambio: indicePrevio.valor == null ? null : indice.valor - indicePrevio.valor, historia },
     sedes, conversacion: { meses: sovMes, ranking }, horaDia: matriz,
   };
 }
@@ -795,29 +857,30 @@ const PESOS_INDICE = [
 
 function calcularIndice(data, fecha) {
   const cfg = data.config;
-  // demanda: últimas 4 semanas de «gimnasio» dentro de su rango de 52 semanas
+  // demanda: últimas 4 semanas de «gimnasio» dentro de su rango de 52 semanas; con menos de 52 semanas no se mide
   const g = data.busquedas.find((b) => b.id === 'gimnasio').semanas.filter((s) => sumarDias(s.semana, 6) <= fecha);
   const ult4 = g.slice(-4), ult52 = g.slice(-52);
-  const media4 = suma(ult4, (s) => s.indice) / (ult4.length || 1);
-  const demanda = posicion(media4, Math.min(...ult52.map((s) => s.indice)), Math.max(...ult52.map((s) => s.indice)));
-  // eficiencia: CPL de los últimos 28 días contra la meta ponderada por inversión; 100 si está 30 % bajo meta, 0 si está 30 % sobre
+  const demanda = ult52.length < 52 ? null : posicion(suma(ult4, (s) => s.indice) / ult4.length, Math.min(...ult52.map((s) => s.indice)), Math.max(...ult52.map((s) => s.indice)));
+  // eficiencia: CPL de 28 días contra la meta combinada Σinv / Σ(inv/meta); 100 si está 30 % bajo meta, 50 en la meta, 0 si está 30 % sobre
   const d0 = sumarDias(fecha, -27);
-  const tot = totalPauta(data, d0, fecha);
-  const metaPond = suma(cfg.canales, (c) => ventanaPauta(data, c.id, d0, fecha).inversion * c.metaCpl) / (tot.inversion || 1);
+  const tot = ventanaTotal(data, d0, fecha);
+  const leadsMeta = suma(cfg.canales, (c) => ventanaCanal(data, c.id, d0, fecha).inversion / c.metaCpl);
+  const metaComb = razon(tot.inversion, leadsMeta);
   const cpl = razon(tot.inversion, tot.leads);
-  const eficiencia = cpl == null ? null : acotar(((1.3 - cpl / metaPond) / 0.6) * 100);
-  // conversión: tasa lead → alta de la última cohorte de 28 días ya cerrada, contra las 12 anteriores
-  const cierre = sumarDias(fecha, -cfg.embudo.rezagoAltaMax);
+  const eficiencia = cpl == null || metaComb == null ? null : acotar(((1.3 - cpl / metaComb) / 0.6) * 100);
+  // conversión: tasa lead → alta de la última ventana de 28 días ya cerrada, contra las 12 anteriores (todas con data)
   const { cohDia } = indices(data);
-  const tasa = (h) => { let l = 0, a = 0; for (let k = 0; k < 28; k++) { const x = cohDia.get(sumarDias(h, -k)); if (x) { l += x.leads; a += x.altas; } } return razon(a, l); };
-  const tasas = Array.from({ length: 13 }, (_, k) => tasa(sumarDias(cierre, -28 * k))).filter((v) => v != null);
-  const conversion = tasas.length > 2 ? posicion(tasas[0], Math.min(...tasas), Math.max(...tasas)) : null;
-  // conversación propia: share of voice de las últimas 4 semanas contra su rango de 52
+  const cierre = sumarDias(fecha, -cfg.embudo.rezagoAltaMax);
+  const tasa = (h) => { if (sumarDias(h, -27) < cfg.desde) return null; let l = 0, a = 0; for (let k = 0; k < 28; k++) { const x = cohDia.get(sumarDias(h, -k)); if (x) { l += x.leads; a += x.altas; } } return razon(a, l); };
+  const tasas = Array.from({ length: 13 }, (_, k) => tasa(sumarDias(cierre, -28 * k)));
+  const conversion = tasas.every((v) => v != null) ? posicion(tasas[0], Math.min(...tasas), Math.max(...tasas)) : null;
+  // conversación propia: share of voice Σ/Σ de las últimas 4 semanas contra el rango semanal de 52
   const prop = data.conversacion.find((b) => b.propia).semanas.filter((s) => sumarDias(s.semana, 6) <= fecha);
   const totSem = (s) => suma(data.conversacion, (b) => b.semanas.find((x) => x.semana === s)?.menciones || 0);
-  const sov = prop.map((s) => s.menciones / (totSem(s.semana) || 1));
-  const sov4 = suma(sov.slice(-4), (v) => v) / Math.max(1, Math.min(4, sov.length));
-  const conversacion = posicion(sov4, Math.min(...sov.slice(-52)), Math.max(...sov.slice(-52)));
+  const ult4p = prop.slice(-4);
+  const sov4 = razon(suma(ult4p, (s) => s.menciones), suma(ult4p, (s) => totSem(s.semana)));
+  const sov52 = prop.slice(-52).map((s) => s.menciones / (totSem(s.semana) || 1));
+  const conversacion = prop.length < 52 || sov4 == null ? null : posicion(sov4, Math.min(...sov52), Math.max(...sov52));
   // temporada: factor estacional del mes siguiente dentro del rango del año
   const mSig = (mes(fecha) % 12) + 1;
   const temporada = posicion(cfg.estacionalidad[mSig - 1], Math.min(...cfg.estacionalidad), Math.max(...cfg.estacionalidad));
@@ -827,13 +890,12 @@ function calcularIndice(data, fecha) {
   const medidos = PESOS_INDICE.filter((p) => valores[p.id] != null);
   const pesoTotal = suma(medidos, (p) => p.peso);
   const aportesExactos = medidos.map((p) => (p.peso / pesoTotal) * valores[p.id]);
-  const valor = Math.round(suma(aportesExactos, (a) => a));
-  const aportes = mayorResto(aportesExactos, valor); // los aportes visibles suman el índice visible
+  const exacto = suma(aportesExactos, (a) => a);
   return {
-    valor, fecha,
+    valor: Math.round(exacto), exacto, fecha, completo: medidos.length === PESOS_INDICE.length,
     componentes: PESOS_INDICE.map((p) => {
       const i = medidos.indexOf(p);
-      return { ...p, puntaje: valores[p.id] == null ? null : Math.round(valores[p.id]), aporte: i >= 0 ? aportes[i] : null, pesoEfectivo: i >= 0 ? p.peso / pesoTotal : 0 };
+      return { ...p, puntaje: valores[p.id] == null ? null : valores[p.id], aporte: i >= 0 ? aportesExactos[i] : null, pesoEfectivo: i >= 0 ? p.peso / pesoTotal : 0 };
     }),
   };
 }
@@ -845,7 +907,7 @@ __m['formas'] = (() => {
 // cruce lo dibujado contra la capa de cálculo. Los colores son variables CSS (tokens).
 // Ningún componente calcula: reciben la vista ya armada.
 
-const { numero, compacto, porcentaje, fechaCorta, mesCorto, soles, variacion } = __m['formato'];
+const { numero, compacto, porcentaje, fechaCorta, mesCorto, mesAnio, soles, variacion } = __m['formato'];
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const diasEntreIso = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
@@ -923,10 +985,10 @@ function pequenosMultiplos({ paneles, ancho = 200, alto = 90, formatoY = compact
     const y = lineal(0, ys[ys.length - 1], alto - m.b, m.t);
     let d = '', ab = false;
     p.serie.forEach((s, i) => { if (s.valor == null) { ab = false; return; } d += `${ab ? 'L' : 'M'}${x(i).toFixed(1)},${y(s.valor).toFixed(1)}`; ab = true; });
-    const u = p.serie[p.serie.length - 1];
-    const c = `<line class="rejilla" x1="${m.l}" x2="${ancho - m.r}" y1="${y(0)}" y2="${y(0)}"/><path class="serie-1" d="${d}"/>` +
-      `<circle class="punto-final" cx="${x(p.serie.length - 1)}" cy="${y(u.valor)}" r="3" data-valor="${u.valor}"/>` +
-      `<text class="rotulo-final" x="${x(p.serie.length - 1) + 6}" y="${y(u.valor) + 4}">${formatoY(u.valor)}</text>`;
+    const iu = p.serie.map((s) => s.valor).lastIndexOf(p.serie.map((s) => s.valor).filter((v) => v != null).at(-1));
+    const u = p.serie[iu];
+    let c = `<line class="rejilla" x1="${m.l}" x2="${ancho - m.r}" y1="${y(0)}" y2="${y(0)}"/><path class="serie-1" d="${d}"/>`;
+    if (u) c += `<circle class="punto-final" cx="${x(iu)}" cy="${y(u.valor)}" r="3" data-valor="${u.valor}"/><text class="rotulo-final" x="${x(iu) + 6}" y="${y(u.valor) + 4}">${formatoY(u.valor)}</text>`;
     return `<figure class="multiplo"><figcaption><span class="nombre">${esc(p.nombre)}</span><span class="cambio ${p.tono || ''}">${esc(p.cambio || '')}</span></figcaption>${svg(ancho, alto, c, p.nombre)}</figure>`;
   }).join('')}</div>`;
 }
@@ -979,7 +1041,7 @@ function bump({ series, semanas, etiqueta, ancho = 640, alto = 240 }) {
   const y = lineal(1, n, m.t, alto - m.b);
   let c = '';
   for (let r = 1; r <= n; r++) c += `<text class="eje" x="${m.l - 10}" y="${y(r) + 4}" text-anchor="end">${r}</text>`;
-  semanas.forEach((s, i) => { if (i % 4 === 0) c += `<text class="eje" x="${x(i)}" y="${alto - 6}" text-anchor="middle">${fechaCorta(s)}</text>`; });
+  semanas.forEach((s, i) => { if (i % 3 === 0) c += `<text class="eje" x="${x(i)}" y="${alto - 6}" text-anchor="middle">${mesAnio(s.slice(0, 7))}</text>`; });
   series.forEach((s) => {
     const d = s.rangos.map((r, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(r).toFixed(1)}`).join('');
     c += `<path class="${s.propia ? 'bump-propia' : 'bump'}" d="${d}"/>`;
@@ -990,28 +1052,32 @@ function bump({ series, semanas, etiqueta, ancho = 640, alto = 240 }) {
   return svg(ancho, alto, c, etiqueta);
 }
 
+function leyendaEscala(min, max, formato) {
+  return `<div class="escala"><span>${formato(min)}</span>${[0, 1, 2, 3, 4, 5, 6].map((k) => `<i class="q q${k}"></i>`).join('')}<span>${formato(max)}</span></div>`;
+}
+
 // ───────────────────────── Mapa de calor hora × día ─────────────────────────
 // matriz[dia 0..6][hora]; filas = días, columnas = horas
 function calorHoraDia({ matriz, horas, etiqueta, ancho = 640, formato = numero }) {
   const m = { t: 22, r: 8, b: 8, l: 76 };
   const cw = (ancho - m.l - m.r) / horas.length, ch = 24;
   const alto = m.t + 7 * ch + m.b;
-  const max = Math.max(...matriz.flat());
+  const max = Math.max(...matriz.flat().filter((v) => v != null));
   const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
   let c = '';
   horas.forEach((h, j) => { if (h % 3 === 0) c += `<text class="eje" x="${m.l + j * cw + cw / 2}" y="14" text-anchor="middle">${h} h</text>`; });
   matriz.forEach((fila, i) => {
     c += `<text class="rotulo-fila" x="${m.l - 8}" y="${m.t + i * ch + ch / 2 + 4}" text-anchor="end">${dias[i]}</text>`;
     fila.forEach((v, j) => {
-      const paso = Math.min(6, Math.floor((v / max) * 7)); // 7 escalones de un solo tono
-      c += `<rect class="celda sec-${paso}" x="${m.l + j * cw + 1}" y="${m.t + i * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="2" data-valor="${v}"><title>${dias[i]} ${horas[j]} h: ${formato(v)}</title></rect>`;
+      const paso = v == null ? null : Math.min(6, Math.floor((v / max) * 7)); // 7 escalones de un solo tono
+      c += `<rect class="celda ${paso == null ? 'sin-dato' : 'sec-' + paso}" x="${m.l + j * cw + 1}" y="${m.t + i * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="2" data-valor="${v ?? ''}"><title>${dias[i]} ${horas[j]} h: ${formato(v)}</title></rect>`;
     });
   });
-  return svg(ancho, alto, c, etiqueta);
+  return svg(ancho, alto, c, etiqueta) + leyendaEscala(0, max, formato);
 }
 
 // ───────────────────────── Calendario de un año (día como celda) ─────────────────────────
-function calendario({ dias, etiqueta, ancho = 760, formato = numero }) {
+function calendario({ dias, etiqueta, ancho = 760, formato = numero, marcados = [] }) {
   // dias: [{fecha, valor, diaSemana, semana}] semana = índice de columna
   const cols = Math.max(...dias.map((d) => d.semana)) + 1;
   const m = { t: 18, l: 30 }, celda = Math.min(13, (ancho - m.l) / cols);
@@ -1024,9 +1090,11 @@ function calendario({ dias, etiqueta, ancho = 760, formato = numero }) {
   dias.forEach((d) => {
     if (d.fecha.endsWith('-01') && (d.semana - ultimoRotulo) * celda >= 26 && (ultimoRotulo = d.semana) >= 0) c += `<text class="eje" x="${m.l + d.semana * celda}" y="12">${mesCorto(+d.fecha.slice(5, 7))}</text>`;
     const cls = d.valor == null ? 'celda sin-dato' : `celda sec-${Math.min(6, Math.floor((d.valor / max) * 7))}`;
-    c += `<rect class="${cls}" x="${m.l + d.semana * celda}" y="${m.t + d.diaSemana * celda}" width="${celda - 1.5}" height="${celda - 1.5}" rx="1.5" data-fecha="${d.fecha}" data-valor="${d.valor ?? ''}"><title>${d.fecha}: ${formato(d.valor)}</title></rect>`;
+    const marca = marcados.find((e) => e.fecha === d.fecha);
+    c += `<rect class="${cls}${marca ? ' marcada' : ''}" x="${m.l + d.semana * celda}" y="${m.t + d.diaSemana * celda}" width="${celda - 1.5}" height="${celda - 1.5}" rx="1.5" data-fecha="${d.fecha}" data-valor="${d.valor ?? ''}"><title>${d.fecha}: ${formato(d.valor)}${marca ? ' · ' + esc(marca.texto) : ''}</title></rect>`;
   });
-  return svg(m.l + cols * celda + 4, alto, c, etiqueta);
+  return svg(m.l + cols * celda + 4, alto, c, etiqueta) + leyendaEscala(0, max, formato) +
+    (marcados.length ? `<ul class="leyenda marcados">${marcados.map((e) => `<li><span class="muestra marco"></span>${esc(e.texto)}</li>`).join('')}</ul>` : '');
 }
 
 // ───────────────────────── Bullet graph (Few 2013) ─────────────────────────
@@ -1042,7 +1110,7 @@ function bala({ filas, max, formato = (v) => soles(v), etiqueta, ancho = 640, me
     let desde = 0;
     f.bandas.forEach((b, k) => { c += `<rect class="banda b-${k}" x="${x(desde)}" y="${cy + 4}" width="${x(Math.min(b.hasta, max)) - x(desde)}" height="${fila - 14}"/>`; desde = b.hasta; });
     const pasa = menosEsMejor == null ? false : menosEsMejor ? f.valor > f.meta : f.valor < f.meta;
-    c += `<rect class="${pasa ? 'barra-empeora' : 'barra-valor'}" x="${x(0)}" y="${cy + 12}" width="${x(f.valor) - x(0)}" height="${fila - 30}" data-valor="${f.valor}"/>`;
+    c += `<rect class="barra-valor" x="${x(0)}" y="${cy + 12}" width="${x(f.valor) - x(0)}" height="${fila - 30}" data-valor="${f.valor}"/>`;
     c += `<line class="marca-meta" x1="${x(f.meta)}" x2="${x(f.meta)}" y1="${cy + 6}" y2="${cy + fila - 12}" data-valor="${f.meta}"/>`;
     c += `<text class="rotulo-fila" x="${m.l - 10}" y="${cy + fila / 2 + 1}" text-anchor="end">${esc(recortar(f.nombre, m.l))}</text>`;
     c += `<text class="${pasa ? 'rotulo-valor empeora' : 'rotulo-valor'}" x="${x(Math.max(f.valor, f.meta)) + 8}" y="${cy + fila / 2 + 1}">${formato(f.valor)}${pasa ? ' ▲ sobre meta' : ''}</text>`;
@@ -1052,15 +1120,16 @@ function bala({ filas, max, formato = (v) => soles(v), etiqueta, ancho = 640, me
 }
 
 // ───────────────────────── Barras horizontales ordenadas, con período anterior ─────────────────────────
-function barras({ filas, formato = numero, etiqueta, ancho = 640, resaltar = null }) {
-  const fila = 28, m = { t: 6, r: filas.some((f) => f.nota) ? 150 : 70, b: 6, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
+function barras({ filas, formato = numero, etiqueta, ancho = 640, resaltar = null, max: maxComun = null, margen = null, margenDer = null }) {
+  const fila = 28, m = { t: 6, r: margenDer ?? (filas.some((f) => f.nota) ? 150 : 70), b: 6, l: margen ?? margenRotulos(filas.map((f) => f.nombre), ancho) };
   const alto = m.t + filas.length * fila + m.b;
-  const max = Math.max(...filas.flatMap((f) => [f.valor, f.previo ?? 0]));
+  const max = maxComun ?? Math.max(...filas.flatMap((f) => [f.valor ?? 0, f.previo ?? 0]));
   const x = lineal(0, max, m.l, ancho - m.r);
   let c = '';
   filas.forEach((f, i) => {
     const cy = m.t + i * fila;
     const r = resaltar === f.nombre;
+    if (f.valor == null) { c += `<text class="rotulo-fila" x="${m.l - 10}" y="${cy + fila / 2 + 4}" text-anchor="end">${esc(recortar(f.nombre, m.l))}</text><text class="nota" x="${m.l}" y="${cy + fila / 2 + 4}">${esc(f.nota || 'sin dato')}</text>`; return; }
     c += `<text class="rotulo-fila ${r ? 'fuerte' : ''}" x="${m.l - 10}" y="${cy + fila / 2 + 4}" text-anchor="end">${esc(recortar(f.nombre, m.l))}</text>`;
     if (f.valor > 0) c += `<rect class="${r ? 'barra-acento' : 'barra'}" x="${x(0)}" y="${cy + 6}" width="${x(f.valor) - x(0)}" height="${fila - 12}" rx="2" data-valor="${f.valor}"/>`;
     if (f.previo != null) c += `<line class="marca-previa" x1="${x(f.previo)}" x2="${x(f.previo)}" y1="${cy + 3}" y2="${cy + fila - 3}" data-valor="${f.previo}"/>`;
@@ -1073,18 +1142,17 @@ function barras({ filas, formato = numero, etiqueta, ancho = 640, resaltar = nul
 function franja({ partes, etiqueta, ancho = 640, formato = (p) => porcentaje(p), leyenda = false }) {
   const total = partes.reduce((s, p) => s + p.valor, 0);
   const alto = 64;
+  const pct = partes.map((p) => p.pct); // el reparto lo trae la capa de cálculo (mayor resto); rótulo y leyenda dicen lo mismo
   let x0 = 0, c = '';
   partes.forEach((p, i) => {
     const w = (p.valor / total) * ancho;
-    c += `<rect class="parte p-${i}" x="${x0 + (i ? 1 : 0)}" y="26" width="${Math.max(0, w - (i ? 1 : 0))}" height="22" data-valor="${p.valor}"/>`;
-    if (w > 70) c += `<text class="rotulo-fila" x="${x0 + 2}" y="18">${esc(p.nombre)} ${formato((p.valor / total) * 100)}</text>`;
+    const clase = p.clase || `p-${i}`;
+    c += `<rect class="parte ${clase}" x="${x0 + (i ? 1 : 0)}" y="26" width="${Math.max(0, w - (i ? 1 : 0))}" height="22" data-valor="${p.valor}"/>`;
+    if (w > 90 && pct[i] != null) c += `<text class="rotulo-fila" x="${x0 + 2}" y="18">${esc(p.nombre)} ${formato(pct[i])}</text>`;
     x0 += w;
   });
-  const pct = mayorRestoLocal(partes.map((p) => p.valor));
-  return svg(ancho, alto, c, etiqueta) + (leyenda ? `<ul class="leyenda">${partes.map((p, i) => `<li><span class="muestra p-${i}"></span>${esc(p.nombre)} <b data-valor="${pct[i]}">${porcentaje(pct[i])}</b></li>`).join('')}</ul>` : '');
+  return svg(ancho, alto, c, etiqueta) + (leyenda ? `<ul class="leyenda">${partes.map((p, i) => `<li><span class="muestra ${p.clase || 'p-' + i}"></span>${esc(p.nombre)} <b data-valor="${pct[i]}">${porcentaje(pct[i])}</b></li>`).join('')}</ul>` : '');
 }
-// solo para rotular: el reparto oficial lo hace la capa de cálculo; acá se reusa el mismo método
-function mayorRestoLocal(v) { const s = v.reduce((a, b) => a + b, 0); const e = v.map((x) => (x / s) * 100); const b = e.map(Math.floor); let r = 100 - b.reduce((a, c) => a + c, 0); e.map((x, i) => [x - Math.floor(x), i]).sort((a, c) => c[0] - a[0]).forEach(([, i]) => { if (r > 0) { b[i]++; r--; } }); return b; }
 
 // ───────────────────────── Dispersión con rótulo directo ─────────────────────────
 function dispersion({ puntos, fx, fy, rx, ry, refX, refY, etiqueta, ancho = 560, alto = 340, resaltar = [] }) {
@@ -1146,7 +1214,8 @@ function teselas({ items, etiqueta, lado = 74, formato = numero }) {
     c += `<rect class="${paso == null ? 'celda sin-dato' : 'celda sec-' + paso}" x="${x + 2}" y="${y + 2}" width="${lado - 4}" height="${lado - 4}" rx="4" data-valor="${t.valor ?? ''}"/>`;
     const claro = paso != null && paso >= 4;
     c += `<text class="tesela-nombre ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 20}">${esc(t.corto || t.nombre)}</text>`;
-    c += `<text class="tesela-valor ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 42}">${formato(t.valor)}</text>`;
+    c += t.valor == null ? `<text class="tesela-cambio" x="${x + 8}" y="${y + 42}">${esc(t.nota || 'sin dato')}</text>` : `<text class="tesela-valor ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 42}">${formato(t.valor)}</text>`;
+    if (t.cambio == null && t.valor != null && t.nota) c += `<text class="tesela-cambio ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 60}">${esc(t.nota)}</text>`;
     if (t.cambio != null) c += `<text class="tesela-cambio ${claro ? 'sobre-oscuro' : ''}" x="${x + 8}" y="${y + 60}">${variacion(t.cambio)}</text>`;
   });
   return svg(cols * lado, filas * lado, c, etiqueta);
@@ -1156,7 +1225,7 @@ function teselas({ items, etiqueta, lado = 74, formato = numero }) {
 // origenes: [{nombre, destinos:{id:n}}]; destinos: [{id, nombre}]. Cada cinta es un conteo real de la cohorte.
 function aluvial({ origenes, destinos, etiqueta, ancho = 640, alto = 300 }) {
   const m = { t: 8, b: 8 }, nodoW = 10, hueco = 8;
-  const colIzq = Math.min(130, ancho * 0.28), colDer = ancho - Math.min(170, ancho * 0.36);
+  const colIzq = Math.min(130, ancho * 0.28), reservaDer = Math.min(220, ancho * 0.44), colDer = ancho - reservaDer;
   const total = origenes.reduce((s, o) => s + Object.values(o.destinos).reduce((a, b) => a + b, 0), 0);
   const util = alto - m.t - m.b - hueco * (Math.max(origenes.length, destinos.length) - 1);
   const k = util / total;
@@ -1173,8 +1242,8 @@ function aluvial({ origenes, destinos, etiqueta, ancho = 640, alto = 300 }) {
       c += `<path class="cinta ${d.id === 'alta' ? 'cinta-alta' : ''}" d="M${x0},${y0}C${xm},${y0} ${xm},${y1} ${x1},${y1}L${x1},${y1 + h}C${xm},${y1 + h} ${xm},${y0 + h} ${x0},${y0 + h}Z" data-valor="${n}"><title>${esc(o.nombre)} → ${esc(d.nombre)}: ${numero(n)}</title></path>`;
     });
   });
-  origenes.forEach((o, i) => { c += `<rect class="nodo" x="${colIzq}" y="${yo[i].y}" width="${nodoW}" height="${Math.max(1, yo[i].h)}"/><text class="rotulo-fila" x="${colIzq - 8}" y="${yo[i].y + yo[i].h / 2 + 4}" text-anchor="end">${esc(o.nombre)}</text>`; });
-  destinos.forEach((d, j) => { c += `<rect class="${d.id === 'alta' ? 'nodo nodo-alta' : 'nodo'}" x="${colDer}" y="${yd[j].y}" width="${nodoW}" height="${Math.max(1, yd[j].h)}"/><text class="rotulo-fila ${d.id === 'alta' ? 'fuerte' : ''}" x="${colDer + nodoW + 8}" y="${yd[j].y + yd[j].h / 2 + 4}">${esc(d.nombre)} ${numero(totD[j])}</text>`; });
+  origenes.forEach((o, i) => { c += `<rect class="nodo" x="${colIzq}" y="${yo[i].y}" width="${nodoW}" height="${Math.max(1, yo[i].h)}"/><text class="rotulo-fila" x="${colIzq - 8}" y="${yo[i].y + yo[i].h / 2 + 4}" text-anchor="end">${esc(recortar(o.nombre, colIzq))}</text>`; });
+  destinos.forEach((d, j) => { c += `<rect class="${d.id === 'alta' ? 'nodo nodo-alta' : 'nodo'}" x="${colDer}" y="${yd[j].y}" width="${nodoW}" height="${Math.max(1, yd[j].h)}"/><text class="rotulo-fila ${d.id === 'alta' ? 'fuerte' : ''}" x="${colDer + nodoW + 8}" y="${yd[j].y + yd[j].h / 2 + 4}">${esc(recortar(d.nombre, reservaDer - nodoW - 50))} ${numero(totD[j])}</text>`; });
   return svg(ancho, alto, c, etiqueta);
 }
 
@@ -1182,14 +1251,15 @@ return { marcas, linea, pequenosMultiplos, dumbbell, pendiente, bump, calorHoraD
 })();
 __m['app'] = (() => {
 // Galería de opciones: cada bloque importante dibujado en dos o tres formas con la misma vista.
-// Este archivo solo compone: los números y las lecturas vienen de armarVista.
+// Este archivo solo compone: las cifras y las lecturas vienen de armarVista; los umbrales, de la configuración.
 
 const { CONFIG } = __m['configuracion'];
 const { generar } = __m['generador'];
-const { armarVista } = __m['vista'];
-const { numero, compacto, porcentaje, variacion, soles, rangoFechas, fecha, mesCorto, mesLargo, diaSemanaLargo } = __m['formato'];
+const { armarVista, PESOS_INDICE } = __m['vista'];
+const { numero, compacto, porcentaje, variacion, soles, rangoFechas, fecha, fechaSinAnio, mesLargo, mesAnio, diaSemanaLargo } = __m['formato'];
 const { linea, pequenosMultiplos, dumbbell, pendiente, bump, calorHoraDia, calendario, bala, barras, franja, dispersion, etapas, reticula, teselas, aluvial } = __m['formas'];
 
+// Período por defecto de la galería: el último mes cerrado contra el mismo mes del año anterior
 const PERIODO = {
   desde: '2026-09-01', hasta: '2026-09-30',
   compararDesde: '2025-09-01', compararHasta: '2025-09-30',
@@ -1197,166 +1267,194 @@ const PERIODO = {
 };
 const data = generar(CONFIG);
 const v = armarVista(data, PERIODO);
-const L = v.lecturas;
+const L = v.lecturas, P = v.periodo;
 const marca = CONFIG.marca.nombre;
-const periodoTxt = rangoFechas(PERIODO.desde, PERIODO.hasta);
-const compTxt = rangoFechas(PERIODO.compararDesde, PERIODO.compararHasta);
-const cohorteTxt = rangoFechas(PERIODO.cohorteDesde, PERIODO.cohorteHasta);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const mesTxt = (aaaamm) => `${mesCorto(+aaaamm.slice(5))} ${aaaamm.slice(2, 4)}`;
 const mayuscula = (t) => t.charAt(0).toUpperCase() + t.slice(1);
-const mesDelPeriodo = mayuscula(mesLargo(+PERIODO.hasta.slice(5, 7)));
-const mesAnterior = mesLargo(((+PERIODO.desde.slice(5, 7) + 10) % 12) + 1);
-const mesCohorte = mesLargo(+PERIODO.cohorteDesde.slice(5, 7));
-const eventosDelAnio = CONFIG.eventos.filter((e) => e.fecha > v.resultados.calendario[0].fecha).map((e) => `${e.texto.toLowerCase()} (${fecha(e.fecha).replace(/ de \d{4}$/, '')})`).join(', ');
-const display = v.embudo.porCanal.reduce((a, b) => (b.leads < a.leads ? b : a));
+
+// ── Nombres del período, armados desde los filtros ──
+const periodoTxt = rangoFechas(P.desde, P.hasta);
+const periodoNombre = P.mesCompleto ? `${mesLargo(+P.hasta.slice(5, 7))} de ${P.hasta.slice(0, 4)}` : `del ${periodoTxt}`;
+const compTxt = rangoFechas(P.compararDesde, P.compararHasta);
+const compNombre = P.tipoComparacion === 'anio' ? 'un año antes' : `el ${compTxt}`;
+const rotuloPeriodo = P.mesCompleto ? mesAnio(P.hasta.slice(0, 7)) : 'período';
+const rotuloComp = P.mesCompleto && P.tipoComparacion === 'anio' ? mesAnio(P.compararHasta.slice(0, 7)) : 'comparación';
+const cohorteTxt = rangoFechas(PERIODO.cohorteDesde, PERIODO.cohorteHasta);
+const cohorteNombre = PERIODO.cohorteDesde.endsWith('-01') ? mesLargo(+PERIODO.cohorteDesde.slice(5, 7)) : `del ${cohorteTxt}`;
 
 // ── Títulos calculados: dicen la lectura solo si el dato la sostiene; si no, caen al descriptivo ──
 function tituloResultados() {
   const r = v.resultados;
-  if (r.cambio == null) return `Leads diarios, ${periodoTxt}`;
-  if (Math.abs(r.cambio) < 3) return `${mesDelPeriodo} cerró con ${numero(r.leads)} leads, casi igual que un año antes (${variacion(r.cambio)})`;
-  return `${mesDelPeriodo} cerró con ${numero(r.leads)} leads, ${variacion(r.cambio)} contra un año antes`;
+  const base = P.mesCompleto ? `${mayuscula(periodoNombre)} cerró con ${numero(r.leads)} leads` : `${mayuscula(periodoNombre)} entraron ${numero(r.leads)} leads`;
+  const parcial = r.diasParciales.length ? ` (sin contar ${r.diasParciales.length === 1 ? 'un día' : r.diasParciales.length + ' días'} con una fuente caída)` : '';
+  if (r.cambio == null) return `${base}${parcial}; sin comparación: menos del 60 % de días medidos`;
+  const porDia = r.mismoLargo ? '' : ' por día';
+  if (Math.abs(r.cambio) < 3) return `${base}${parcial}, casi igual que ${compNombre} (${variacion(r.cambio)}${porDia})`;
+  return `${base}${parcial}, ${variacion(r.cambio)}${porDia} contra ${compNombre}`;
 }
 function tituloCanales() {
-  const a = L.canalQueRinde, b = L.canalQueNoRinde;
-  if (a && b) return `${a.nombre} trae el ${porcentaje(a.pctLeads)} de los leads con el ${porcentaje(a.pctInversion)} de la inversión; ${b.nombre}, al revés`;
-  if (a) return `${a.nombre} trae el ${porcentaje(a.pctLeads)} de los leads con el ${porcentaje(a.pctInversion)} de la inversión`;
-  return 'Peso de cada canal en inversión y en leads';
+  const a = L.canalQueRinde, s = L.sobreMeta;
+  const partes = [];
+  if (a) partes.push(`${a.nombre} trae el ${porcentaje(a.pctLeads)} de los leads con el ${porcentaje(a.pctInversion)} de la inversión`);
+  if (s.length) partes.push(`${s.map((c) => c.nombre).join(' y ')} ${s.length === 1 ? 'está' : 'están'} sobre su meta de costo por lead`);
+  return partes.length ? partes.join('; ') : 'Peso de cada canal en inversión y en leads';
 }
-const NOMBRE_ETAPA = { leads: 'lead', contactos: 'contacto', citas: 'cita', asisten: 'asistencia', altas: 'inscripción' };
 function tituloEmbudo() {
-  if (!v.embudo.cerrada) return `Etapas de los leads de ${cohorteTxt} (cohorte todavía abierta)`;
-  return `De cada 100 leads de ${mesCohorte}, ${v.embudo.exclusivas[0].de100} se inscribieron; la mayor pérdida está entre ${NOMBRE_ETAPA[L.etapaConMasPerdida.de]} e ${NOMBRE_ETAPA[L.etapaConMasPerdida.a]}`;
+  if (!v.embudo.cerrada) return `Etapas de los leads del ${cohorteTxt}: cohorte abierta, todavía faltan inscripciones por ocurrir`;
+  const p = L.caidaEnPersonas;
+  return `De cada 100 leads de ${cohorteNombre}, ${v.embudo.exclusivas[0].de100} se inscribieron; la mayor parte queda en «${p.nombre.toLowerCase()}» (${p.de100} de cada 100)`;
 }
 function tituloIndice() {
-  const i = v.indice, d = i.cambio;
+  const i = v.indice;
   const motor = [...i.componentes].filter((c) => c.aporte != null).sort((a, b) => b.aporte - a.aporte)[0];
-  return `Índice de oportunidad: ${i.valor} de 100, ${d === 0 ? 'igual que' : d > 0 ? `${d} puntos más que` : `${-d} puntos menos que`} en ${mesAnterior}. Lo sostiene ${motor.nombre.toLowerCase()}`;
+  const base = `Índice de oportunidad: ${i.valor} de 100`;
+  if (i.cambio == null) return `${base}. Lo sostiene ${motor.nombre.toLowerCase()}`;
+  const d = i.cambio;
+  const cmp = d === 0 ? 'igual que' : d > 0 ? `${d} puntos más que` : `${-d} puntos menos que`;
+  return `${base}, ${cmp} al ${fechaSinAnio(P.fechaPrevioIndice)}. Lo sostiene ${motor.nombre.toLowerCase()}`;
 }
 function tituloSedes() {
-  const s = L.sedeQueMasCrece, n = L.sedesNuevas;
-  let t = s ? `${s.nombre} es la sede que más crece (${variacion(s.cambio)})` : 'Leads por sede';
-  if (n.length) t += `; ${n.map((x) => x.nombre).join(' y ')} abrió este año y no tiene con qué compararse`;
-  return t;
+  const partes = [];
+  const s = L.sedeQueMasCrece;
+  if (s) partes.push(`${s.nombre} es la sede que más crece (${variacion(s.cambio)} por día contra ${compNombre})`);
+  L.sedesNuevas.forEach((n) => partes.push(`${n.nombre} abrió el ${fecha(n.abre)} y no tiene con qué compararse`));
+  L.sedesSinAbrir.forEach((n) => partes.push(`${n.nombre} todavía no abría`));
+  return partes.length ? mayuscula(partes.join('; ')) : 'Leads por sede';
 }
 function tituloConversacion() {
   const s = L.sovPropio;
-  if (s.rangoActual < s.rangoInicio) return `${marca} pasó del puesto ${s.rangoInicio} al ${s.rangoActual} en conversación entre gimnasios de Lima`;
-  return `${marca} está en el puesto ${s.rangoActual} de conversación entre gimnasios de Lima`;
+  if (!s.sostenido) return `Participación en la conversación de ${marca} y de la competencia, ${s.meses} meses con data`;
+  const t = s.sostenido;
+  if (t.mejor3 !== t.peor3) return `${marca} alterna entre el puesto ${t.mejor3} y el ${t.peor3} de conversación en los últimos 3 meses; en ${mesLargo(+sovUltimo.mes.slice(5, 7))} quedó ${t.actual}.º`;
+  if (s.sostenido.ahora < s.sostenido.antes) return `${marca} pasó del puesto ${s.sostenido.antes} al ${s.sostenido.ahora} en conversación entre gimnasios de Lima (mediana de los 3 primeros y los 3 últimos meses)`;
+  return `${marca} se mantiene en el puesto ${t.ahora} de conversación entre gimnasios de Lima en los últimos 3 meses`;
 }
 
-// ── Opciones por bloque: cada una dibuja al ancho real de su caja ──
-const meses12 = v.conversacion.meses.map((m) => m.mes);
+// ── Piezas que cambian según el estado ──
+const bandasCpl = (meta) => [...CONFIG.bandasCpl.map((b) => ({ hasta: meta * b.fraccion })), { hasta: Infinity }];
+const zonas = [...new Set(CONFIG.sedes.map((s) => s.zona))];
+const maxSedes = Math.max(...v.sedes.flatMap((s) => [s.leads ?? 0, s.leadsPrevio ?? 0]));
+const notaSede = (s) => (s.estado === 'sin-abrir' ? `abre el ${fechaSinAnio(s.abre)}` : s.estado === 'abrio-en-el-periodo' ? `abrió el ${fechaSinAnio(s.abre)}` : s.estado === 'sin-anterior' ? 'sin año anterior' : null);
+const menor = v.embudo.porCanal.reduce((a, b) => (b.leads < a.leads ? b : a));
+const marcadosCalendario = CONFIG.eventos.filter((e) => e.fecha >= v.resultados.calendario[0].fecha && e.fecha <= CONFIG.corte);
+const aporteExactoTotal = v.indice.componentes.reduce((s, c) => s + (c.aporte ?? 0), 0);
+const sovUltimo = v.conversacion.meses.at(-1), sovPrimero = v.conversacion.meses[0];
+const claseMarca = (m) => (m.propia ? 'p-0' : m.id === 'otros' ? 'g-4' : 'g-2');
+
 const BLOQUES = [
   {
     id: 'resultados', capa: 'Capa 4 · Resultado', pregunta: '¿Cómo le fue al período?', titulo: tituloResultados(),
-    sub: `Leads por día, ${periodoTxt}. En gris, ${compTxt}.`,
+    sub: `Leads por día, ${periodoTxt}. En gris, ${compTxt}. Un día con una fuente caída corta la línea.`,
     opciones: [
       { nombre: 'Línea con el año anterior en gris', recomendada: true,
-        dibujar: (w) => linea({ serie: v.resultados.serie, previa: v.resultados.seriePrevia, ancho: w, alto: Math.round(Math.min(260, w * 0.5)), formatoY: numero, eventos: v.resultados.eventos, etiqueta: 'Leads diarios del período y del mismo tramo del año anterior' }),
+        dibujar: (w) => linea({ serie: v.resultados.serie, previa: v.resultados.seriePrevia, ancho: w, alto: Math.round(Math.min(260, w * 0.5)), formatoY: numero, eventos: v.resultados.eventos, etiqueta: 'Leads diarios del período y de la comparación' }),
         porque: 'Posición sobre una escala común: se ve el nivel y la forma, y la comparación está en el mismo eje. Rectas entre días: no inventa valores.',
         cuandoNo: 'Si el período tiene más de 120 días: el ruido diario tapa la tendencia y conviene semana.' },
-      { nombre: 'Small multiples por canal, eje común',
-        dibujar: (w) => pequenosMultiplos({ paneles: v.resultados.porCanal.map((c) => ({ nombre: c.nombre, serie: c.serie, cambio: variacion(c.cambio), tono: '' })), ancho: Math.max(140, Math.floor((w - 12) / 2)), alto: 84, formatoY: numero }),
+      { nombre: 'Pequeños múltiplos por canal, eje común',
+        dibujar: (w) => pequenosMultiplos({ paneles: v.resultados.porCanal.map((c) => ({ nombre: c.nombre, serie: c.serie, cambio: c.cambio == null ? 'sin comparación' : `${variacion(c.cambio)} por día` })), ancho: Math.max(140, Math.floor((w - 12) / 2)), alto: 84, formatoY: numero }),
         porque: 'Muestra qué canal explica el total sin apilar cuatro líneas en un gráfico.',
         cuandoNo: 'Si la pregunta es el total: obliga a sumar con la vista. Con eje común, los canales chicos se aplastan.' },
       { nombre: 'Calendario de 12 meses',
-        dibujar: (w) => calendario({ dias: v.resultados.calendario, ancho: w, formato: numero, etiqueta: 'Leads por día, últimos 12 meses' }),
-        porque: `Ubica días en un año: feriados y eventos de la data (${eventosDelAnio}).`,
+        dibujar: (w) => calendario({ dias: v.resultados.calendario, ancho: w, formato: numero, marcados: marcadosCalendario, etiqueta: 'Leads por día, últimos 12 meses' }),
+        porque: 'Ubica días en un año: los eventos de la data van con marco y el día sin dato queda punteado.',
         cuandoNo: 'Para leer cifras o comparar dos períodos: el color no da magnitudes exactas.' },
     ],
   },
   {
     id: 'canales', capa: 'Capa 3 · Activación', pregunta: '¿Qué canal rinde más por sol invertido?', titulo: tituloCanales(),
-    sub: `Participación en inversión y en leads, ${periodoTxt}. Suman 100 por el método del mayor resto.`,
+    sub: `Participación en inversión y en leads, ${periodoTxt}, sobre los días que midieron todos los canales. Suman 100 por el método del mayor resto. Metas de costo por lead: supuestas para la muestra.`,
     opciones: [
-      { nombre: 'Dumbbell: % de inversión contra % de leads', recomendada: true,
+      { nombre: 'Pesas: % de inversión contra % de leads', recomendada: true,
         dibujar: (w) => dumbbell({ filas: v.canales.map((c) => ({ nombre: c.nombre, a: c.pctInversion, b: c.pctLeads })), formato: (x) => porcentaje(x), max: 100, ancho: w, rotuloA: '○ % de la inversión', rotuloB: '% de los leads', etiqueta: 'Participación de cada canal en inversión y en leads' }),
-        porque: 'La pregunta es una diferencia, y el largo de la barra entre los dos puntos es la diferencia. Se lee sin ejes.',
+        porque: 'La pregunta es una diferencia, y el largo entre los dos puntos es la diferencia. Se lee sin ejes.',
         cuandoNo: 'Si hay más de 8 canales, o si importa el costo absoluto y no el peso relativo.' },
-      { nombre: 'Bullet: CPL contra su meta',
-        dibujar: (w) => bala({ filas: v.canales.map((c) => ({ nombre: c.nombre, valor: c.cpl, meta: c.metaCpl, bandas: [{ hasta: c.metaCpl * 0.85 }, { hasta: c.metaCpl }, { hasta: 200 }] })), max: Math.ceil(Math.max(...v.canales.map((c) => Math.max(c.cpl, c.metaCpl))) / 10) * 10 + 10, ancho: w, formato: (x) => soles(x, 0), etiqueta: 'Costo por lead de cada canal contra su meta' }),
+      { nombre: 'Bala: costo por lead contra su meta',
+        dibujar: (w) => bala({ filas: v.canales.map((c) => ({ nombre: c.nombre, valor: c.cpl, meta: c.metaCpl, bandas: bandasCpl(c.metaCpl) })), max: Math.ceil(Math.max(...v.canales.map((c) => Math.max(c.cpl, c.metaCpl))) / 10) * 10 + 10, ancho: w, formato: (x) => soles(x, 0), etiqueta: 'Costo por lead de cada canal contra su meta' }),
         porque: 'Cada canal contra su propia meta, con la meta dibujada y el estado escrito, no solo pintado.',
-        cuandoNo: 'Si las metas no están fijadas por el cliente: una meta inventada es un dato inventado.' },
-      { nombre: 'Dispersión: inversión contra CPL',
-        dibujar: (w) => dispersion({ puntos: v.canales.map((c) => ({ nombre: c.nombre, x: c.inversion, y: c.cpl })), fx: (x) => compacto(x), fy: (y) => soles(y), rx: 'inversión del mes', ry: 'costo por lead', refY: v.resultados.cpl, ancho: w, alto: Math.round(Math.min(320, w * 0.62)), etiqueta: 'Inversión y costo por lead por canal' }),
-        porque: 'Dos medidas por canal en un solo plano, con el CPL promedio como referencia.',
+        cuandoNo: 'Si las metas no las fijó el cliente: una meta inventada es un dato inventado.' },
+      { nombre: 'Dispersión: inversión contra costo por lead',
+        dibujar: (w) => dispersion({ puntos: v.canales.map((c) => ({ nombre: c.nombre, x: c.inversion, y: c.cpl })), fx: (x) => `S/ ${compacto(x)}`, fy: (y) => soles(y), rx: 'inversión del período', ry: 'costo por lead', refY: v.resultados.cpl, ancho: w, alto: Math.round(Math.min(320, w * 0.62)), etiqueta: 'Inversión y costo por lead por canal' }),
+        porque: 'Dos medidas por canal en un solo plano, con el costo por lead promedio como referencia.',
         cuandoNo: 'Con cuatro puntos es un gráfico grande para poca data: la tabla dice lo mismo.' },
     ],
   },
   {
     id: 'embudo', capa: 'Capa 4 · Resultado', pregunta: '¿Dónde se pierden los leads?', titulo: tituloEmbudo(),
-    sub: `Cohorte de leads que entraron del ${cohorteTxt}, seguida hasta el ${fecha(CONFIG.corte)}. Cohorte cerrada: todas sus inscripciones ya pudieron ocurrir.`,
+    sub: `Cohorte de leads que entraron del ${cohorteTxt}, seguida hasta el ${fecha(CONFIG.corte)}. ${v.embudo.cerrada ? 'Cohorte cerrada: todas sus inscripciones ya pudieron ocurrir.' : 'Cohorte abierta: las cifras van a crecer.'}`,
     opciones: [
       { nombre: 'Etapas desde una base común', recomendada: true,
-        dibujar: (w) => etapas({ filas: v.embudo.etapas.map((e) => ({ nombre: { leads: 'Leads', contactos: 'Contactados', citas: 'Agendaron visita', asisten: 'Fueron', altas: 'Se inscribieron' }[e.id], valor: e.valor })), ancho: w, etiqueta: `Etapas de la cohorte de ${mesCohorte}` }),
+        dibujar: (w) => etapas({ filas: v.embudo.etapas.map((e) => ({ nombre: { leads: 'Leads', contactos: 'Contactados', citas: 'Agendaron visita', asisten: 'Fueron', altas: 'Se inscribieron' }[e.id], valor: e.valor })), ancho: w, etiqueta: `Etapas de la cohorte de ${cohorteNombre}` }),
         porque: 'Largo desde una base común: se compara cada etapa con la primera y con la anterior, que va rotulada.',
         cuandoNo: 'Si las etapas no son de la misma cohorte: entonces una etapa puede ser más grande que la anterior y la forma miente.' },
       { nombre: 'Retícula de 100',
-        dibujar: (w) => reticula({ partes: v.embudo.exclusivas.map((e) => ({ nombre: e.nombre, valor: e.valor })), lado: Math.max(16, Math.min(24, Math.floor((w - 8) / 10 / 1.6))), etiqueta: `De cada 100 leads de ${mesCohorte}, dónde terminó cada uno` }),
-        porque: 'Cuenta en personas: «8 de cada 100» se recuerda mejor que «8,2 %». Los cinco destinos son excluyentes y suman 100.',
+        dibujar: (w) => reticula({ partes: v.embudo.exclusivas.map((e) => ({ nombre: e.nombre, valor: e.valor })), lado: Math.max(16, Math.min(24, Math.floor((w - 8) / 10 / 1.6))), etiqueta: `De cada 100 leads de ${cohorteNombre}, dónde terminó cada uno` }),
+        porque: `Cuenta en personas: «${v.embudo.exclusivas[0].de100} de cada 100» se recuerda mejor que «${porcentaje(v.embudo.tasaAlta * 100, 1)}». Los cinco destinos son excluyentes y suman 100.`,
         cuandoNo: 'Si la parte que importa es menor a 1 de cada 100: desaparece.' },
-      { nombre: 'Aluvial: canal → destino',
-        dibujar: (w) => aluvial({ origenes: v.embudo.porCanal.map((c) => ({ nombre: c.nombre, destinos: c.destinos })), destinos: v.embudo.exclusivas.map((e) => ({ id: e.id, nombre: e.nombre })), ancho: w, alto: Math.round(Math.min(320, w * 0.6)), etiqueta: `Recorrido de los leads de ${mesCohorte}, de canal a destino` }),
-        porque: 'Es honesto aquí porque la cohorte está cerrada y cada cinta es un conteo real. Es el momento «no lo había visto» del bloque.',
-        cuandoNo: `Con cohorte abierta (habría que agregar «aún en curso»), o para comparar tasas entre canales: ${display.nombre} tiene ${numero(display.leads)} leads y su tasa es ruido.` },
+      { nombre: 'Aluvial: de canal a destino',
+        dibujar: (w) => (v.embudo.cerrada
+          ? aluvial({ origenes: v.embudo.porCanal.map((c) => ({ nombre: c.nombre, destinos: c.destinos })), destinos: v.embudo.exclusivas.map((e) => ({ id: e.id, nombre: e.nombre })), ancho: w, alto: Math.round(Math.min(320, w * 0.6)), etiqueta: `Recorrido de los leads de ${cohorteNombre}, de canal a destino` })
+          : '<p class="nota-estado">Cohorte abierta: el aluvial no se dibuja hasta que todas las inscripciones puedan haber ocurrido.</p>'),
+        porque: 'Es honesto solo con la cohorte cerrada, porque cada cinta es un conteo real. Es el momento «no lo había visto» del bloque.',
+        cuandoNo: `Con cohorte abierta, o para comparar tasas entre canales: ${menor.nombre} tiene ${numero(menor.leads)} leads y su tasa es ruido.` },
     ],
   },
   {
     id: 'indice', capa: 'Capa 2 · Decisión', pregunta: '¿Es buen momento para invertir?', titulo: tituloIndice(),
-    sub: `Índice de 0 a 100, suma ponderada de cinco componentes medidos al ${fecha(PERIODO.hasta)}. Los aportes suman el índice. Lectura del modelo.`,
+    sub: `Índice de 0 a 100, suma ponderada de ${PESOS_INDICE.length} componentes medidos al ${fecha(P.hasta)}. Lectura del modelo. Bandas de lectura supuestas para la muestra.`,
     opciones: [
-      { nombre: 'Bullet 0 a 100 con aportes', recomendada: true,
-        dibujar: (w) => bala({ filas: [{ nombre: 'Índice', valor: v.indice.valor, meta: v.indice.previo, rotuloMarca: mesAnterior, bandas: [{ hasta: 40 }, { hasta: 70 }, { hasta: 100 }] }], max: 100, menosEsMejor: null, ancho: w, formato: (x) => numero(x), etiqueta: 'Índice de oportunidad contra el mes anterior' })
-          + franja({ partes: v.indice.componentes.filter((c) => c.aporte).map((c) => ({ nombre: c.nombre, valor: c.aporte })), ancho: w, formato: () => '', etiqueta: 'Aporte de cada componente al índice' })
-          + `<ul class="aportes">${v.indice.componentes.map((c, i) => `<li><span class="muestra p-${i}"></span>${esc(c.nombre)} <b>${c.aporte ?? 'no medido'}</b><span class="nota"> · puntaje ${c.puntaje ?? 'sin dato'} × peso ${porcentaje(c.pesoEfectivo * 100)}</span></li>`).join('')}</ul>`,
-        porque: 'Escala lineal en lugar de un medidor: el largo se compara con precisión, la marca es el mes anterior y los aportes muestran qué lo mueve.',
+      { nombre: 'Bala de 0 a 100 con aportes', recomendada: true,
+        dibujar: (w) => bala({ filas: [{ nombre: 'Índice', valor: v.indice.valor, meta: v.indice.previo ?? v.indice.valor, rotuloMarca: v.indice.previo == null ? '' : fechaSinAnio(P.fechaPrevioIndice), bandas: CONFIG.bandasIndice }], max: 100, menosEsMejor: null, ancho: w, formato: (x) => numero(x), etiqueta: 'Índice de oportunidad contra el día anterior al período' })
+          + franja({ partes: v.indice.componentes.map((c, i) => ({ nombre: c.nombre, valor: c.aporte ?? 0, pct: null, clase: `p-${i}` })), ancho: w, etiqueta: 'Aporte de cada componente al índice' })
+          + `<ul class="aportes">${v.indice.componentes.map((c, i) => `<li><span class="muestra p-${i}"></span>${esc(c.nombre)} <b>${c.aporte == null ? 'sin dato' : numero(c.aporte, 1)}</b><span class="nota"> · puntaje ${c.puntaje == null ? 'sin dato' : numero(c.puntaje)} × peso ${porcentaje(c.pesoEfectivo * 100)}</span></li>`).join('')}<li class="nota">Suman ${numero(aporteExactoTotal, 1)}, que se redondea a ${v.indice.valor}.</li></ul>`,
+        porque: 'Escala lineal en lugar de un medidor: el largo se compara con precisión, la raya es el valor anterior y los aportes muestran qué lo mueve.',
         cuandoNo: 'Si el cliente no entiende que es una lectura del modelo: entonces va con la palabra «sugerencia» y su fecha.' },
       { nombre: 'Línea de 12 meses',
-        dibujar: (w) => linea({ serie: v.indice.historia.map((h) => ({ fecha: h.fecha, valor: h.valor })), ancho: w, alto: Math.round(Math.min(220, w * 0.45)), formatoY: numero, etiqueta: 'Índice de oportunidad mensual' }),
-        porque: 'Pone el valor de hoy en su historia: enero alto, invierno bajo.',
+        dibujar: (w) => linea({ serie: v.indice.historia.map((h) => ({ fecha: h.fecha, valor: h.valor })), ancho: w, alto: Math.round(Math.min(220, w * 0.45)), formatoY: numero, etiqueta: 'Índice de oportunidad al cierre de cada mes' }),
+        porque: 'Pone el valor de hoy en sus 12 meses. Un mes con algún componente sin medir no se dibuja junto a los completos.',
         cuandoNo: 'Si la pregunta es qué lo mueve: la línea no muestra componentes.' },
-      { nombre: 'Componentes con su puntaje',
-        dibujar: (w) => barras({ filas: v.indice.componentes.map((c) => ({ nombre: c.nombre, valor: c.puntaje ?? 0 })), ancho: w, formato: (x) => `${numero(x)} de 100`, etiqueta: 'Puntaje de cada componente' }),
+      { nombre: 'Puntaje de cada componente',
+        dibujar: (w) => barras({ filas: v.indice.componentes.map((c) => ({ nombre: c.nombre, valor: c.puntaje == null ? null : Math.round(c.puntaje) })), max: 100, ancho: w, formato: (x) => `${numero(x)} de 100`, etiqueta: 'Puntaje de cada componente' }),
         porque: 'Muestra dónde está fuerte o débil cada componente, sin el peso.',
         cuandoNo: 'Si se lee como contribución: un puntaje alto con poco peso aporta poco. Hay que escribirlo.' },
     ],
   },
   {
     id: 'sedes', capa: 'Capa 3 · Activación', pregunta: '¿Qué sede crece?', titulo: tituloSedes(),
-    sub: `Leads por sede, ${periodoTxt}. La raya marca ${compTxt}.`,
+    sub: `Leads por sede, ${periodoTxt}. La raya marca ${compTxt}. Todas las zonas en la misma escala.`,
     opciones: [
       { nombre: 'Lista ordenada por zona', recomendada: true,
-        dibujar: (w) => ['Lima Moderna', 'Lima Norte', 'Lima Este'].map((z) => `<p class="grupo">${z}</p>` + barras({ filas: v.sedes.filter((s) => s.zona === z).sort((a, b) => b.leads - a.leads).map((s) => ({ nombre: s.nombre, valor: s.leads, previo: s.leadsPrevio, nota: s.leadsPrevio == null ? `nueva, ${mesCorto(+s.abre.slice(5, 7))} ${s.abre.slice(2, 4)}` : null })), ancho: w, formato: (x) => numero(x), etiqueta: `Leads por sede en ${z}` })).join(''),
-        porque: 'Largo sobre una escala común, ordenado: la sede que más pesa arriba. La zona agrupa sin un mapa que distorsione por superficie.',
+        dibujar: (w) => {
+          const margen = Math.min(Math.round(w * 0.45), 14 + Math.ceil(Math.max(...v.sedes.map((s) => s.nombre.length)) * 6.9));
+          return zonas.map((z) => `<p class="grupo">${esc(z)}</p>` + barras({ filas: v.sedes.filter((s) => s.zona === z).sort((a, b) => (b.leads ?? -1) - (a.leads ?? -1)).map((s) => ({ nombre: s.nombre, valor: s.leads, previo: s.leadsPrevio, nota: notaSede(s) })), max: maxSedes, margen, margenDer: v.sedes.some((s) => notaSede(s)) ? 150 : 70, ancho: w, formato: (x) => numero(x), etiqueta: `Leads por sede en ${z}` })).join('');
+        },
+        porque: 'Largo sobre una escala común a las tres zonas, ordenado: la sede que más pesa arriba. La zona agrupa sin un mapa que distorsione por superficie.',
         cuandoNo: 'Si la pregunta es de cercanía entre sedes (canibalización): ahí sí hace falta ubicación.' },
       { nombre: 'Teselas de distritos',
-        dibujar: (w) => teselas({ items: v.sedes.map((s) => ({ nombre: s.nombre, corto: s.corto, col: s.col, fila: s.fila, valor: s.leads, cambio: s.cambio })), lado: Math.min(96, Math.floor(w / 4)), formato: numero, etiqueta: 'Leads por sede ubicados por distrito' }),
+        dibujar: (w) => teselas({ items: v.sedes.map((s) => ({ nombre: s.nombre, corto: s.corto, col: s.col, fila: s.fila, valor: s.leads, cambio: s.cambio, nota: notaSede(s) })), lado: Math.min(96, Math.floor(w / 4)), formato: numero, etiqueta: 'Leads por sede ubicados por distrito' }),
         porque: 'Ubica Lima Norte, Moderna y Este con teselas iguales: ningún distrito pesa más por su superficie.',
         cuandoNo: 'Si la posición se lee como mapa exacto: no lo es, y conviene decirlo.' },
-      { nombre: 'Dumbbell: año anterior contra este año',
-        dibujar: (w) => dumbbell({ filas: v.sedes.filter((s) => s.leadsPrevio != null).sort((a, b) => b.leads - a.leads).map((s) => ({ nombre: s.nombre, a: s.leadsPrevio, b: s.leads })), formato: numero, ancho: w, rotuloA: `○ ${mesTxt(PERIODO.compararHasta.slice(0, 7))}`, rotuloB: mesTxt(PERIODO.hasta.slice(0, 7)), etiqueta: 'Leads por sede, un año antes y ahora' }),
+      { nombre: 'Pesas: antes contra ahora',
+        dibujar: (w) => dumbbell({ filas: v.sedes.filter((s) => s.leadsPrevio != null && s.leads != null).sort((a, b) => b.leads - a.leads).map((s) => ({ nombre: s.nombre, a: s.leadsPrevio, b: s.leads })), formato: numero, ancho: w, rotuloA: `○ ${rotuloComp}`, rotuloB: rotuloPeriodo, etiqueta: 'Leads por sede, antes y ahora' }),
         porque: 'El cambio de cada sede es el largo entre los puntos.',
         cuandoNo: 'Las sedes nuevas no tienen punto anterior: quedan fuera y hay que decirlo al pie.' },
     ],
   },
   {
     id: 'conversacion', capa: 'Capa 1 · Señales', pregunta: '¿Cómo va la conversación contra la competencia?', titulo: tituloConversacion(),
-    sub: 'Share of voice mensual en redes, entre gimnasios de Lima. Marcas reales con data de muestra: solo menciones, sin sentimiento ni juicios.',
+    sub: 'Participación mensual en la conversación en redes (share of voice), entre gimnasios de Lima. Marcas reales con data de muestra: solo menciones, sin sentimiento ni juicios.',
     muestra: true,
     opciones: [
-      { nombre: 'Slope: hace un año contra ahora', recomendada: true,
-        dibujar: (w) => pendiente({ filas: v.conversacion.meses[0].marcas.filter((m) => m.id !== 'otros').map((m) => ({ nombre: m.nombre, a: m.pct, b: v.conversacion.meses.at(-1).marcas.find((x) => x.id === m.id).pct })), formato: (x) => porcentaje(x), rotuloA: mesTxt(meses12[0]), rotuloB: mesTxt(meses12.at(-1)), ancho: w, alto: 260, resaltar: [marca], etiqueta: 'Share of voice, primer y último mes' }),
-        porque: 'Dos momentos, una escala: quién sube y quién baja se ve por la pendiente, con su cifra. El cruce con b2 se ve sin el zigzag del mes a mes.',
-        cuandoNo: 'Si importa lo que pasó en el medio: el slope lo esconde.' },
-      { nombre: 'Bump chart mensual',
-        dibujar: (w) => bump({ series: v.conversacion.ranking, semanas: meses12.map((m) => m + '-01'), ancho: w, alto: 230, etiqueta: 'Puesto de cada marca en conversación, por mes' }),
+      { nombre: 'Pendiente: hace un año contra ahora', recomendada: true,
+        dibujar: (w) => pendiente({ filas: sovPrimero.marcas.filter((m) => m.id !== 'otros').map((m) => ({ nombre: m.nombre, a: m.pct, b: sovUltimo.marcas.find((x) => x.id === m.id).pct })), formato: (x) => porcentaje(x), rotuloA: mesAnio(sovPrimero.mes), rotuloB: mesAnio(sovUltimo.mes), ancho: w, alto: 260, resaltar: [marca], etiqueta: 'Participación en la conversación, primer y último mes' }),
+        porque: 'Dos momentos, una escala: quién sube y quién baja se ve por la pendiente, con su cifra, sin el zigzag del mes a mes.',
+        cuandoNo: 'Si importa lo que pasó en el medio: la pendiente lo esconde.' },
+      { nombre: 'Puestos mes a mes',
+        dibujar: (w) => bump({ series: v.conversacion.ranking, semanas: v.conversacion.meses.map((m) => m.mes + '-01'), ancho: w, alto: 230, etiqueta: 'Puesto de cada marca en conversación, por mes' }),
         porque: 'Muestra el puesto mes a mes. Mensual y no semanal: con semanas, el ruido cruza las líneas.',
-        cuandoNo: 'Cuando dos marcas están casi empatadas, como aquí: el puesto cambia por un punto y la línea zigzaguea sin que haya un cambio real.' },
-      { nombre: 'Franja de proporción del mes',
-        dibujar: (w) => franja({ partes: v.conversacion.meses.at(-1).marcas.map((m) => ({ nombre: m.nombre, valor: m.menciones })), ancho: w, leyenda: true, etiqueta: 'Share of voice del último mes' }),
-        porque: 'Partes de un todo que suman 100 con «Otros» incluido.',
+        cuandoNo: 'Cuando dos marcas están casi empatadas: el puesto cambia por un punto y la línea zigzaguea sin un cambio real.' },
+      { nombre: 'Franja del último mes',
+        dibujar: (w) => franja({ partes: sovUltimo.marcas.map((m) => ({ nombre: m.nombre, valor: m.menciones, pct: m.pct, clase: claseMarca(m) })), ancho: w, leyenda: true, etiqueta: 'Participación en la conversación del último mes' }),
+        porque: 'Partes de un todo que suman 100 con «Otros» incluido; solo la marca propia va en color.',
         cuandoNo: 'Para ver cambio en el tiempo, que es la pregunta del bloque.' },
     ],
   },
@@ -1389,8 +1487,8 @@ document.getElementById('extra').innerHTML = `
     <header class="bloque-cab">
       <p class="capa">Capa 3 · Activación</p>
       <h2 id="t-hora">¿A qué hora entra el lead?</h2>
-      <p class="titulo-calculado">El pico del período fue el ${diaSemanaLargo(pico.dia)} a las ${pico.hora} h, con ${numero(pico.v)} leads acumulados en esa hora</p>
-      <p class="sub">Leads por hora y día de la semana, ${periodoTxt}. Un solo tono, de menos a más. Sin alternativa: las otras formas (líneas por día, barras por franja) piden más espacio para decir lo mismo.</p>
+      <p class="titulo-calculado">En promedio, la hora con más leads es el ${diaSemanaLargo(pico.dia)} a las ${pico.hora} h, con ${numero(pico.v, 1)} leads</p>
+      <p class="sub">Promedio de leads por hora para cada día de la semana, ${periodoTxt}; un mes tiene 4 o 5 de cada día, por eso se promedia y no se suma. Un solo tono, de menos a más. Sin alternativa: líneas por día o barras por franja piden más espacio para decir lo mismo.</p>
     </header>
     <div class="lienzo ancho" data-extra="hora"></div>
   </section>`;
@@ -1402,7 +1500,7 @@ function pintar() {
     el.innerHTML = b.opciones[+el.dataset.opcion].dibujar(w);
   });
   const h = document.querySelector('[data-extra="hora"]');
-  h.innerHTML = calorHoraDia({ matriz: v.horaDia, horas: Array.from({ length: 24 }, (_, i) => i), ancho: Math.max(320, h.clientWidth), etiqueta: 'Leads por hora y día de la semana' });
+  h.innerHTML = calorHoraDia({ matriz: v.horaDia, horas: Array.from({ length: 24 }, (_, i) => i), ancho: Math.max(320, h.clientWidth - 32), formato: (x) => numero(x, 1), etiqueta: 'Promedio de leads por hora y día de la semana' });
 }
 pintar();
 let espera;
@@ -1416,8 +1514,8 @@ function aplicar() {
   const id = leer('galeria-identidad') || 'a';
   html.dataset.identidad = id;
   document.querySelectorAll('[data-pone-identidad]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.poneIdentidad === id)));
-  const tema = html.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  document.querySelectorAll('[data-pone-tema]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.poneTema === tema)));
+  const tema = id === 'b' ? 'dark' : html.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.querySelectorAll('[data-pone-tema]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.poneTema === tema)); b.disabled = id === 'b'; });
   document.getElementById('nota-b').hidden = id !== 'b';
 }
 document.querySelectorAll('[data-pone-identidad]').forEach((b) => b.addEventListener('click', () => { guardar('galeria-identidad', b.dataset.poneIdentidad); aplicar(); }));
