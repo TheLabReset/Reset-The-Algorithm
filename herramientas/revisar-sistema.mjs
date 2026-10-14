@@ -3,7 +3,7 @@
 //  2. Tamaños de letra, espacios, radios, sombras y duraciones salen de tokens.
 //  3. Huérfanos en las dos direcciones: todo primitivo lo usa un semántico, todo semántico lo usa un componente,
 //     y ningún componente usa un primitivo ni un token que no existe.
-//  4. Los dos bloques del tema claro (preferencia del sistema y botón) son idénticos.
+//  4. Los dos bloques del tema alterno (preferencia del sistema y botón) son idénticos.
 //  5. Contraste WCAG medido de cada token de texto y de gráfico sobre cada superficie, en los dos temas.
 // La función revisar() es pura: recibe { ruta: contenido } y devuelve errores. La prueba negativa la usa con archivos sembrados.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -14,13 +14,17 @@ import { quitarComentarios, bloquesDeTokens, contraste } from '../src/sistema/le
 export { contraste };
 
 export const TOKENS = 'src/sistema/tokens.css';
-const SUPERFICIES = ['fondo', 'superficie', 'superficie-banda', 'superficie-alcance', 'elevada'];
+const SUPERFICIES = ['fondo', 'superficie-capitulo', 'superficie', 'superficie-alcance', 'elevada'];
+// los gráficos solo viven dentro de tarjetas
+const SUPERFICIES_GRAFICO = ['superficie', 'superficie-alcance'];
 // texto: 4,5:1 sobre toda superficie (WCAG 1.4.3)
 const TEXTO = ['texto-1', 'texto-2', 'texto-3', 'acento-texto', 'mejora', 'empeora', 'atencion'];
-// marcas que hay que ver: 3:1 sobre toda superficie (WCAG 1.4.11)
-const GRAFICO = ['borde-control', 'acento', 'foco', 's1', 's2', 's3', 's4', 's5', 'previa'];
+// marcas de interfaz que hay que ver: 3:1 sobre toda superficie (WCAG 1.4.11)
+const INTERFAZ = ['borde-control', 'acento', 'foco'];
+// marcas de datos: 3:1 sobre las superficies donde hay gráficos
+const GRAFICO = ['s1', 's2', 's3', 's4', 's5', 'previa'];
 // pares fijos: texto sobre un relleno
-const PARES = [['sobre-acento', 'acento', 4.5]];
+const PARES = [['sobre-seleccion', 'seleccion', 4.5], ['sobre-barra', 'barra', 4.5], ['sobre-barra-2', 'barra', 4.5]];
 
 const PROP_COLOR = /^(color|background(-color)?|fill|stroke|border(-(top|right|bottom|left))?(-color)?|outline(-color)?|box-shadow|text-decoration-color|caret-color|accent-color)$/;
 const NOMBRADOS = /\b(white|black|red|green|blue|gray|grey|purple|violet|orange|yellow|pink|navy|silver|maroon|teal|aqua|fuchsia|lime|olive)\b/i;
@@ -31,7 +35,7 @@ export function revisar(archivos) {
   const err = (ruta, msg) => errores.push(`${ruta}: ${msg}`);
   const tokensCss = archivos[TOKENS];
   if (!tokensCss) return { errores: [`falta ${TOKENS}`], informe: [] };
-  const { base, claroMedia, claroBoton, todas } = bloquesDeTokens(tokensCss);
+  const { base, altMedia, altBoton, todas, temaBase, temaAlterno } = bloquesDeTokens(tokensCss);
   const primitivos = Object.keys(base).filter((k) => k.startsWith('p-'));
   const semanticos = Object.keys(todas).filter((k) => !k.startsWith('p-'));
   const otros = Object.entries(archivos).filter(([r]) => r !== TOKENS);
@@ -75,11 +79,12 @@ export function revisar(archivos) {
   for (const s of semanticos) if (!usados.has(s)) err(TOKENS, `semántico huérfano --${s}: ningún componente lo usa`);
   for (const u of usados) if (!(u in todas) && !definidosFuera.has(u)) err('src', `--${u} se usa pero no está declarado`);
 
-  // 4 · los dos bloques claros iguales, y cada semántico de color del claro existe en el base
-  const claves = new Set([...Object.keys(claroMedia), ...Object.keys(claroBoton)]);
+  // 4 · los dos bloques del tema alterno iguales, y cada semántico del alterno existe en el base
+  if (!Object.keys(altBoton).length) err(TOKENS, `falta el bloque :root[data-theme] del tema ${temaAlterno}`);
+  const claves = new Set([...Object.keys(altMedia), ...Object.keys(altBoton)]);
   for (const k of claves) {
-    if (claroMedia[k] !== claroBoton[k]) err(TOKENS, `--${k} difiere entre el claro por preferencia (${claroMedia[k]}) y el claro por botón (${claroBoton[k]})`);
-    if (!(k in base)) err(TOKENS, `--${k} existe solo en el tema claro; todo token se declara primero en :root`);
+    if (altMedia[k] !== altBoton[k]) err(TOKENS, `--${k} difiere entre el ${temaAlterno} por preferencia (${altMedia[k]}) y el ${temaAlterno} por botón (${altBoton[k]})`);
+    if (!(k in base)) err(TOKENS, `--${k} existe solo en el tema ${temaAlterno}; todo token se declara primero en :root`);
   }
 
   // 5 · contraste
@@ -89,7 +94,7 @@ export function revisar(archivos) {
     for (let i = 0; i < 4 && v && v.startsWith('var('); i++) { const r = v.match(/var\(--([\w-]+)\)/)[1]; v = tema[r] ?? base[r]; }
     return v && /^#[0-9a-f]{3,8}$/i.test(v) ? v : null;
   };
-  for (const [nombre, tema] of [['oscuro', base], ['claro', { ...base, ...claroBoton }]]) {
+  for (const [nombre, tema] of [[temaBase, base], [temaAlterno, { ...base, ...altBoton }]]) {
     const medir = (a, b, minimo, tipo) => {
       const ca = resolver(tema, a), cb = resolver(tema, b);
       if (!ca || !cb) { err(TOKENS, `no se pudo resolver --${a} o --${b} en el tema ${nombre}`); return; }
@@ -98,7 +103,8 @@ export function revisar(archivos) {
       if (c < minimo) err(TOKENS, `contraste de --${a} sobre --${b} en ${nombre}: ${c.toFixed(2)}:1, mínimo ${minimo}:1`);
     };
     for (const t of TEXTO) for (const s of SUPERFICIES) medir(t, s, 4.5, 'texto');
-    for (const g of GRAFICO) for (const s of SUPERFICIES) medir(g, s, 3, 'gráfico');
+    for (const g of INTERFAZ) for (const s of SUPERFICIES) medir(g, s, 3, 'interfaz');
+    for (const g of GRAFICO) for (const s of SUPERFICIES_GRAFICO) medir(g, s, 3, 'gráfico');
     for (const [a, b, min] of PARES) medir(a, b, min, 'par');
   }
   return { errores, informe, primitivos: primitivos.length, semanticos: semanticos.length };
@@ -123,7 +129,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { errores, informe, primitivos, semanticos } = revisar(leerSrc(raiz));
   const peor = (tipo) => informe.filter((f) => f.tipo === tipo).sort((a, b) => a.contraste - b.contraste)[0];
   console.log(`Quincha · ${primitivos} primitivos, ${semanticos} semánticos, ${informe.length} pares de contraste medidos`);
-  for (const t of ['texto', 'gráfico', 'par']) { const p = peor(t); if (p) console.log(`  peor ${t}: --${p.token} sobre --${p.sobre} (${p.tema}) ${p.contraste}:1, mínimo ${p.minimo}:1`); }
+  for (const t of ['texto', 'interfaz', 'gráfico', 'par']) { const p = peor(t); if (p) console.log(`  peor ${t}: --${p.token} sobre --${p.sobre} (${p.tema}) ${p.contraste}:1, mínimo ${p.minimo}:1`); }
   if (errores.length) { console.error(`\n${errores.length} problema(s):\n` + errores.map((e) => '  · ' + e).join('\n')); process.exit(1); }
   console.log('Sin problemas.');
 }

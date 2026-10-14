@@ -1,32 +1,6 @@
-// Piezas comunes de las pantallas: cabecera de capa, veredicto y chips de fuentes de una sección.
-import { IndiceCapa, Seccion } from '../sistema/Componentes.jsx';
+// Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
+import { IndiceCapa, Seccion, FuentesCapa } from '../sistema/Componentes.jsx';
 import { fechaCorta, numero } from '../sistema/formato.js';
-
-export function CabeceraCapa({ capa, veredicto }) {
-  return (
-    <>
-      <div className="q-envoltura">
-        <div className="q-capa-cab">
-          <div>
-            <h1><em>{capa.numero}</em> {capa.titulo}</h1>
-            <p>{capa.bajada}</p>
-          </div>
-          {veredicto}
-        </div>
-      </div>
-      <IndiceCapa secciones={capa.secciones} etiqueta={`Secciones de ${capa.nombre}`} />
-    </>
-  );
-}
-
-export function Veredicto({ rotulo, children }) {
-  return (
-    <aside className="q-veredicto" aria-label={rotulo}>
-      <span className="q-veredicto-rotulo">{rotulo}</span>
-      <div className="q-veredicto-texto">{children}</div>
-    </aside>
-  );
-}
 
 // Chips de fuentes: estado y fecha de corte, o los días sin dato del período
 export function fuentesDe(ids, vista) {
@@ -37,10 +11,28 @@ export function fuentesDe(ids, vista) {
   }));
 }
 
-// Sección con sus chips ya resueltos desde la estructura de capas
+// Marco de una capa: índice fijo al costado y, al centro, cabecera, resumen y capítulos
+export function MarcoCapa({ capa, vista, bajada, children }) {
+  const ids = [...new Set(capa.secciones.flatMap((s) => s.fuentes))];
+  return (
+    <div className="q-envoltura q-capa-marco">
+      <IndiceCapa secciones={capa.secciones} etiqueta={`Capítulos de ${capa.nombre}`} />
+      <div className="q-capa">
+        <header className="q-capa-cab">
+          <h1>{capa.titulo}</h1>
+          <p>{bajada || capa.bajada}</p>
+          {ids.length > 0 && <FuentesCapa fuentes={fuentesDe(ids, vista)} />}
+        </header>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Capítulo con sus avisos de fuente ya resueltos desde la estructura de capas
 export function SeccionDe({ def, vista, children }) {
   return (
-    <Seccion id={def.id} numero={def.numero} titulo={def.titulo} pregunta={def.pregunta} universos={def.universos} fuentes={fuentesDe(def.fuentes, vista)}>
+    <Seccion id={def.id} numero={def.numero} titulo={def.titulo} pregunta={def.pregunta} fuentes={fuentesDe(def.fuentes, vista)}>
       {children}
     </Seccion>
   );

@@ -1,6 +1,6 @@
-# Social Listening Meta - Apify Actor (The Algorithm by Reset)
+# Social Listening Meta - Apify Actor (The Algorithm by The Lab)
 
-Actor de Apify para análisis de social listening en Facebook/Meta. Parte de **The Algorithm by Reset**, configurable para cualquier cliente.
+Actor de Apify para análisis de social listening en Facebook/Meta. Parte de **The Algorithm by The Lab**, configurable para cualquier cliente.
 
 ## Funcionalidades
 
@@ -278,4 +278,4 @@ npm start
 
 ## Licencia
 
-MIT - Reset Agency
+MIT - The Lab

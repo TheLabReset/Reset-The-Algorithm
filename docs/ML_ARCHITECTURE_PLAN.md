@@ -1,4 +1,4 @@
-# Plan de Arquitectura ML - The Algorithm by Reset
+# Plan de Arquitectura ML - The Algorithm by The Lab
 
 ## Resumen Ejecutivo
 
@@ -847,5 +847,5 @@ ml/
 
 ---
 
-*Documento preparado para The Algorithm by Reset*
+*Documento preparado para The Algorithm by The Lab*
 *Versión 1.0 - Enero 2026*

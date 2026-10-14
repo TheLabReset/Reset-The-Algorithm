@@ -2,7 +2,7 @@
   "name": "the-algorithm-scrapers",
   "version": "1.1.0",
   "type": "module",
-  "description": "Data scrapers for The Algorithm by Reset - Social Intelligence Template",
+  "description": "Data scrapers for The Algorithm by The Lab - Social Intelligence Template",
   "main": "index.js",
   "scripts": {
     "scrape:all": "npm run scrape:trends && npm run scrape:tiktok && npm run scrape:meta",
@@ -18,7 +18,7 @@
     "social-listening",
     "apify"
   ],
-  "author": "Reset Agency",
+  "author": "The Lab",
   "license": "UNLICENSED",
   "dependencies": {
     "apify-client": "^2.9.0",

@@ -45,11 +45,13 @@ test('atrapa huérfanos en las dos direcciones', () => {
   assert.ok(revisar({ [TOKENS]: tokens, 'src/ok.css': '.x { color: var(--texto-1); }' }).errores.some((e) => e.includes('semántico huérfano')));
 });
 
-test('atrapa contraste insuficiente y temas claros que no coinciden', () => {
-  const bajo = tokens.replace('--texto-3: var(--p-gris-400);', '--texto-3: var(--p-gris-700);');
+test('atrapa contraste insuficiente y temas alternos que no coinciden', () => {
+  const bajo = tokens.replace('--texto-3: var(--p-n-600);', '--texto-3: var(--p-n-300);');
+  assert.notEqual(bajo, tokens);
   assert.ok(revisar({ [TOKENS]: bajo, 'src/ok.css': usaTodo }).errores.some((e) => e.includes('contraste de --texto-3')));
-  const distinto = tokens.replace(/(:root\[data-theme="light"\] \{[\s\S]*?--riel: )var\(--p-gris-300\)/, '$1var(--p-gris-400)');
-  assert.ok(revisar({ [TOKENS]: distinto, 'src/ok.css': usaTodo }).errores.some((e) => e.includes('--riel difiere')));
+  const distinto = tokens.replace(/(:root\[data-theme="dark"\] \{[\s\S]*?--borde: )var\(--p-o-750\)/, '$1var(--p-o-700)');
+  assert.notEqual(distinto, tokens);
+  assert.ok(revisar({ [TOKENS]: distinto, 'src/ok.css': usaTodo }).errores.some((e) => e.includes('--borde difiere')));
 });
 
 test('el contraste coincide con valores de referencia WCAG', () => {

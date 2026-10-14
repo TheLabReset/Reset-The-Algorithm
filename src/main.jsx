@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '@fontsource-variable/montserrat';
-import '@fontsource/bebas-neue';
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/atkinson-hyperlegible-next';
 import './sistema/tokens.css';
 import './sistema/base.css';
 import './sistema/componentes.css';

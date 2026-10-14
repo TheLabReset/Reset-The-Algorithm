@@ -1,4 +1,4 @@
-# The Algorithm by Reset — Playbook de Adaptación para Nuevos Clientes
+# The Algorithm by The Lab — Playbook de Adaptación para Nuevos Clientes
 
 > **Cómo usar este archivo:** Cuando el usuario diga "lee el playbook y adaptemos para [Cliente]" o similar, lee este archivo completo antes de hacer cualquier cosa. Luego ejecuta las fases en orden, una por una, esperando aprobación antes de avanzar a la siguiente. No te saltes fases. No empieces a editar hasta terminar la Fase 1.
 
@@ -6,7 +6,7 @@
 
 ## ¿Qué es este repositorio?
 
-**The Algorithm by Reset** es una SPA (React 18 + Vite + Tailwind CSS + Recharts) que simula una plataforma de analytics de marketing digital para presentaciones a clientes. Muestra datos reales o simulados organizados en 4 capas navegables:
+**The Algorithm by The Lab** es una SPA (React 18 + Vite + Tailwind CSS + Recharts) que simula una plataforma de analytics de marketing digital para presentaciones a clientes. Muestra datos reales o simulados organizados en 4 capas navegables:
 
 | Capa | Nombre | Qué muestra |
 |------|--------|-------------|

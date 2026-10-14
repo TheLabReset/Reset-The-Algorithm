@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Algorithm by Reset - Validador de Datos
+ * The Algorithm by The Lab - Validador de Datos
  *
  * Valida que los archivos JSON generados por los scrapers
  * tengan la estructura correcta esperada por el frontend.

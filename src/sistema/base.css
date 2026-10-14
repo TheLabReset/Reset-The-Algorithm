@@ -1,7 +1,15 @@
 /* Quincha · base. Reinicio mínimo, tipografía y controles. Solo semánticos de tokens.css. */
 
+/* Cifras de la marca dentro del texto: Atkinson tacha el cero (0 se lee Ø en fechas y ejes) y no trae alternativa;
+   esta cara toma solo los dígitos de Bricolage, el mismo archivo que ya carga la página, y Atkinson pone las letras. */
+@font-face {
+  font-family: 'Cifras Fit Lab'; font-style: normal; font-display: swap; font-weight: 200 800;
+  src: url('../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0030-0039;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--alto-barra) + var(--e-18)); }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--alto-capas) + var(--e-6)); }
 body {
   margin: 0; min-height: 100vh;
   background: var(--fondo); color: var(--texto-1);
@@ -12,9 +20,9 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 button, input, select { font: inherit; color: inherit; }
-a { color: var(--acento-texto); text-underline-offset: 3px; }
+a { color: var(--texto-1); text-underline-offset: 3px; }
 :focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; border-radius: var(--r-control); }
-::selection { background: var(--acento); color: var(--sobre-acento); }
+::selection { background: var(--seleccion); color: var(--sobre-seleccion); }
 
 .solo-lector {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -29,8 +37,8 @@ a { color: var(--acento-texto); text-underline-offset: 3px; }
   font-size: var(--t-13); font-weight: var(--peso-rotulo); line-height: 1.2; cursor: pointer;
   transition: background-color var(--d-110) var(--curva-productiva), border-color var(--d-110) var(--curva-productiva);
 }
-.q-boton:hover { background: var(--superficie-banda); }
-.q-boton[aria-pressed="true"], .q-boton-principal { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); }
+.q-boton:hover { background: var(--superficie-capitulo); }
+.q-boton[aria-pressed="true"], .q-boton-principal { background: var(--seleccion); border-color: var(--seleccion); color: var(--sobre-seleccion); }
 .q-boton-quieto { border-color: transparent; color: var(--texto-2); }
 .q-boton-quieto:hover { color: var(--texto-1); }
 .q-boton svg { flex: none; }
@@ -43,8 +51,8 @@ a { color: var(--acento-texto); text-underline-offset: 3px; }
   transition: background-color var(--d-110) var(--curva-productiva), color var(--d-110) var(--curva-productiva);
 }
 .q-grupo button + button { border-left: 1px solid var(--borde-control); }
-.q-grupo button:hover:not([aria-pressed="true"]) { background: var(--superficie-banda); color: var(--texto-1); }
-.q-grupo button[aria-pressed="true"] { background: var(--acento); color: var(--sobre-acento); }
+.q-grupo button:hover:not([aria-pressed="true"]) { background: var(--superficie-capitulo); color: var(--texto-1); }
+.q-grupo button[aria-pressed="true"] { background: var(--seleccion); color: var(--sobre-seleccion); }
 .q-grupo button:focus-visible { outline-offset: -3px; }
 
 /* Selector nativo con la piel del sistema */
@@ -55,18 +63,20 @@ a { color: var(--acento-texto); text-underline-offset: 3px; }
   background-image: linear-gradient(45deg, transparent 50%, var(--texto-2) 50%), linear-gradient(135deg, var(--texto-2) 50%, transparent 50%);
   background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%; background-size: 5px 5px; background-repeat: no-repeat;
 }
-.q-control { display: grid; gap: var(--e-1); }
-.q-control > span { font-size: var(--t-12); color: var(--texto-3); font-weight: var(--peso-rotulo); }
+.q-control { display: inline-flex; align-items: center; gap: var(--e-2); }
+.q-control > span { font-size: var(--t-13); color: var(--texto-3); }
 
-/* Tabla */
-.q-tabla-marco { overflow-x: auto; border: 1px solid var(--borde); border-radius: var(--r-bloque); }
+/* Tabla: sin caja ni relleno de cabecera; las filas se separan con una raya fina */
+.q-tabla-marco { overflow-x: auto; margin-inline: calc(-1 * var(--e-2)); padding-inline: var(--e-2); }
 .q-tabla { border-collapse: collapse; width: 100%; font-size: var(--t-13); }
-.q-tabla th, .q-tabla td { text-align: left; padding: var(--e-2) var(--e-3); border-bottom: 1px solid var(--borde); vertical-align: baseline; }
-.q-tabla thead th { color: var(--texto-3); font-size: var(--t-12); font-weight: var(--peso-rotulo); background: var(--superficie-banda); }
+.q-tabla th, .q-tabla td { text-align: left; padding: var(--e-2) var(--e-4) var(--e-2) 0; border-bottom: 1px solid var(--borde); vertical-align: baseline; }
+.q-tabla th:last-child, .q-tabla td:last-child { padding-right: 0; }
+.q-tabla thead th { color: var(--texto-3); font-size: var(--t-12); font-weight: var(--peso-lectura); border-bottom-color: var(--borde-control); padding-top: 0; }
 .q-tabla tbody tr:last-child > * { border-bottom: 0; }
 .q-tabla .q-num { text-align: right; white-space: nowrap; }
-.q-tabla tbody th { font-weight: var(--peso-rotulo); color: var(--texto-1); }
+.q-tabla tbody th { font-weight: var(--peso-lectura); color: var(--texto-1); }
 .q-tabla td { color: var(--texto-2); }
+.q-tabla tbody tr:hover > * { background: var(--superficie-alcance); }
 
 /* El atributo hidden siempre gana, aunque el componente declare su display */
 [hidden] { display: none !important; }

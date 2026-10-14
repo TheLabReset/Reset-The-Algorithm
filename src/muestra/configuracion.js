@@ -1,4 +1,4 @@
-// Configuración de la data de muestra de Reset Fit. Todo parámetro del generador vive acá, con su origen.
+// Configuración de la data de muestra de Fit Lab. Todo parámetro del generador vive acá, con su origen.
 // «confirmé» = tiene fuente (docs/rediseno/investigacion/06-data-verosimil.md); «asumo» = sin fuente primaria.
 // Para adaptar la demo a otro cliente se cambia este archivo, no los componentes.
 
@@ -6,7 +6,7 @@ export const CONFIG = {
   semilla: 20260930,
   desde: '2025-01-01',
   corte: '2026-09-30', // fecha fija de la muestra: nunca Date.now()
-  marca: { id: 'resetfit', nombre: 'Reset Fit', rubro: 'cadena de gimnasios', ciudad: 'Lima' },
+  marca: { id: 'fitlab', nombre: 'Fit Lab', rubro: 'cadena de gimnasios', ciudad: 'Lima' },
   moneda: 'S/',
 
   // Índice mensual de «gimnasio» en Perú, Google Trends 2022-2025, media anual = 1 (confirmé, informe 06 §4.4)
@@ -98,7 +98,7 @@ export const CONFIG = {
     { id: 'bioritmo', nombre: 'Bio Ritmo', base: 150 },
     { id: 'ko', nombre: 'KO', base: 115, crece: 0.15 },
     { id: 'megaforce', nombre: 'Mega Force', base: 110 },
-    { id: 'resetfit', nombre: 'Reset Fit', base: 120, propia: true, crece: 0.95 },
+    { id: 'fitlab', nombre: 'Fit Lab', base: 120, propia: true, crece: 0.95 },
     { id: 'otros', nombre: 'Otros', base: 420 },
   ],
 
@@ -110,7 +110,7 @@ export const CONFIG = {
     { id: 'personal', termino: 'entrenador personal', base: 22, crece: 0.35 },
     { id: 'spinning', termino: 'clases de spinning', base: 18, crece: -0.15 },
     { id: 'pilates', termino: 'pilates reformer', base: 2, aparece: '2026-05-04', despues: 16 }, // casi no se buscaba antes de mayo de 2026
-    { id: 'marca', termino: 'reset fit', base: 9, crece: 0.9, propia: true },
+    { id: 'marca', termino: 'fit lab', base: 9, crece: 0.9, propia: true },
   ],
 
   // ══════════ Detalle de producción (src/muestra/detalle.js). Todo «asumo» salvo que diga otra cosa ══════════
@@ -118,31 +118,31 @@ export const CONFIG = {
   // con su CTR y conversión relativos. Suman exacto el total del canal. conversion 0 = campaña sin leads (alcance).
   campanas: {
     search: [
-      { id: 's-marca', nombre: 'RF | Search | Marca', producto: 'marca', peso: 0.16, ctr: 2.4, conversion: 1.7 },
-      { id: 's-membresias', nombre: 'RF | Search | Membresías Lima', producto: 'membresias', peso: 0.52, ctr: 1, conversion: 1 },
-      { id: 's-distritos', nombre: 'RF | Search | Gimnasio por distrito', producto: 'membresias', peso: 0.32, ctr: 0.9, conversion: 0.95 },
+      { id: 's-marca', nombre: 'FL | Search | Marca', producto: 'marca', peso: 0.16, ctr: 2.4, conversion: 1.7 },
+      { id: 's-membresias', nombre: 'FL | Search | Membresías Lima', producto: 'membresias', peso: 0.52, ctr: 1, conversion: 1 },
+      { id: 's-distritos', nombre: 'FL | Search | Gimnasio por distrito', producto: 'membresias', peso: 0.32, ctr: 0.9, conversion: 0.95 },
     ],
     display: [
-      { id: 'd-remarketing', nombre: 'RF | Display | Remarketing', producto: 'membresias', peso: 0.4, ctr: 1.7, conversion: 1.5 },
-      { id: 'd-prospeccion', nombre: 'RF | Display | Prospección', producto: 'marca', peso: 0.6, ctr: 0.55, conversion: 0.65 },
+      { id: 'd-remarketing', nombre: 'FL | Display | Remarketing', producto: 'membresias', peso: 0.4, ctr: 1.7, conversion: 1.5 },
+      { id: 'd-prospeccion', nombre: 'FL | Display | Prospección', producto: 'marca', peso: 0.6, ctr: 0.55, conversion: 0.65 },
     ],
     meta: [
-      { id: 'm-prueba', nombre: 'RF | Leads | Clase de prueba', producto: 'membresias', peso: 0.5, ctr: 1, conversion: 1.1 },
-      { id: 'm-remarketing', nombre: 'RF | Leads | Remarketing', producto: 'membresias', peso: 0.2, ctr: 1.5, conversion: 1.35 },
-      { id: 'm-reto', nombre: 'RF | Leads | Reto de enero', producto: 'membresias', peso: 0.7, ctr: 1.2, conversion: 1.2, activa: [['2025-01-02', '2025-02-15'], ['2026-01-02', '2026-02-15']] },
-      { id: 'm-olivos', nombre: 'RF | Leads | Apertura Los Olivos', producto: 'membresias', peso: 0.3, ctr: 1.1, conversion: 1.25, activa: [['2026-02-16', '2026-04-30']] },
-      { id: 'm-alcance', nombre: 'RF | Alcance | Marca', producto: 'marca', peso: 0.18, ctr: 0.45, conversion: 0 },
+      { id: 'm-prueba', nombre: 'FL | Leads | Clase de prueba', producto: 'membresias', peso: 0.5, ctr: 1, conversion: 1.1 },
+      { id: 'm-remarketing', nombre: 'FL | Leads | Remarketing', producto: 'membresias', peso: 0.2, ctr: 1.5, conversion: 1.35 },
+      { id: 'm-reto', nombre: 'FL | Leads | Reto de enero', producto: 'membresias', peso: 0.7, ctr: 1.2, conversion: 1.2, activa: [['2025-01-02', '2025-02-15'], ['2026-01-02', '2026-02-15']] },
+      { id: 'm-olivos', nombre: 'FL | Leads | Apertura Los Olivos', producto: 'membresias', peso: 0.3, ctr: 1.1, conversion: 1.25, activa: [['2026-02-16', '2026-04-30']] },
+      { id: 'm-alcance', nombre: 'FL | Alcance | Marca', producto: 'marca', peso: 0.18, ctr: 0.45, conversion: 0 },
     ],
     tiktok: [
-      { id: 't-prueba', nombre: 'RF | TikTok | Clase de prueba', producto: 'membresias', peso: 0.7, ctr: 1, conversion: 1 },
-      { id: 't-alcance', nombre: 'RF | TikTok | Alcance', producto: 'marca', peso: 0.3, ctr: 1.15, conversion: 0 },
+      { id: 't-prueba', nombre: 'FL | TikTok | Clase de prueba', producto: 'membresias', peso: 0.7, ctr: 1, conversion: 1 },
+      { id: 't-alcance', nombre: 'FL | TikTok | Alcance', producto: 'marca', peso: 0.3, ctr: 1.15, conversion: 0 },
     ],
   },
   productos: { membresias: 'Membresías', marca: 'Marca' },
 
   // Palabras clave de Search: reparten los clics y las conversiones del canal; el gasto, por clics × CPC relativo.
   palabrasClave: [
-    { texto: 'reset fit', concordancia: 'exacta', clics: 0.11, conversion: 2.3, cpc: 0.4 },
+    { texto: 'fit lab', concordancia: 'exacta', clics: 0.11, conversion: 2.3, cpc: 0.4 },
     { texto: 'gimnasio cerca de mí', concordancia: 'frase', clics: 0.15, conversion: 1, cpc: 1 },
     { texto: 'gimnasio miraflores', concordancia: 'frase', clics: 0.08, conversion: 1.2, cpc: 1.15 },
     { texto: 'gimnasio surco', concordancia: 'frase', clics: 0.07, conversion: 1.1, cpc: 1 },
@@ -157,8 +157,8 @@ export const CONFIG = {
   ],
   // Términos que de verdad se buscaron (otra lectura de los mismos clics de Search)
   terminosBusqueda: [
-    { texto: 'reset fit', clics: 0.08, conversion: 2.3 },
-    { texto: 'reset fit horarios', clics: 0.03, conversion: 1.8 },
+    { texto: 'fit lab', clics: 0.08, conversion: 2.3 },
+    { texto: 'fit lab horarios', clics: 0.03, conversion: 1.8 },
     { texto: 'gimnasio cerca de mi', clics: 0.12, conversion: 1 },
     { texto: 'gimnasios en miraflores', clics: 0.06, conversion: 1.15 },
     { texto: 'gimnasio barato lima', clics: 0.07, conversion: 0.7 },
@@ -171,7 +171,7 @@ export const CONFIG = {
 
   // Programática: llega en una planilla manual sin fecha por día; no sigue el período y no se suma a la inversión de plataformas
   programatica: {
-    campana: 'RF | Programática | Prospección Lima Norte', desde: '2026-08-18', hasta: '2026-09-30',
+    campana: 'FL | Programática | Prospección Lima Norte', desde: '2026-08-18', hasta: '2026-09-30',
     fuente: 'Planilla del equipo de programática (carga manual)', sitios: 214,
     formatos: [
       { nombre: 'Notificación push', compra: 'CPC', audiencia: '18 a 34 años · Lima Norte', impresiones: 420000, ctr: 0.009, costoUnidad: 0.32 },
@@ -219,9 +219,9 @@ export const CONFIG = {
     { tag: '#pilatesreformer', publicaciones: 140, vistasPorPublicacion: 5200, interaccion: 0.09, crece: 2.2 },
     { tag: '#crossfitperu', publicaciones: 95, vistasPorPublicacion: 2600, interaccion: 0.05, crece: -0.2 },
     { tag: '#limafit', publicaciones: 120, vistasPorPublicacion: 2900, interaccion: 0.061 },
-    { tag: '#resetfit', publicaciones: 18, vistasPorPublicacion: 2100, interaccion: 0.074, crece: 1.4, propia: true },
+    { tag: '#fitlab', publicaciones: 18, vistasPorPublicacion: 2100, interaccion: 0.074, crece: 1.4, propia: true },
   ],
-  // Conversación sobre Reset Fit por tema; el tono va de −1 a 1 y solo se lee para la marca propia
+  // Conversación sobre Fit Lab por tema; el tono va de −1 a 1 y solo se lee para la marca propia
   temas: [
     { id: 'precios', nombre: 'Precios y promociones', peso: 0.24, tono: 0.2 },
     { id: 'clases', nombre: 'Clases grupales', peso: 0.18, tono: 0.55 },
@@ -239,7 +239,7 @@ export const CONFIG = {
     { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14 },
     { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25 },
     { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4 },
-    { id: 'resetfit', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true },
+    { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true },
   ],
   formatosAnuncio: [{ nombre: 'Imagen', peso: 0.45 }, { nombre: 'Video', peso: 0.38 }, { nombre: 'Carrusel', peso: 0.17 }],
 

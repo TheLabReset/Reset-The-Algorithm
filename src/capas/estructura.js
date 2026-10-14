@@ -9,7 +9,7 @@ export const CAPAS = [
       { id: 's-1-1', numero: '1.1', titulo: 'Pauta pagada', pregunta: '¿Cuánto se invirtió y qué reportan las plataformas?', universos: ['pauta'], fuentes: ['meta', 'search', 'tiktok', 'display'] },
       { id: 's-1-2', numero: '1.2', titulo: 'CRM', pregunta: '¿Cuántos leads llegaron, de dónde y qué pasó con ellos?', universos: ['crm'], fuentes: ['crm'] },
       { id: 's-1-3', numero: '1.3', titulo: 'Búsquedas en Google', pregunta: '¿Cuánto interés hay y en qué palabras?', universos: ['busquedas'], fuentes: ['busquedas'] },
-      { id: 's-1-4', numero: '1.4', titulo: 'Redes', pregunta: '¿De qué se habla en TikTok y qué se dice de Reset Fit?', universos: ['conversacion'], fuentes: ['conversacion'] },
+      { id: 's-1-4', numero: '1.4', titulo: 'Redes', pregunta: '¿De qué se habla en TikTok y qué se dice de Fit Lab?', universos: ['conversacion'], fuentes: ['conversacion'] },
       { id: 's-1-5', numero: '1.5', titulo: 'Competencia', pregunta: '¿Qué tan activos están los otros gimnasios?', universos: ['conversacion'], fuentes: ['conversacion'] },
       { id: 's-1-6', numero: '1.6', titulo: 'Sitio web', pregunta: '¿Quién entra al sitio, desde dónde y qué mira?', universos: ['web'], fuentes: ['web'] },
     ],

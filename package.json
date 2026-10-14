@@ -1,8 +1,8 @@
 {
-  "name": "the-algorithm-by-reset",
+  "name": "the-algorithm",
   "version": "1.0.0",
   "type": "module",
-  "description": "The Algorithm by Reset - Social Intelligence Template for Digital Marketing Optimization",
+  "description": "The Algorithm by The Lab - Social Intelligence Template for Digital Marketing Optimization",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,8 +12,8 @@
     "sistema": "node herramientas/revisar-sistema.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/montserrat": "^5.3.0",
-    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "lucide-react": "1.49.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

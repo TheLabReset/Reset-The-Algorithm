@@ -1,4 +1,4 @@
-# The Algorithm by Reset
+# The Algorithm by The Lab
 
 **Social Intelligence Platform - Template para Optimización de Marketing Digital**
 
@@ -10,13 +10,13 @@
 
 ## Descripcion
 
-**The Algorithm by Reset** es un template de Social Intelligence reutilizable que unifica datos de diversas fuentes digitales para optimizar la inversión publicitaria de cualquier cliente.
+**The Algorithm by The Lab** es un template de Social Intelligence reutilizable que unifica datos de diversas fuentes digitales para optimizar la inversión publicitaria de cualquier cliente.
 
 Identifica microcomportamientos, emociones e intenciones en el ecosistema digital, optimizando la inversión mediante decisiones automatizadas basadas en señales de data en tiempo real.
 
 ### Propuesta de Valor
 
-- **Producto**: The Algorithm by Reset (por Reset Agency)
+- **Producto**: The Algorithm by The Lab
 - **Tipo**: Template reutilizable de Social Intelligence
 - **Cliente Demo**: FitZone Perú (cadena de gimnasios ficticia)
 - **Objetivo**: Sistema automatizado para optimizar campañas de marketing digital
@@ -513,15 +513,15 @@ Para información más detallada, consulta los documentos en `/docs/`:
 
 ## Licencia
 
-Este proyecto es propiedad de Reset Agency. Todos los derechos reservados.
+Este proyecto es propiedad de The Lab. Todos los derechos reservados.
 
 ---
 
 ## Contacto
 
-- **Agencia**: Reset Agency
+- **Agencia**: The Lab
 - **Repositorio**: https://github.com/alonsix6/Reset-The-Algorithm
 
 ---
 
-**© 2026 The Algorithm by Reset - Reset Agency**
+**© 2026 The Algorithm by The Lab - The Lab**

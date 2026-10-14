@@ -103,7 +103,7 @@ export function Multiplos({ paneles, formato = numero, etiqueta }) {
       {paneles.map((p) => (
         <Grafico key={p.nombre} etiqueta={p.nombre} className="q-multiplo">
           {(ancho) => {
-            const alto = 76, m = { t: 6, r: 40, b: 4, l: 2 };
+            const alto = 96, m = { t: 6, r: 40, b: 4, l: 2 };
             const ys = marcas(max, 2);
             const x = lineal(0, p.serie.length - 1, m.l, ancho - m.r), y = lineal(0, ys.at(-1), alto - m.b, m.t);
             const iu = ultimoConValor(p.serie);

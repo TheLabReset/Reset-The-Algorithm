@@ -1,4 +1,4 @@
-# Guía de Scrapers - The Algorithm by Reset
+# Guía de Scrapers - The Algorithm by The Lab
 
 Esta guía explica cómo funcionan los 3 scrapers de tendencias del proyecto The Algorithm.
 

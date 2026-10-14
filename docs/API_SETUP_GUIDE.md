@@ -1,6 +1,6 @@
 # Guía Paso a Paso: Configuración de APIs
 
-Esta guía detalla los pasos exactos para obtener acceso a cada API requerida para el sistema The Algorithm by Reset.
+Esta guía detalla los pasos exactos para obtener acceso a cada API requerida para el sistema The Algorithm by The Lab.
 
 ---
 
@@ -114,8 +114,8 @@ const client = new BetaAnalyticsDataClient({
 1. Ir a [API Center](https://ads.google.com/aw/apicenter)
 2. Iniciar sesión con la Manager Account
 3. Completar el formulario:
-   - **Company name:** Reset Agency (or client company name)
-   - **Company website:** https://resetagency.com (debe estar activo)
+   - **Company name:** The Lab (o el nombre del cliente)
+   - **Company website:** el sitio web de la agencia o del cliente (debe estar activo)
    - **API contact email:** email monitoreado regularmente
    - **Describe your use case:** "Internal marketing analytics dashboard for tracking campaign performance, CPL metrics, and budget optimization"
 4. Aceptar Terms and Conditions

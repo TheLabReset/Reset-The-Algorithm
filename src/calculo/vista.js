@@ -169,7 +169,7 @@ export function armarVista(data, filtros, estado = {}) {
   const plataformas = estadoGrupo('pauta') === 'ok' ? { estado: 'ok', universo: 'Lo que reporta cada plataforma', ...leePlataformas(data, P) } : { estado: estadoGrupo('pauta') };
   const crmDetalle = estadoGrupo('crm') === 'ok' ? { estado: 'ok', universo: 'Leads registrados en el CRM en el período', ...leeCrmDetalle(data, P) } : { estado: estadoGrupo('crm') };
   if (busquedas.estado === 'ok') Object.assign(busquedas, leeBusquedasDetalle(data, P));
-  const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'TikTok y conversación pública sobre Reset Fit', ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
+  const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'TikTok y conversación pública sobre Fit Lab', ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
   const competencia = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'Actividad pública de cada marca (cifras de muestra)', ...leeCompetencia(data, P), conversacion } : { estado: estadoGrupo('conversacion') };
   if (web.estado === 'ok') Object.assign(web, leeWebDetalle(data, P));
 

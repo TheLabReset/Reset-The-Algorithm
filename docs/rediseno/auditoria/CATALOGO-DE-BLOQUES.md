@@ -1,6 +1,6 @@
 # Catálogo de bloques de la demo actual
 
-**The Algorithm by Reset · auditoría del 14 de octubre de 2026 · rama `claude/modest-tesla-a7501f`**
+**The Algorithm by The Lab · auditoría del 14 de octubre de 2026 · rama `claude/modest-tesla-a7501f`**
 
 Una fila por bloque de cada pantalla, en el orden en que aparecen. Las capturas están en `capturas/` con el formato `<ancho>-<capa>.png`. La columna «5 s» compara lo que entiende alguien que mira el bloque cinco segundos (lo que se observó en la captura) contra lo que debería entender. La forma candidata es preliminar: la decisión final, con sus dos alternativas, está en `docs/rediseno/PLAN.md` y en la galería.
 

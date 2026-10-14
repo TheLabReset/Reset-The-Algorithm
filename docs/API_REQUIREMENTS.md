@@ -1,4 +1,4 @@
-# API Requirements - The Algorithm by Reset
+# API Requirements - The Algorithm by The Lab
 
 ## Overview
 

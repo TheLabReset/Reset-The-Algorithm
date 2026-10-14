@@ -1,214 +1,231 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Quincha · tokens de The Algorithm
    Quincha es la técnica limeña de caña y barro: liviana, flexible, resiste temblores.
-   Un sistema que se adapta por cliente sin romperse.
+   Un sistema que se adapta por cliente sin romperse: este archivo lleva la marca del cliente
+   (Fit Lab: tinta, cal, rojo y menta) y nada más cambia.
 
    Dos capas:
    1. Primitivos (--p-*): la paleta. Ningún componente los usa directo.
-   2. Semánticos: lo único que tocan los componentes. Cada uno dice para qué sirve
-      su contraste no se escribe a mano: lo mide `npm run sistema` y lo muestra la guía viva.
+   2. Semánticos: lo único que tocan los componentes. Cada uno dice para qué sirve;
+      su contraste no se escribe a mano: lo mide `npm run sistema`.
    Regla de huérfanos (la vigila `npm run sistema`): todo primitivo lo usa al menos
    un semántico, y todo semántico lo usa al menos un componente.
-   Oscuro por defecto; claro con [data-theme="light"] o la preferencia del sistema.
+
+   Claro por defecto: se proyecta en reuniones y se lee de día. Oscuro con
+   [data-theme="dark"] o la preferencia del sistema, armado por niveles propios
+   (más claro es más cerca), no invertido.
+
+   Tres niveles de superficie, del fondo hacia el lector:
+   fondo (la página) → capítulo (el panel que agrupa) → superficie (la tarjeta).
+   La profundidad sale del valor de la superficie, no de sombras ni de bordes gruesos.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Primitivos: violeta de la guía de la agencia, tono 295° en OKLCH ── */
-  --p-violeta-100: #eee9ff;
-  --p-violeta-200: #ddd4ff;
-  --p-violeta-300: #c5b4fb;
-  --p-violeta-400: #ab91f2;
-  --p-violeta-500: #9572e7;
-  --p-violeta-600: #8257d9;
-  --p-violeta-700: #6f42c1; /* el violeta de marca */
-  --p-violeta-800: #572e9d;
-  --p-violeta-900: #3d206f;
-  --p-violeta-950: #261547;
-  --p-violeta-975: #1f1830;
+  /* ── Primitivos: marca Fit Lab ── */
+  --p-tinta: #121318;      /* el negro de la marca */
+  --p-cal: #f4f4f1;        /* el blanco cálido de la marca */
+  --p-rojo: #f5332a;       /* el rojo de la pesa: identidad, nunca dato */
+  --p-rojo-texto: #b51e17; /* rojo legible sobre claro */
+  --p-rojo-claro: #ff7a70; /* rojo legible sobre oscuro */
+  --p-menta: #3ee6b0;      /* la menta de la marca, sobre oscuro */
+  --p-menta-oscura: #0a7254; /* menta legible sobre claro */
 
-  /* ── Primitivos: grises con una pizca del mismo tono (croma 0,004 a 0,018) ── */
-  --p-gris-0: #ffffff;
-  --p-gris-25: #fcfbfe;
-  --p-gris-50: #f6f5f9;
-  --p-gris-100: #edecf1;
-  --p-gris-200: #dedde3;
-  --p-gris-300: #c7c6ce;
-  --p-gris-400: #a5a3ac;
-  --p-gris-500: #817f88;
-  --p-gris-600: #66646f;
-  --p-gris-700: #4d4b56;
-  --p-gris-800: #33313b;
-  --p-gris-850: #26242d;
-  --p-gris-900: #1c1a23;
-  --p-gris-950: #100e16;
-  --p-gris-975: #0a090f;
+  /* ── Primitivos: neutros con el tono cálido de la cal ── */
+  --p-n-0: #ffffff;
+  --p-n-25: #fafaf7;
+  --p-n-75: #ebebe6;
+  --p-n-100: #e3e3dd;
+  --p-n-150: #d6d6d0;
+  --p-n-200: #c4c5c0;
+  --p-n-300: #a3a6ad;   /* niebla */
+  --p-n-400: #7d8088;
+  --p-n-500: #6e7179;
+  --p-n-600: #5c5f67;
+  --p-n-700: #4a4d55;   /* pizarra */
+  --p-n-750: #44474f;
+
+  /* ── Primitivos: neutros del oscuro, de la tinta hacia arriba ── */
+  --p-o-950: #0b0c0f;
+  --p-o-900: #1c1d23;
+  --p-o-850: #212329;
+  --p-o-800: #272930;
+  --p-o-750: #33353d;
+  --p-o-700: #3c3e46;
+  --p-o-600: #42444c;
+  --p-o-500: #5d6068;
+  --p-o-400: #7b7e86;
+  --p-o-300: #a4a7ae;
+  --p-o-200: #c9cacd;
 
   /* ── Primitivos: estado (reservados, nunca serie) ── */
-  --p-verde-600: #1b763a;
-  --p-verde-300: #6ed889;
-  --p-rojo-600: #c22826;
-  --p-rojo-300: #fa887d;
   --p-ambar-700: #8c5b10;
   --p-ambar-300: #ffbc63;
 
-  /* ── Primitivos: series de datos, orden fijo, validadas para daltonismo (informe 04) ── */
-  --p-serie-violeta-claro: #7544cd;
-  --p-serie-naranja-claro: #c2601a;
-  --p-serie-cian-claro: #0090a8;
-  --p-serie-oliva-claro: #848e2d;
-  --p-serie-azul-claro: #1762b6;
-  --p-serie-violeta-oscuro: #8b61e3;
-  --p-serie-naranja-oscuro: #d66919;
-  --p-serie-cian-oscuro: #0096af;
-  --p-serie-oliva-oscuro: #7e8826;
-  --p-serie-azul-oscuro: #337bd0;
+  /* ── Primitivos: categorías, orden fijo, validadas para daltonismo en las dos superficies ── */
+  --p-cat-menta: #0c8a66;
+  --p-cat-naranja: #c2601a;
+  --p-cat-azul: #4b63c4;
+  --p-cat-ocre: #9a7a2e;
+  --p-cat-menta-o: #1ea47f;
+  --p-cat-naranja-o: #d26a26;
+  --p-cat-azul-o: #6d84e6;
+  --p-cat-ocre-o: #b18c32;
 
-  /* ══════════ Semánticos · tema oscuro (por defecto) ══════════ */
-  --fondo: var(--p-gris-975);            /* fondo de la página */
-  --superficie: var(--p-gris-950);       /* bloques */
-  --superficie-banda: var(--p-gris-900); /* franja que abre cada sección */
-  --superficie-alcance: var(--p-gris-850); /* bloques que no siguen el período (cohorte, proyección) */
-  --elevada: var(--p-gris-900);          /* lo que flota: ayuda, menú, recorrido */
-  --texto-1: var(--p-gris-50);           /* cifras y títulos */
-  --texto-2: var(--p-gris-300);          /* texto de lectura */
-  --texto-3: var(--p-gris-400);          /* notas, ejes, rótulos secundarios */
-  --borde: var(--p-gris-800);            /* separadores decorativos */
-  --borde-control: var(--p-gris-500);    /* bordes de controles y marcas que hay que ver (≥ 3:1) */
-  --riel: var(--p-gris-700);             /* línea vertical que une los bloques de una sección */
-  --acento: var(--p-violeta-400);        /* capa activa, selección, la serie propia */
-  --acento-texto: var(--p-violeta-300);  /* texto en violeta */
-  --sobre-acento: var(--p-gris-975);     /* texto sobre un relleno de acento */
-  --foco: var(--p-violeta-300);          /* anillo de foco */
-  --mejora: var(--p-verde-300);          /* variación favorable: siempre con flecha y signo */
-  --empeora: var(--p-rojo-300);          /* variación desfavorable */
-  --atencion: var(--p-ambar-300);        /* pocos casos, dato parcial */
-  --s1: var(--p-serie-violeta-oscuro);   /* series en orden fijo */
-  --s2: var(--p-serie-naranja-oscuro);
-  --s3: var(--p-serie-cian-oscuro);
-  --s4: var(--p-serie-oliva-oscuro);
-  --s5: var(--p-serie-azul-oscuro);
-  --previa: var(--p-gris-500);           /* período de comparación: siempre gris */
-  --q0: var(--p-violeta-975);            /* rampa secuencial de un tono, de menos a más */
-  --q1: var(--p-violeta-950);
-  --q2: var(--p-violeta-900);
-  --q3: var(--p-violeta-800);
-  --q4: var(--p-violeta-600);
-  --q5: var(--p-violeta-400);
-  --q6: var(--p-violeta-200);
-  --banda-0: var(--p-gris-850);          /* bandas de lectura de una bala, de la más lejana a la meta */
-  --banda-1: var(--p-gris-800);
-  --banda-2: var(--p-gris-700);
-  color-scheme: dark;
+  /* ══════════ Semánticos · tema claro (por defecto) ══════════ */
+  --fondo: var(--p-cal);                 /* la página */
+  --superficie-capitulo: var(--p-n-75);  /* panel que agrupa las tarjetas de un capítulo */
+  --superficie: var(--p-n-0);            /* tarjetas */
+  --superficie-alcance: var(--p-n-25);   /* tarjetas que no siguen el período (cohorte, planilla, escenario) */
+  --elevada: var(--p-n-0);               /* lo que flota: ayuda, pista de gráfico */
+  --barra: var(--p-tinta);               /* barra de marca arriba */
+  --sobre-barra: var(--p-cal);           /* texto sobre la barra */
+  --sobre-barra-2: var(--p-n-300);       /* texto secundario sobre la barra */
+  --texto-1: var(--p-tinta);             /* cifras y títulos */
+  --texto-2: var(--p-n-750);             /* texto de lectura */
+  --texto-3: var(--p-n-600);             /* notas, ejes, rótulos secundarios */
+  --borde: var(--p-n-100);               /* separadores */
+  --borde-control: var(--p-n-400);       /* bordes de controles y marcas que hay que ver (≥ 3:1) */
+  --acento: var(--p-rojo);               /* la capa activa y el número de capítulo: marca, no dato */
+  --acento-texto: var(--p-rojo-texto);   /* texto en el rojo de la marca */
+  --seleccion: var(--p-tinta);           /* opción elegida en un control */
+  --sobre-seleccion: var(--p-cal);       /* texto sobre la opción elegida */
+  --foco: var(--p-tinta);                /* anillo de foco */
+  --mejora: var(--p-menta-oscura);       /* variación favorable: siempre con flecha y signo */
+  --empeora: var(--p-rojo-texto);        /* variación desfavorable */
+  --atencion: var(--p-ambar-700);        /* pocos casos, dato parcial */
+  --s1: var(--p-tinta);                  /* la serie propia: tinta, como la marca */
+  --s2: var(--p-cat-menta);              /* categorías en orden fijo */
+  --s3: var(--p-cat-naranja);
+  --s4: var(--p-cat-azul);
+  --s5: var(--p-cat-ocre);
+  --previa: var(--p-n-400);              /* período de comparación: siempre gris */
+  --q0: var(--p-n-75);                   /* rampa secuencial en tinta, de menos a más */
+  --q1: var(--p-n-150);
+  --q2: var(--p-n-200);
+  --q3: var(--p-n-300);
+  --q4: var(--p-n-500);
+  --q5: var(--p-n-700);
+  --q6: var(--p-tinta);
+  --banda-0: var(--p-n-75);              /* bandas de lectura de una bala, de la más lejana a la meta */
+  --banda-1: var(--p-n-100);
+  --banda-2: var(--p-n-150);
+  --sombra-flota: 0 10px 28px rgb(18 19 24 / 0.14);
+  color-scheme: light;
 
-  /* ── Tipografía ── */
-  --f-cifra: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
-  --f-texto: 'Montserrat Variable', 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
-  --t-12: 0.75rem;  --t-13: 0.8125rem; --t-15: 0.9375rem; --t-17: 1.0625rem; --t-22: 1.375rem;
-  --c-22: 1.375rem; --c-34: 2.125rem;  --c-48: 3rem;      --c-64: 4rem;
-  --peso-lectura: 400; --peso-rotulo: 560; --peso-cifra: 640; --peso-titulo: 700;
+  /* ── Tipografía de la marca: Bricolage Grotesque para títulos y cifras, Atkinson Hyperlegible Next para leer ── */
+  --f-titulo: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+  --f-texto: 'Cifras Fit Lab', 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', Verdana, Arial, sans-serif;
+  --t-12: 0.75rem;  --t-13: 0.8125rem; --t-15: 0.9375rem; --t-17: 1.0625rem; --t-20: 1.25rem; --t-24: 1.5rem; --t-32: 2rem;
+  --c-22: 1.375rem; --c-28: 1.75rem;
+  --peso-lectura: 400; --peso-rotulo: 600; --peso-cifra: 600; --peso-titulo: 700;
 
   /* ── Espacio (base 4) ── */
-  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 20px; --e-6: 24px; --e-8: 32px; --e-10: 40px; --e-18: 72px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 20px; --e-6: 24px; --e-8: 32px; --e-10: 40px; --e-12: 48px; --e-16: 64px;
 
   /* ── Medidas de composición ── */
-  --ancho-max: 1400px;     /* la página no crece más: las líneas largas se leen mal */
+  --ancho-max: 1360px;     /* la página no crece más: las líneas largas se leen mal */
   --ancho-lectura: 68ch;   /* texto corrido */
-  --alto-barra: 64px;      /* barra superior fija; el índice de capa se pega debajo */
+  --ancho-indice: 184px;   /* índice lateral de la capa */
+  --alto-barra: 52px;      /* barra de marca */
+  --alto-capas: 52px;      /* fila de capas y filtros, fija al bajar */
 
   /* ── Radio: tres, con rol ── */
-  --r-control: 6px; --r-bloque: 10px; --r-flota: 14px;
-
-  /* ── Elevación: solo lo que flota ── */
-  --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.35);
+  --r-control: 6px; --r-bloque: 10px; --r-capitulo: 16px;
 
   /* ── Movimiento: corto y productivo; nada se anima por adorno ── */
-  --d-110: 110ms; --d-150: 150ms;
+  --d-110: 110ms;
   --d-latido: 1200ms; /* solo el esqueleto de carga */
   --curva-productiva: cubic-bezier(0.2, 0, 0.38, 0.9);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --fondo: var(--p-gris-50);
-    --superficie: var(--p-gris-25);
-    --superficie-banda: var(--p-gris-100);
-    --superficie-alcance: var(--p-gris-100);
-    --elevada: var(--p-gris-0);
-    --texto-1: var(--p-gris-950);
-    --texto-2: var(--p-gris-700);
-    --texto-3: var(--p-gris-600);
-    --borde: var(--p-gris-200);
-    --borde-control: var(--p-gris-500);
-    --riel: var(--p-gris-300);
-    --acento: var(--p-violeta-700);
-    --acento-texto: var(--p-violeta-700);
-    --sobre-acento: var(--p-gris-0);
-    --foco: var(--p-violeta-600);
-    --mejora: var(--p-verde-600);
-    --empeora: var(--p-rojo-600);
-    --atencion: var(--p-ambar-700);
-    --s1: var(--p-serie-violeta-claro);
-    --s2: var(--p-serie-naranja-claro);
-    --s3: var(--p-serie-cian-claro);
-    --s4: var(--p-serie-oliva-claro);
-    --s5: var(--p-serie-azul-claro);
-    --previa: var(--p-gris-500);
-    --q0: var(--p-violeta-100);
-    --q1: var(--p-violeta-200);
-    --q2: var(--p-violeta-300);
-    --q3: var(--p-violeta-400);
-    --q4: var(--p-violeta-500);
-    --q5: var(--p-violeta-600);
-    --q6: var(--p-violeta-700);
-    --banda-0: var(--p-gris-100);
-    --banda-1: var(--p-gris-200);
-    --banda-2: var(--p-gris-300);
-    --sombra-flota: 0 12px 32px rgb(16 14 22 / 0.14);
-    color-scheme: light;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: var(--p-tinta);
+    --superficie-capitulo: var(--p-o-900);
+    --superficie: var(--p-o-800);
+    --superficie-alcance: var(--p-o-850);
+    --elevada: var(--p-o-750);
+    --barra: var(--p-o-950);
+    --sobre-barra: var(--p-cal);
+    --sobre-barra-2: var(--p-o-300);
+    --texto-1: var(--p-cal);
+    --texto-2: var(--p-o-200);
+    --texto-3: var(--p-o-300);
+    --borde: var(--p-o-750);
+    --borde-control: var(--p-o-400);
+    --acento: var(--p-rojo);
+    --acento-texto: var(--p-rojo-claro);
+    --seleccion: var(--p-cal);
+    --sobre-seleccion: var(--p-tinta);
+    --foco: var(--p-cal);
+    --mejora: var(--p-menta);
+    --empeora: var(--p-rojo-claro);
+    --atencion: var(--p-ambar-300);
+    --s1: var(--p-cal);
+    --s2: var(--p-cat-menta-o);
+    --s3: var(--p-cat-naranja-o);
+    --s4: var(--p-cat-azul-o);
+    --s5: var(--p-cat-ocre-o);
+    --previa: var(--p-o-400);
+    --q0: var(--p-o-750);
+    --q1: var(--p-o-700);
+    --q2: var(--p-o-600);
+    --q3: var(--p-o-500);
+    --q4: var(--p-o-400);
+    --q5: var(--p-o-200);
+    --q6: var(--p-cal);
+    --banda-0: var(--p-o-750);
+    --banda-1: var(--p-o-700);
+    --banda-2: var(--p-o-600);
+    --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.45);
+    color-scheme: dark;
   }
 }
 
-:root[data-theme="light"] {
-  --fondo: var(--p-gris-50);
-  --superficie: var(--p-gris-25);
-  --superficie-banda: var(--p-gris-100);
-  --superficie-alcance: var(--p-gris-100);
-  --elevada: var(--p-gris-0);
-  --texto-1: var(--p-gris-950);
-  --texto-2: var(--p-gris-700);
-  --texto-3: var(--p-gris-600);
-  --borde: var(--p-gris-200);
-  --borde-control: var(--p-gris-500);
-  --riel: var(--p-gris-300);
-  --acento: var(--p-violeta-700);
-  --acento-texto: var(--p-violeta-700);
-  --sobre-acento: var(--p-gris-0);
-  --foco: var(--p-violeta-600);
-  --mejora: var(--p-verde-600);
-  --empeora: var(--p-rojo-600);
-  --atencion: var(--p-ambar-700);
-  --s1: var(--p-serie-violeta-claro);
-  --s2: var(--p-serie-naranja-claro);
-  --s3: var(--p-serie-cian-claro);
-  --s4: var(--p-serie-oliva-claro);
-  --s5: var(--p-serie-azul-claro);
-  --previa: var(--p-gris-500);
-  --q0: var(--p-violeta-100);
-  --q1: var(--p-violeta-200);
-  --q2: var(--p-violeta-300);
-  --q3: var(--p-violeta-400);
-  --q4: var(--p-violeta-500);
-  --q5: var(--p-violeta-600);
-  --q6: var(--p-violeta-700);
-  --banda-0: var(--p-gris-100);
-  --banda-1: var(--p-gris-200);
-  --banda-2: var(--p-gris-300);
-  --sombra-flota: 0 12px 32px rgb(16 14 22 / 0.14);
-  color-scheme: light;
+:root[data-theme="dark"] {
+  --fondo: var(--p-tinta);
+  --superficie-capitulo: var(--p-o-900);
+  --superficie: var(--p-o-800);
+  --superficie-alcance: var(--p-o-850);
+  --elevada: var(--p-o-750);
+  --barra: var(--p-o-950);
+  --sobre-barra: var(--p-cal);
+  --sobre-barra-2: var(--p-o-300);
+  --texto-1: var(--p-cal);
+  --texto-2: var(--p-o-200);
+  --texto-3: var(--p-o-300);
+  --borde: var(--p-o-750);
+  --borde-control: var(--p-o-400);
+  --acento: var(--p-rojo);
+  --acento-texto: var(--p-rojo-claro);
+  --seleccion: var(--p-cal);
+  --sobre-seleccion: var(--p-tinta);
+  --foco: var(--p-cal);
+  --mejora: var(--p-menta);
+  --empeora: var(--p-rojo-claro);
+  --atencion: var(--p-ambar-300);
+  --s1: var(--p-cal);
+  --s2: var(--p-cat-menta-o);
+  --s3: var(--p-cat-naranja-o);
+  --s4: var(--p-cat-azul-o);
+  --s5: var(--p-cat-ocre-o);
+  --previa: var(--p-o-400);
+  --q0: var(--p-o-750);
+  --q1: var(--p-o-700);
+  --q2: var(--p-o-600);
+  --q3: var(--p-o-500);
+  --q4: var(--p-o-400);
+  --q5: var(--p-o-200);
+  --q6: var(--p-cal);
+  --banda-0: var(--p-o-750);
+  --banda-1: var(--p-o-700);
+  --banda-2: var(--p-o-600);
+  --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.45);
+  color-scheme: dark;
 }
 
-:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --d-110: 0ms; --d-150: 0ms; --d-latido: 0ms; }
+  :root { --d-110: 0ms; --d-latido: 0ms; }
 }

@@ -1,14 +1,19 @@
 // Lector de tokens.css, puro: lo usan el chequeo (npm run sistema) y la guía viva, así los dos leen lo mismo.
 export const quitarComentarios = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 
-// Bloques del archivo de tokens: el :root base, el claro por preferencia y el claro por botón
+// Bloques del archivo de tokens: el :root base y el otro tema, por preferencia del sistema y por botón.
+// Sirve en las dos direcciones: base clara con oscuro alterno, o base oscura con claro alterno.
 export function bloquesDeTokens(css) {
   const limpio = quitarComentarios(css);
   const definiciones = (texto) => Object.fromEntries([...texto.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
   const raiz = limpio.match(/^:root\s*\{([\s\S]*?)\n\}/m);
-  const media = limpio.match(/@media \(prefers-color-scheme: light\)\s*\{\s*:root:not\(\[data-theme="dark"\]\)\s*\{([\s\S]*?)\}\s*\}/);
-  const boton = limpio.match(/:root\[data-theme="light"\]\s*\{([\s\S]*?)\}/);
-  return { base: definiciones(raiz?.[1] || ''), claroMedia: definiciones(media?.[1] || ''), claroBoton: definiciones(boton?.[1] || ''), todas: definiciones(limpio) };
+  const media = limpio.match(/@media \(prefers-color-scheme: (dark|light)\)\s*\{\s*:root:not\(\[data-theme="(?:light|dark)"\]\)\s*\{([\s\S]*?)\}\s*\}/);
+  const alterno = media?.[1] === 'light' ? 'claro' : 'oscuro';
+  const boton = limpio.match(new RegExp(`:root\\[data-theme="${media?.[1] || 'dark'}"\\]\\s*\\{([\\s\\S]*?)\\}`));
+  return {
+    base: definiciones(raiz?.[1] || ''), altMedia: definiciones(media?.[2] || ''), altBoton: definiciones(boton?.[1] || ''), todas: definiciones(limpio),
+    temaBase: alterno === 'claro' ? 'oscuro' : 'claro', temaAlterno: alterno,
+  };
 }
 
 function hexARgb(hex) {

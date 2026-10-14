@@ -31,7 +31,7 @@
 .q-svg .q-linea-plan { fill: none; stroke: var(--previa); stroke-width: 1.5; stroke-dasharray: 5 4; }
 .q-svg .q-punto-oculto { fill: transparent; }
 .q-svg .q-punto-final { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
-.q-svg .q-hueco { fill: var(--superficie-banda); }
+.q-svg .q-hueco { fill: var(--superficie-capitulo); }
 .q-svg .q-evento line { stroke: var(--borde-control); stroke-dasharray: 2 3; }
 .q-svg .q-evento text { fill: var(--texto-3); }
 
@@ -43,7 +43,7 @@
 .q-svg .q-pendiente-propia { stroke: var(--s1); stroke-width: 3; }
 
 /* Barras: gris neutro; la que se lee primero, en la serie propia */
-.q-svg .q-barra { fill: var(--texto-3); }
+.q-svg .q-barra { fill: var(--borde-control); }
 .q-svg .q-barra-acento, .q-svg .q-barra-valor { fill: var(--s1); }
 .q-svg .q-barra-rayada { fill: var(--rayado); }
 .q-svg .q-rayado-fondo { fill: var(--superficie); }
@@ -86,7 +86,7 @@
 
 /* Zonas de lectura: invisibles hasta que el puntero las toca */
 .q-svg .q-zona { fill: transparent; }
-.q-svg .q-zona:hover { fill: var(--superficie-banda); }
+.q-svg .q-zona:hover { fill: var(--superficie-capitulo); }
 
 /* Leyendas y escalas en HTML */
 .q-leyenda { list-style: none; margin: var(--e-3) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); font-size: var(--t-13); color: var(--texto-2); }

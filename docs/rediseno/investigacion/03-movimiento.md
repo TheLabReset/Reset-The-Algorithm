@@ -1,6 +1,6 @@
 # 03 · Movimiento: soporte, constancia de objeto y recorrido guiado
 
-THE LAB · Reset · investigación para el rediseño de «The Algorithm» · 14 de octubre de 2026
+THE LAB · investigación para el rediseño de «The Algorithm» · 14 de octubre de 2026
 
 **Respuesta para decidir:** no hace falta ninguna librería nueva de animación. Las marcas se siguen con la vista subiendo Recharts de 2.15 a 3.10 (que ya es dependencia) y usando `animationMatchBy={matchByDataKey(...)}` a 240 ms. Las View Transitions sirven para cambiar de capa y para el recorrido guiado, pero **no para las barras ni los puntos de un gráfico SVG**: lo probé en Chromium 156 y los `<rect>` internos no se capturan. El recorrido guiado se arma con unas 80 líneas propias: pasos con URL, flechas y PageUp/PageDown (lo que mandan los presentadores inalámbricos), Escape, anillo por fuera del bloque y leyenda acoplada abajo, nunca encima de la cifra.
 

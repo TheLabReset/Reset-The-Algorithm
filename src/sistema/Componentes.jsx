@@ -113,60 +113,96 @@ export function Estado({ tipo, titulo, children }) {
   );
 }
 
-// ── Bloque: una lectura con su gráfico. Un bloque, un universo ──
+// ── Bloque: una tarjeta, una lectura, un universo ──
+// Misma estructura siempre (cabecera, cuerpo, pie con la fuente) para que las tarjetas vecinas se alineen fila por fila.
 export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance, estado, ayuda, pie, children, id }) {
+  const u = UNIVERSOS[universo];
   return (
     <article className={`q-bloque q-${ancho}${alcance ? ' q-bloque-alcance' : ''}`} id={id} data-estado={estado?.tipo || 'ok'}>
       <header className="q-bloque-cab">
-        <h3>
-          {universo && <ChipUniverso universo={universo} />}
-          {alcance && <Chip tipo="alcance" icono={Hourglass}>{alcance}</Chip>}
-          <span>{titulo}</span>
-        </h3>
-        {ayuda && <Ayuda>{ayuda}</Ayuda>}
+        <div className="q-bloque-titulo">
+          <h3>{titulo}</h3>
+          {ayuda && <Ayuda>{ayuda}</Ayuda>}
+        </div>
+        {alcance && <span className="q-alcance"><Hourglass size={13} aria-hidden="true" />{alcance}</span>}
         {lectura && !estado?.reemplaza && <p className="q-bloque-lectura">{lectura}</p>}
       </header>
       <div className="q-bloque-cuerpo">
         {estado && <Estado tipo={estado.tipo} titulo={estado.titulo}>{estado.texto && <p>{estado.texto}</p>}</Estado>}
         {!estado?.reemplaza && children}
       </div>
-      {pie ? <footer className="q-bloque-pie">{pie}</footer> : <span />}
+      <footer className="q-bloque-pie">
+        {u && <span className="q-pie-universo"><u.icono size={13} aria-hidden="true" />{u.nombre}</span>}
+        {pie}
+      </footer>
     </article>
   );
 }
 
-// ── Sección: franja numerada a todo el ancho y riel que une sus bloques ──
-export function Seccion({ id, numero, titulo, pregunta, universos = [], fuentes = [], children }) {
+// ── Capítulo: un panel que agrupa las tarjetas de una fuente. Se lee como parte del flujo, no como un corte ──
+export const numeroCapitulo = (numero) => String(numero).split('.').at(-1).padStart(2, '0');
+export function Seccion({ id, numero, titulo, pregunta, fuentes = [], children }) {
+  const conProblema = fuentes.filter((f) => f.estado !== 'ok');
   return (
-    <section className="q-seccion" id={id} aria-labelledby={id + '-t'} data-seccion={numero}>
-      <header className="q-seccion-cab">
-        <span className="q-seccion-num" aria-hidden="true">{numero}</span>
+    <section className="q-capitulo" id={id} aria-labelledby={id + '-t'} data-seccion={numero}>
+      <header className="q-capitulo-cab">
+        <span className="q-capitulo-num" aria-hidden="true">{numeroCapitulo(numero)}</span>
         <div>
-          <h2 id={id + '-t'}><span className="solo-lector">{numero} </span>{titulo}</h2>
-          {pregunta && <p className="q-seccion-pregunta">{pregunta}</p>}
+          <h2 id={id + '-t'}>{titulo}</h2>
+          {pregunta && <p>{pregunta}</p>}
         </div>
-        <div className="q-seccion-meta">
-          {universos.map((u) => <ChipUniverso key={u} universo={u} />)}
-          {fuentes.map((f) => <ChipFuente key={f.nombre} {...f} />)}
-        </div>
+        {conProblema.length > 0 && <div className="q-capitulo-avisos">{conProblema.map((f) => <ChipFuente key={f.nombre} {...f} />)}</div>}
       </header>
-      <div className="q-seccion-cuerpo">{children}</div>
+      <div className="q-capitulo-cuerpo">{children}</div>
     </section>
   );
 }
 
-// ── Navegación entre las tres capas ──
+// ── Resumen de la capa: pocas cifras, cada una lleva a su capítulo ──
+export function Resumen({ titulo, items, pie }) {
+  return (
+    <section className="q-resumen" aria-labelledby="resumen-t" id="resumen">
+      <h2 id="resumen-t" className="q-resumen-titulo">{titulo}</h2>
+      <ul className="q-resumen-cifras">
+        {items.map((i) => {
+          const u = UNIVERSOS[i.universo];
+          return (
+            <li key={i.rotulo}>
+              <span className="q-resumen-rotulo">{i.rotulo}</span>
+              <span className={`q-cifra-valor${i.valor == null ? ' q-cifra-sin-dato' : ''}`} data-clave={i.dataClave}>{i.valor ?? NO_MEDIDO}</span>
+              {i.delta ? <Delta {...i.delta} /> : i.nota ? <span className="q-delta">{i.nota}</span> : null}
+              <a className="q-resumen-ir" href={'#' + i.ir}>{u && <u.icono size={13} aria-hidden="true" />}{i.irTexto}</a>
+            </li>
+          );
+        })}
+      </ul>
+      {pie && <footer className="q-bloque-pie">{pie}</footer>}
+    </section>
+  );
+}
+
+// ── Fecha de cada fuente, en una línea: el punto dice el estado y el texto también ──
+export function FuentesCapa({ fuentes }) {
+  return (
+    <ul className="q-fuentes" aria-label="Fuentes y fecha de corte">
+      {fuentes.map((f) => (
+        <li key={f.nombre} className={`q-fuente-${f.estado}`}><i aria-hidden="true" />{f.nombre} <span>{f.detalle}</span></li>
+      ))}
+    </ul>
+  );
+}
+
+// ── Navegación entre las tres capas: pestañas de texto, sin peso de tarjeta ──
 export function NavegacionCapas({ capas, activa, onCambiar }) {
   return (
-    <nav aria-label="Capas del algoritmo">
-      <ol className="q-capas">
+    <nav className="q-capas" aria-label="Capas del algoritmo">
+      <ol>
         {capas.map((c) => (
           <li key={c.id}>
-            <button type="button" className="q-capa-boton" aria-current={c.id === activa ? 'page' : undefined} onClick={() => onCambiar(c.id)}>
-              <span className="q-capa-num">{c.numero}</span>
-              <span className="q-capa-nombre">{c.nombre}</span>
-              <span className="q-capa-desc">{c.descripcion}</span>
-            </button>
+            <a href={'#' + c.id} aria-current={c.id === activa ? 'page' : undefined} title={c.descripcion}
+              onClick={(e) => { e.preventDefault(); onCambiar(c.id); }}>
+              <span className="q-capa-num" aria-hidden="true">{c.numero}</span>{c.nombre}
+            </a>
           </li>
         ))}
       </ol>
@@ -174,28 +210,29 @@ export function NavegacionCapas({ capas, activa, onCambiar }) {
   );
 }
 
-// ── Índice de la capa: fijo, resalta la sección que se está leyendo ──
+// ── Índice de la capa: al costado, fijo, marca el capítulo que se está leyendo ──
 export function IndiceCapa({ secciones, etiqueta }) {
-  const [activa, setActiva] = useState(secciones[0]?.id);
+  const [activa, setActiva] = useState('resumen');
+  const ids = ['resumen', ...secciones.map((s) => s.id)];
   useEffect(() => {
     const visibles = new Map();
     const io = new IntersectionObserver((entradas) => {
       entradas.forEach((e) => visibles.set(e.target.id, e.isIntersecting ? e.boundingClientRect.top : null));
       const primera = [...visibles.entries()].filter(([, t]) => t != null).sort((a, b) => a[1] - b[1])[0];
       if (primera) setActiva(primera[0]);
-    }, { rootMargin: '-140px 0px -55% 0px' });
-    secciones.forEach((s) => { const el = document.getElementById(s.id); if (el) io.observe(el); });
+    }, { rootMargin: '-120px 0px -60% 0px' });
+    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
     return () => io.disconnect();
-  }, [secciones]);
+  }, [secciones]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <nav className="q-indice" aria-label={etiqueta}>
-      <div className="q-envoltura">
-        <ol>
-          {secciones.map((s) => (
-            <li key={s.id}><a href={'#' + s.id} aria-current={s.id === activa ? 'true' : undefined}><b>{s.numero}</b>{s.titulo}</a></li>
-          ))}
-        </ol>
-      </div>
+      <span className="q-indice-titulo">En esta capa</span>
+      <ol>
+        <li><a href="#resumen" aria-current={activa === 'resumen' ? 'true' : undefined}>Resumen</a></li>
+        {secciones.map((s) => (
+          <li key={s.id}><a href={'#' + s.id} aria-current={s.id === activa ? 'true' : undefined}>{s.titulo}</a></li>
+        ))}
+      </ol>
     </nav>
   );
 }

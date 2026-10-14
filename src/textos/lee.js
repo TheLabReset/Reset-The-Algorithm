@@ -15,7 +15,7 @@ export function pautaResumen(v) {
 export function plataformasLectura(v) {
   const ps = v.lee.plataformas.plataformas;
   const sobre = ps.filter((p) => p.cpl != null && p.objetivo != null && p.cpl > p.objetivo);
-  const titulo = 'Cada plataforma contra su objetivo de costo por lead';
+  const titulo = 'Costo por lead contra el objetivo';
   if (!sobre.length) return { titulo, lectura: `Las ${numero(ps.length)} plataformas quedan bajo su objetivo de costo por lead en ${periodoTexto(P(v))}.` };
   return { titulo, lectura: `${lista(sobre.map((p) => p.nombre))} ${sobre.length === 1 ? 'paga' : 'pagan'} más por lead que su objetivo en ${periodoTexto(P(v))}.` };
 }
@@ -104,7 +104,7 @@ export function redesTiktok(v) {
 export function redesTemas(v) {
   const r = v.lee.redes;
   const t = r.pideLectura;
-  const titulo = 'Qué se dice de Reset Fit';
+  const titulo = 'Qué se dice de Fit Lab';
   if (!t) return { titulo, lectura: `${capital(numero(r.menciones))} menciones en el mes. Ningún tema con casos suficientes tiene tono claramente negativo.` };
   const giro = t.tonoPrevio != null && t.tonoPrevio - t.tono > 0.15 ? `; en ${comparacionTexto(P(v))} el tono era mejor` : '';
   return { titulo, lectura: `«${t.nombre}» es el tema con peor tono: ${numero(t.negativas)} de sus ${numero(t.menciones)} menciones son negativas${giro}.` };
@@ -114,13 +114,13 @@ export function competenciaLectura(v) {
   const m = v.lee.competencia.marcas;
   const propia = m.find((x) => x.propia);
   const puesto = m.indexOf(propia) + 1;
-  return { titulo: 'Interacción por publicación', lectura: `${m[0].nombre} logra la mayor interacción por publicación del mes. Reset Fit queda en el puesto ${numero(puesto)} de ${numero(m.length)}, con ${numero(propia.publicaciones)} publicaciones y ${numero(propia.anuncios)} anuncios activos.` };
+  return { titulo: 'Interacción por publicación', lectura: `${m[0].nombre} logra la mayor interacción por publicación del mes. Fit Lab queda en el puesto ${numero(puesto)} de ${numero(m.length)}, con ${numero(propia.publicaciones)} publicaciones y ${numero(propia.anuncios)} anuncios activos.` };
 }
 
 export function competenciaConversacion(v) {
   const c = v.lee.competencia.conversacion;
   if (c.estado !== 'ok') return { titulo: 'Participación en la conversación', lectura: 'Hacen falta al menos dos meses con menciones.' };
-  return { titulo: 'Participación en la conversación', lectura: `Reset Fit pasó de ${porcentaje(c.propia.inicio)} a ${porcentaje(c.propia.actual)} de las menciones del rubro en un año.` };
+  return { titulo: 'Participación en la conversación', lectura: `Fit Lab pasó de ${porcentaje(c.propia.inicio)} a ${porcentaje(c.propia.actual)} de las menciones del rubro en un año.` };
 }
 
 export function webFuentes(v) {

@@ -103,7 +103,7 @@ Las dependencias desactualizadas y deprecadas, medidas contra el registry, está
 | B3 | 44 íconos, 12 en cuadro de color sobre un título; la mancuerna del cliente demo como logo de un producto de Reset | `grep` (confirmé) |
 | B4 | Favicon inexistente que responde HTML; `theme-color` `#7C3AED` | `curl` (confirmé) |
 | B5 | Tokens fantasma (`fitzone-orange`, `fitzone-lime`) y colores de gráfico que no son del sistema (`#FF6B35`, `#00D4FF`, `#B8FF00`): restos de una paleta anterior | `grep` (confirmé) |
-| B6 | El producto se llama «The Algorithm by Reset» en la cabecera y «FitZone Algorithm» en el pie y en la carga | Capturas (confirmé) |
+| B6 | El producto se llama «The Algorithm by The Lab» en la cabecera y «FitZone Algorithm» en el pie y en la carga | Capturas (confirmé) |
 
 ---
 
