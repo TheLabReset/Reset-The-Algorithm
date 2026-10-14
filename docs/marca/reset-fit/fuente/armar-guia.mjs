@@ -20,13 +20,15 @@ const MD = [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0
 const deut = (h) => { const l = rgb(h).map(lin); return MD.map((r) => Math.min(1, Math.max(0, r[0] * l[0] + r[1] * l[1] + r[2] * l[2]))); };
 const contrasteDeut = (a, b) => ratio(lum(deut(a)), lum(deut(b)));
 const coma = (n, d = 1) => n.toFixed(d).replace('.', ',');
+const num = (n) => String(n).replace('.', ',').replace('-', '−'); // número tal cual, con coma decimal y signo menos
 
 // ── Piezas de dibujo ──
 // Sin argumentos, la pose hereda --cara y --acento del tema (no se redeclaran: una variable que se nombra a sí misma queda inválida)
 const pose = (id, tam = 120, { cara, acento, pesa = 'var(--rf-rojo)' } = {}) => {
   const p = geo.poses.find((x) => x.id === id);
   const estilo = `color:${pesa}` + (cara ? `;--cara:${cara}` : '') + (acento ? `;--acento:${acento}` : '');
-  return `<svg class="pose" viewBox="-6 -22 112 120" width="${tam}" height="${f((tam * 120) / 112)}" role="img" aria-label="La pesa: ${p.nombre}" style="${estilo}">${p.dibujo}</svg>`;
+  const E = geo.encuadre;
+  return `<svg class="pose" viewBox="${E.x} ${E.y} ${E.w} ${E.h}" width="${tam}" height="${f((tam * E.h) / E.w)}" role="img" aria-label="La pesa: ${p.nombre}" style="${estilo}">${p.dibujo}</svg>`;
 };
 const poseG = (id, x, y, s, { cara = C.cal, acento = C.tinta, pesa = C.rojo } = {}) => {
   const p = geo.poses.find((q) => q.id === id);
@@ -35,32 +37,20 @@ const poseG = (id, x, y, s, { cara = C.cal, acento = C.tinta, pesa = C.rojo } = 
 const palabra = (x, y, alto, color) => `<path transform="translate(${x} ${y}) scale(${f(alto / geo.alturaX)})" d="${geo.palabra}" fill="${color}"/>`;
 const horizontalG = (x, y, ancho, negativo = false) => `<g transform="translate(${x} ${y}) scale(${f(ancho / geo.horiz.w)})">${interior(negativo ? 'reset-fit-horizontal-negativo.svg' : 'reset-fit-horizontal.svg')}</g>`;
 const minimaG = (x, y, s, pesa = C.rojo, cara = C.cal) => `<g transform="translate(${x} ${y}) scale(${s})" style="color:${pesa};--cara:${cara}">${geo.minima}</g>`;
-// QR decorativo: patrón determinista que no codifica nada (dice «QR de muestra» al lado)
-const qr = (x, y, t, color) => {
-  let s = `<g transform="translate(${x} ${y})" fill="${color}">`, a = 7;
-  const m = t / 21;
-  for (let i = 0; i < 21; i++) for (let j = 0; j < 21; j++) {
-    const ojo = (i < 7 && j < 7) || (i < 7 && j > 13) || (i > 13 && j < 7);
-    a = (a * 1103515245 + 12345) & 0x7fffffff;
-    const lleno = ojo ? (i % 6 === 0 || j % 6 === 0 || (i % 14 >= 2 && i % 14 <= 4 && j % 14 >= 2 && j % 14 <= 4)) && !(i > 13 && j > 13) : a % 3 === 0;
-    if (lleno) s += `<rect x="${f(j * m)}" y="${f(i * m)}" width="${f(m)}" height="${f(m)}"/>`;
-  }
-  return s + '</g>';
-};
 
 // ── Construcción del símbolo ──
 let grilla = '';
 for (let i = 0; i <= 100; i += 10) grilla += `<line x1="${i}" y1="0" x2="${i}" y2="100" class="g-linea"/><line x1="0" y1="${i}" x2="100" y2="${i}" class="g-linea"/>`;
 const G = geo.G;
 const construccion = `<svg viewBox="-6 -8 150 120" role="img" aria-label="Construcción del símbolo sobre una grilla de 100 módulos">${grilla}
-<g style="color:var(--rf-rojo);--cara:var(--rf-cal)" opacity="0.88">${geo.poses[0].dibujo}</g>
+<g style="color:var(--rf-rojo);--cara:var(--rf-cal)" opacity="0.88" transform="rotate(${-G.giro} 50 60)">${geo.poses[0].dibujo}</g>
 <g class="g-cota"><circle cx="50" cy="${G.cy}" r="${G.r}" fill="none" stroke-dasharray="1.5 1.5"/><circle cx="50" cy="${G.cy}" r="0.9"/>
 <line x1="50" y1="${G.cy}" x2="104" y2="${G.cy}" stroke-dasharray="0.6 0.8"/><text x="106" y="${G.cy + 1.3}">círculo r ${G.r}</text>
 <line x1="${50 - 26}" y1="${G.base}" x2="104" y2="${G.base}" stroke-dasharray="1 1"/><text x="106" y="${G.base + 1.3}">base plana, y ${G.base}</text>
 <line x1="62" y1="22" x2="104" y2="12"/><text x="106" y="13.3">asa, trazo ${G.asa.trazo}</text>
-<line x1="88" y1="40" x2="104" y2="34"/><text x="106" y="35.3">brazo, trazo ${G.brazo}</text>
-<line x1="87" y1="24" x2="104" y2="24" stroke-dasharray="0.6 0.8"/><text x="106" y="25.3">mano, r ${G.mano}</text>
-<text x="106" y="100">todo girado ${G.giro}°</text></g>
+<line x1="90" y1="44" x2="104" y2="38"/><text x="106" y="39.3">brazo, trazo ${num(G.brazo)}</text>
+<line x1="92.5" y1="24" x2="104" y2="24" stroke-dasharray="0.6 0.8"/><text x="106" y="25.3">mano, r ${num(G.mano)}</text>
+<text x="106" y="96">dibujo sin giro;</text><text x="106" y="101">en la firma, ${num(G.giro)}°</text></g>
 ${[0, 50, 100].map((v) => `<text class="g-num" x="${v}" y="-3" text-anchor="middle">${v}</text>`).join('')}
 </svg>`;
 
@@ -69,7 +59,7 @@ const P0 = geo.poses[0].dibujo;
 const malSvg = (cuerpo, etiqueta) => `<svg viewBox="-10 -10 120 120" role="img" aria-label="${etiqueta}">${cuerpo}</svg>`;
 const mal = [
   { t: 'No se estira ni se aplasta', s: malSvg(`<g transform="translate(-14 18) scale(1.3 0.72)" style="color:${C.rojo};--cara:${C.cal}">${P0}</g>`, 'Símbolo estirado') },
-  { t: 'No se le da cuerpo de persona', d: 'La pesa no lleva torso ni piernas fijas: el gesto es de una pesa, no de un cuerpo.', s: malSvg(`<g style="color:${C.rojo};--cara:${C.cal}">${P0}<path d="M36 84 Q34 100 30 108 M64 84 Q66 100 70 108" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="none"/></g>`, 'Símbolo con piernas') },
+  { t: 'No se le da cuerpo de persona', d: 'La pesa no lleva torso ni piernas fijas: el gesto es de una pesa, no de un cuerpo.', s: malSvg(`<g style="color:${C.rojo};--cara:${C.cal}">${P0}<path d="M37 84 Q35 94 31 101 M63 84 Q65 94 69 101" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="none"/></g>`, 'Símbolo con piernas') },
   { t: 'No cambia de color', s: malSvg(`<g style="color:#6f42c1;--cara:${C.cal}">${P0}</g>`, 'Símbolo en violeta') },
   { t: 'No va sobre rojo y menta juntos', d: `En deuteranopía, rojo y menta quedan a ${coma(contrasteDeut(C.rojo, C.menta))}:1.`, s: malSvg(`<rect x="-10" y="-10" width="120" height="120" fill="${C.menta}"/><g style="color:${C.rojo};--cara:${C.cal}">${P0}</g>`, 'Símbolo rojo sobre menta') },
   { t: 'No lleva sombras ni contornos', s: malSvg(`<g style="color:${C.tinta};--cara:${C.tinta}" transform="translate(4 4)" opacity="0.35">${P0}</g><g style="color:${C.rojo};--cara:${C.cal}">${P0}</g>`, 'Símbolo con sombra') },
@@ -77,142 +67,187 @@ const mal = [
 ];
 
 // ── Aplicaciones ──
-const fachada = `<svg viewBox="0 0 1200 620" role="img" aria-label="Fachada de la sede Los Olivos de noche">
-<rect width="1200" height="620" fill="#0b0c10"/><rect x="0" y="520" width="1200" height="100" fill="#1d1f26"/>
-<rect x="90" y="120" width="1020" height="400" fill="#16181f"/>
-<rect x="90" y="120" width="1020" height="120" fill="${C.tinta}"/><rect x="90" y="236" width="1020" height="4" fill="${C.rojo}"/>
-${horizontalG(130, 140, 470, true)}
-<text x="1070" y="194" text-anchor="end" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="40" fill="${C.cal}">Los Olivos</text>
-<rect x="140" y="280" width="420" height="240" fill="#22252e"/><rect x="640" y="280" width="420" height="240" fill="#22252e"/>
-<rect x="140" y="280" width="420" height="240" fill="${C.menta}" opacity="0.07"/>
-${poseG('hola', 150, 330, 1.5, { acento: C.menta, cara: C.tinta })}
-<text x="330" y="408" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="44" fill="${C.cal}">Ven como</text>
-<text x="330" y="458" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="44" fill="${C.menta}">estés.</text>
-<rect x="664" y="310" width="380" height="180" rx="14" fill="${C.cal}"/>
-<text x="688" y="352" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="700" font-size="24" fill="${C.tinta}">Horario</text>
-<text x="688" y="390" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="21" fill="${C.tinta}">Lunes a viernes: 5:00 a 23:00</text>
-<text x="688" y="424" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="21" fill="${C.tinta}">Sábado y domingo: 7:00 a 19:00</text>
-<text x="688" y="460" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="19" fill="${C.pizarra}">Feriados: 7:00 a 15:00</text>
-<rect x="1124" y="140" width="56" height="230" rx="10" fill="${C.rojo}"/>${minimaG(1128, 220, 0.48, C.cal, C.rojo)}
+// Reglas que siguen todas: márgenes iguales a los cuatro lados de cada pieza, nada a menos de 24 px de un borde,
+// la firma siempre con su símbolo, y ningún texto editorial impreso dentro de la pieza (va en el pie).
+const T = (x, y, t, { tam = 24, peso = 400, color = C.tinta, fam = 'texto', ancla = 'start' } = {}) =>
+  `<text x="${x}" y="${y}" text-anchor="${ancla}" font-family="${fam === 'titulo' ? 'Bricolage Grotesque, sans-serif' : 'Atkinson Hyperlegible Next, sans-serif'}" font-weight="${peso}" font-size="${tam}" fill="${color}">${t}</text>`;
+// Firma horizontal dibujada con el símbolo completo (la versión mínima es solo para ícono y favicon).
+// «alto» es la altura de x de la palabra; el símbolo mide 1,9 veces eso, igual que en reset-fit-horizontal.svg.
+const firma = (x, y, alto, color, pesa = C.rojo, cara = C.cal) => {
+  const k = geo.caja, s = (alto * 1.9) / (k.y1 - k.y0);
+  return `${poseG('celebra', f(x - k.x0 * s), f(y - geo.G.base * s), f(s), { pesa, cara, acento: cara })}${palabra(f(x + (k.x1 - k.x0) * s + alto * 0.38), y, alto, color)}`;
+};
+
+const anchoFirma = (alto) => ((geo.caja.x1 - geo.caja.x0) * alto * 1.9) / (geo.caja.y1 - geo.caja.y0) + alto * 0.38 + (geo.palabraAncho * alto) / geo.alturaX;
+const firmaCentrada = (cx, y, alto, color, pesa, cara) => firma(f(cx - anchoFirma(alto) / 2), y, alto, color, pesa, cara);
+
+const fachada = `<svg viewBox="0 0 1200 640" role="img" aria-label="Fachada de la sede Los Olivos de noche">
+<defs><linearGradient id="fa-cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#07080b"/><stop offset="1" stop-color="#11131a"/></linearGradient>
+<linearGradient id="fa-luz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3140"/><stop offset="1" stop-color="#1c2029"/></linearGradient></defs>
+<rect width="1200" height="640" fill="url(#fa-cielo)"/>
+<rect x="80" y="100" width="1040" height="440" fill="#191b22"/>
+<rect x="80" y="100" width="1040" height="150" fill="${C.tinta}"/><rect x="80" y="246" width="1040" height="6" fill="${C.rojo}"/>
+${firma(128, 210, 46, C.cal, C.rojo, C.tinta)}
+${T(1072, 210, 'Los Olivos', { tam: 40, peso: 700, color: C.cal, fam: 'titulo', ancla: 'end' })}
+<rect x="120" y="290" width="400" height="250" fill="url(#fa-luz)"/><rect x="680" y="290" width="400" height="250" fill="url(#fa-luz)"/>
+<rect x="548" y="300" width="104" height="240" fill="#232733" stroke="#3a3f4c" stroke-width="4"/><line x1="600" y1="300" x2="600" y2="540" stroke="#3a3f4c" stroke-width="3"/>
+<rect x="584" y="400" width="6" height="40" rx="3" fill="#8c919c"/><rect x="610" y="400" width="6" height="40" rx="3" fill="#8c919c"/>
+${poseG('hola', 140, 322, 1.55, { acento: C.menta, cara: C.tinta })}
+${T(318, 404, 'Ven como', { tam: 44, peso: 800, color: C.cal, fam: 'titulo' })}${T(318, 454, 'estés.', { tam: 44, peso: 800, color: C.menta, fam: 'titulo' })}
+<rect x="712" y="330" width="336" height="170" rx="14" fill="${C.cal}"/>
+${T(736, 370, 'Horario', { tam: 24, peso: 700 })}${T(736, 408, 'Lunes a viernes: 5:00 a 23:00', { tam: 20 })}${T(736, 440, 'Sábado y domingo: 7:00 a 19:00', { tam: 20 })}${T(736, 474, 'Feriados: 7:00 a 15:00', { tam: 18, color: C.pizarra })}
+<rect x="1120" y="150" width="34" height="8" fill="#5b606c"/><rect x="1120" y="330" width="34" height="8" fill="#5b606c"/>
+<rect x="1140" y="128" width="46" height="232" rx="10" fill="${C.rojo}"/>${minimaG(1143, 216, 0.42, C.cal, C.rojo)}
+<rect x="0" y="540" width="1200" height="100" fill="#20232b"/><rect x="0" y="540" width="1200" height="6" fill="#2d313b"/>
 </svg>`;
 
-const senal = (titulo, texto, id, fondo, tinta, acento) => `<svg viewBox="0 0 420 560" role="img" aria-label="Señal de sala: ${titulo}">
-<rect width="420" height="560" rx="18" fill="${fondo}"/>${poseG(id, 110, 70, 2, { cara: fondo, acento, pesa: C.rojo })}
-<text x="36" y="390" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="40" fill="${tinta}">${titulo}</text>
-${texto.map((l, i) => `<text x="36" y="${440 + i * 36}" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="26" fill="${tinta}">${l}</text>`).join('')}</svg>`;
-const salida = `<svg viewBox="0 0 420 560" role="img" aria-label="Señal de salida de emergencia, sin humor">
-<rect width="420" height="560" rx="18" fill="#0a7d3b"/><rect x="40" y="60" width="340" height="300" rx="10" fill="none" stroke="#fff" stroke-width="6"/>
-<path d="M210 120 a22 22 0 1 0 0.1 0Z" fill="#fff"/><path d="M190 175 l60 10 l30 60 M200 190 l-20 70 l-30 40 M215 230 l40 40 l10 60 M245 186 l30 -20" stroke="#fff" stroke-width="18" stroke-linecap="round" fill="none"/>
-<path d="M300 300 h60 m-20 -20 l20 20 l-20 20" stroke="#fff" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="36" y="430" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="800" font-size="46" fill="#fff">SALIDA</text>
-<text x="36" y="480" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="26" fill="#fff">Pictograma de la norma técnica.</text>
-<text x="36" y="514" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="26" fill="#fff">Aquí no va la pesa.</text></svg>`;
+const senal = (titulo, lineas, id, fondo, tinta, acento, zona) => `<svg viewBox="0 0 420 560" role="img" aria-label="Señal de sala: ${titulo}">
+<rect width="420" height="560" rx="18" fill="${fondo}"/>${poseG(id, 102, 54, 2.1, { cara: fondo, acento, pesa: C.rojo })}
+${T(40, 344, titulo, { tam: 44, peso: 800, color: tinta, fam: 'titulo' })}
+${lineas.map((l, i) => T(40, 392 + i * 34, l, { tam: 25, color: tinta })).join('')}
+<line x1="40" y1="492" x2="380" y2="492" stroke="${tinta}" stroke-opacity="0.18" stroke-width="2"/>
+${minimaG(36, 502, 0.36, C.rojo, fondo)}${T(380, 530, zona, { tam: 18, peso: 700, color: tinta, ancla: 'end' })}</svg>`;
 
-const polo = (rol, base, letra, linea) => `<svg viewBox="0 0 400 440" role="img" aria-label="Polo del equipo: ${rol}">
-<path d="M120 40 Q200 80 280 40 L370 90 L340 170 L300 150 L300 420 Q200 432 100 420 L100 150 L60 170 L30 90 Z" fill="${base}"/>
-<path d="M150 46 Q200 92 250 46" fill="none" stroke="${linea}" stroke-width="10"/>
-${minimaG(232, 120, 0.42, C.rojo, base)}
-<text x="200" y="300" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="${rol.length > 7 ? 30 : 40}" fill="${letra}">${rol}</text>
-<rect x="100" y="400" width="200" height="8" fill="${linea}"/></svg>`;
+// Salida: pictograma de evacuación sin pesa ni humor (en obra se usa el de la norma técnica vigente)
+const salida = `<svg viewBox="0 0 420 560" role="img" aria-label="Señal de salida">
+<rect width="420" height="560" rx="18" fill="#0a7d3b"/><rect x="36" y="40" width="348" height="320" rx="12" fill="none" stroke="#fff" stroke-width="6"/>
+<rect x="268" y="96" width="78" height="210" fill="none" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
+<circle cx="196" cy="118" r="23" fill="#fff"/>
+<g fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round">
+<path d="M186 152 L162 232"/><path d="M182 166 L218 186 L242 168"/><path d="M182 166 L150 190 L132 220"/>
+<path d="M162 232 L204 256 L214 300"/><path d="M162 232 L134 268 L96 272"/></g>
+<path d="M72 330 H160 M136 308 L162 330 L136 352" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+${T(40, 448, 'SALIDA', { tam: 64, peso: 800, color: '#fff' })}${T(40, 496, 'Ruta de evacuación', { tam: 26, color: '#fff' })}</svg>`;
+
+// Polos: frente y espalda. El logo nunca va del mismo color que la tela.
+const siluetaPolo = 'M130 40 C150 58 250 58 270 40 L342 68 L382 150 L330 174 L312 142 L312 420 C240 434 160 434 88 420 L88 142 L70 174 L18 150 L58 68 Z';
+const polo = (base, rib, x0, espalda) => `<g transform="translate(${x0} 0)">
+<path d="${siluetaPolo}" fill="${base}"/>
+<path d="M140 44 Q200 ${espalda ? 60 : 80} 260 44" fill="none" stroke="${rib}" stroke-width="9" stroke-linecap="round"/>
+<path d="M30 140 L66 156 M370 140 L334 156" stroke="${rib}" stroke-width="7" stroke-linecap="round"/>`;
+const polos = (rol, base, letra, rib, pesa) => `<svg viewBox="0 0 860 460" role="img" aria-label="Polo del equipo, ${rol}: frente y espalda">
+${polo(base, rib, 20, false)}${minimaG(228, 104, 0.4, pesa, base)}${T(248, 162, rol, { tam: 16, peso: 700, color: letra, ancla: 'middle' })}</g>
+${polo(base, rib, 440, true)}
+${palabra(f(200 - (geo.palabraAncho * 18) / geo.alturaX / 2), 104, 18, letra)}${T(200, 250, rol, { tam: Math.min(58, Math.floor(180 / (rol.length * 0.56))), peso: 800, color: letra, fam: 'titulo', ancla: 'middle' })}</g>
+${T(220, 452, 'Frente', { tam: 16, color: C.pizarra, ancla: 'middle' })}${T(640, 452, 'Espalda', { tam: 16, color: C.pizarra, ancla: 'middle' })}</svg>`;
 
 const tarjeta = `<svg viewBox="0 0 856 540" role="img" aria-label="Tarjeta de socia">
+<defs><clipPath id="tarjeta-corte"><rect width="856" height="540" rx="34"/></clipPath></defs>
 <rect width="856" height="540" rx="34" fill="${C.rojo}"/>
-<clipPath id="tarjeta-corte"><rect width="856" height="540" rx="34"/></clipPath>
-<g clip-path="url(#tarjeta-corte)">${poseG('celebra', 500, 110, 3.6, { cara: C.rojo, pesa: C.cal, acento: C.tinta })}</g>
-${palabra(56, 104, 34, C.tinta)}
-<text x="56" y="392" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="26" fill="${C.tinta}">Socia desde marzo de 2026 · todas las sedes</text>
-<text x="56" y="460" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="50" fill="${C.tinta}">Nombre Apellido</text>
-</svg>`;
-const billetera = `<svg viewBox="0 0 360 560" role="img" aria-label="Tarjeta en la billetera del celular, con QR de muestra">
-<rect width="360" height="560" rx="26" fill="${C.tinta}"/>${palabra(28, 62, 30, C.cal)}${minimaG(282, 22, 0.52, C.rojo, C.tinta)}
-<text x="28" y="120" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="18" fill="${C.niebla}">Socia</text>
-<text x="28" y="152" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="30" fill="${C.cal}">Nombre Apellido</text>
-<text x="28" y="196" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="18" fill="${C.niebla}">Próxima clase</text>
-<text x="28" y="224" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="700" font-size="22" fill="${C.menta}">Ciclo · jueves 19:00 · San Borja</text>
-<rect x="80" y="262" width="200" height="200" rx="12" fill="${C.cal}"/>${qr(95, 277, 170, C.tinta)}
-<text x="180" y="500" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="16" fill="${C.niebla}">QR de muestra: no lleva a ningún lado</text></svg>`;
+<g clip-path="url(#tarjeta-corte)">${poseG('celebra', 548, 190, 3.05, { cara: C.rojo, pesa: C.cal, acento: C.tinta })}</g>
+${firma(56, 110, 34, C.tinta, C.tinta, C.rojo)}
+${T(56, 404, 'Socia desde marzo de 2026', { tam: 24 })}
+${T(56, 462, 'Nombre Apellido', { tam: 46, peso: 800, fam: 'titulo' })}
+${T(56, 500, 'Todas las sedes', { tam: 20, color: C.tinta })}</svg>`;
 
-const telefono = (titulo, cuerpo) => `<svg viewBox="0 0 300 620" role="img" aria-label="Pantalla de la app: ${titulo}">
-<rect width="300" height="620" rx="42" fill="#0b0c10"/><rect x="12" y="12" width="276" height="596" rx="32" fill="${C.cal}"/>
-<rect x="110" y="24" width="80" height="22" rx="11" fill="#0b0c10"/>${cuerpo}</svg>`;
-const appInicio = telefono('Inicio', `${palabra(30, 92, 22, C.tinta)}
-<text x="30" y="140" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="26" fill="${C.tinta}">Hola, Nombre</text>
-<text x="30" y="166" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="15" fill="${C.pizarra}">Llevas 3 semanas seguidas.</text>
-<rect x="30" y="186" width="240" height="150" rx="18" fill="${C.tinta}"/>${poseG('celebra', 186, 196, 0.86, { cara: C.tinta, acento: C.menta })}
-<text x="48" y="226" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="14" fill="${C.niebla}">Tu racha</text>
-<text x="48" y="282" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="52" fill="${C.cal}">3</text>
-<text x="48" y="312" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="15" fill="${C.cal}">semanas: ya es costumbre</text>
-<text x="30" y="378" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="18" fill="${C.tinta}">Próxima clase</text>
-<rect x="30" y="392" width="240" height="74" rx="14" fill="#fff" stroke="#dcdcd6"/>
-<text x="46" y="424" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="700" font-size="17" fill="${C.tinta}">Ciclo · jueves 19:00</text>
-<text x="46" y="450" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="15" fill="${C.pizarra}">San Borja · quedan 4 bicis</text>
-<rect x="30" y="486" width="240" height="52" rx="26" fill="${C.rojo}"/><text x="150" y="518" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="700" font-size="17" fill="${C.tinta}">Reservar otra clase</text>`);
-const appVacio = telefono('Sin reservas', `<text x="30" y="92" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="24" fill="${C.tinta}">Mis reservas</text>
-${poseG('siesta', 70, 170, 1.45)}
-<text x="150" y="380" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="22" fill="${C.tinta}">Nada por aquí todavía</text>
-<text x="150" y="410" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="15" fill="${C.pizarra}">La pesa aprovecha para dormir.</text>
-<text x="150" y="432" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="15" fill="${C.pizarra}">Cuando reserves, aparece aquí.</text>
-<rect x="50" y="470" width="200" height="50" rx="25" fill="${C.tinta}"/><text x="150" y="501" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="700" font-size="16" fill="${C.cal}">Ver clases de hoy</text>`);
-const appCargando = telefono('Cargando', `${poseG('piensa', 80, 200, 1.3)}
-<text x="150" y="400" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="22" fill="${C.tinta}">Un momento</text>
-<text x="150" y="430" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="15" fill="${C.pizarra}">Buscamos los horarios de tu sede.</text>`);
+// QR de muestra: módulos al azar con los tres cuadros de posición bien formados; no codifica nada
+const qrMuestra = (x, y, lado, color) => {
+  const n = 25, m = lado / n;
+  let s = `<g transform="translate(${x} ${y})" fill="${color}" shape-rendering="crispEdges">`, a = 11;
+  const enOjo = (i, j) => (i < 8 && j < 8) || (i < 8 && j >= n - 8) || (i >= n - 8 && j < 8);
+  const ojo = (i, j) => { const r = Math.max(Math.abs(i - 3), Math.abs(j - 3)); return r === 3 || r <= 1; };
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    let lleno;
+    if (enOjo(i, j)) { const ii = i >= n - 8 ? i - (n - 7) : i, jj = j >= n - 8 ? j - (n - 7) : j; lleno = ii >= 0 && jj >= 0 && ii < 7 && jj < 7 && ojo(ii, jj); }
+    else { a = (Math.imul(a, 1664525) + 1013904223) >>> 0; lleno = ((a >>> 16) & 1) === 1; } // entero de 32 bits: sin pérdida de precisión
+    if (lleno) s += `<rect x="${f(j * m)}" y="${f(i * m)}" width="${f(m)}" height="${f(m)}"/>`;
+  }
+  return s + '</g>';
+};
+const billetera = `<svg viewBox="0 0 360 580" role="img" aria-label="Tarjeta en la billetera del celular, con QR de muestra">
+<rect width="360" height="580" rx="26" fill="${C.tinta}"/>${firma(28, 64, 22, C.cal, C.rojo, C.tinta)}
+${T(28, 118, 'Socia', { tam: 16, color: C.niebla })}${T(28, 150, 'Nombre Apellido', { tam: 28, peso: 800, color: C.cal, fam: 'titulo' })}
+${T(28, 192, 'Próxima clase', { tam: 16, color: C.niebla })}${T(28, 220, 'Ciclo · jueves 19:00', { tam: 21, peso: 700, color: C.menta })}${T(28, 246, 'San Borja', { tam: 18, color: C.cal })}
+<rect x="70" y="272" width="220" height="220" rx="14" fill="${C.cal}"/>${qrMuestra(88, 290, 184, C.tinta)}
+${T(180, 528, 'QR de muestra: no lleva a ningún lado', { tam: 15, color: C.niebla, ancla: 'middle' })}</svg>`;
+
+// App: barra de estado, contenido y barra de pestañas iguales en las tres pantallas
+const icTab = {
+  inicio: 'M-9 1 L0 -8 L9 1 V10 H-9 Z',
+  clases: 'M-10 -6 H10 V9 H-10 Z M-10 -1 H10 M-5 -9 V-4 M5 -9 V-4',
+  reservas: 'M-8 -9 H8 V10 L0 5 L-8 10 Z',
+  perfil: 'M0 -9.5 A4.5 4.5 0 1 1 -0.01 -9.5 M-8.5 10 Q0 -1 8.5 10',
+};
+const barraTabs = (activa) => `<rect x="12" y="540" width="276" height="68" fill="#fff"/><line x1="12" y1="540" x2="288" y2="540" stroke="#dcdcd6"/>
+${['inicio', 'clases', 'reservas', 'perfil'].map((k, i) => { const x = 46 + i * 69, on = k === activa; return `<g transform="translate(${x} 562)"><path d="${icTab[k]}" fill="none" stroke="${on ? C.tinta : C.niebla}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></g>${T(x, 594, k[0].toUpperCase() + k.slice(1), { tam: 11, peso: on ? 700 : 400, color: on ? C.tinta : C.pizarra, ancla: 'middle' })}`; }).join('')}`;
+const telefono = (titulo, cuerpo, activa) => `<svg viewBox="0 0 300 620" role="img" aria-label="Pantalla de la app: ${titulo}">
+<defs><clipPath id="pantalla-${activa}"><rect x="12" y="12" width="276" height="596" rx="32"/></clipPath></defs>
+<rect width="300" height="620" rx="42" fill="#0b0c10"/><g clip-path="url(#pantalla-${activa})"><rect x="12" y="12" width="276" height="596" fill="${C.cal}"/>
+${T(40, 40, '7:42', { tam: 13, peso: 700 })}<rect x="246" y="30" width="22" height="11" rx="3" fill="none" stroke="${C.tinta}" stroke-width="1.5"/><rect x="248" y="32" width="15" height="7" rx="1.5" fill="${C.tinta}"/>
+${cuerpo}${barraTabs(activa)}</g><rect x="110" y="22" width="80" height="22" rx="11" fill="#0b0c10"/></svg>`;
+const appInicio = telefono('Inicio', `${firma(30, 92, 16, C.tinta)}
+${T(30, 140, 'Hola, Nombre', { tam: 26, peso: 800, fam: 'titulo' })}${T(30, 166, 'Llevas 3 semanas seguidas.', { tam: 15, color: C.pizarra })}
+<rect x="30" y="184" width="240" height="140" rx="18" fill="${C.tinta}"/>${poseG('celebra', 172, 198, 0.86, { cara: C.tinta, acento: C.menta })}
+${T(50, 222, 'Tu racha', { tam: 14, color: C.niebla })}${T(50, 278, '3', { tam: 52, peso: 800, color: C.cal, fam: 'titulo' })}${T(50, 306, 'semanas: ya es costumbre', { tam: 14, color: C.cal })}
+${T(30, 360, 'Próxima clase', { tam: 18, peso: 700, fam: 'titulo' })}
+<rect x="30" y="374" width="240" height="72" rx="14" fill="#fff" stroke="#dcdcd6"/>${T(46, 404, 'Ciclo · jueves 19:00', { tam: 17, peso: 700 })}${T(46, 430, 'San Borja · quedan 4 bicis', { tam: 15, color: C.pizarra })}
+<rect x="30" y="464" width="240" height="50" rx="25" fill="${C.rojo}"/>${T(150, 495, 'Reservar otra clase', { tam: 16, peso: 700, ancla: 'middle' })}`, 'inicio');
+const appVacio = telefono('Sin reservas', `${T(30, 96, 'Mis reservas', { tam: 24, peso: 800, fam: 'titulo' })}
+${poseG('siesta', 82, 160, 1.3)}
+${T(150, 368, 'Nada por aquí todavía', { tam: 21, peso: 800, fam: 'titulo', ancla: 'middle' })}
+${T(150, 398, 'La pesa aprovecha para dormir.', { tam: 15, color: C.pizarra, ancla: 'middle' })}${T(150, 420, 'Cuando reserves, aparece aquí.', { tam: 15, color: C.pizarra, ancla: 'middle' })}
+<rect x="55" y="452" width="190" height="48" rx="24" fill="${C.tinta}"/>${T(150, 482, 'Ver clases de hoy', { tam: 16, peso: 700, color: C.cal, ancla: 'middle' })}`, 'reservas');
+const appCargando = telefono('Cargando', `${T(30, 96, 'Clases', { tam: 24, peso: 800, fam: 'titulo' })}
+${poseG('piensa', 86, 190, 1.2)}
+${T(150, 394, 'Un momento', { tam: 21, peso: 800, fam: 'titulo', ancla: 'middle' })}${T(150, 424, 'Buscamos los horarios de tu sede.', { tam: 15, color: C.pizarra, ancla: 'middle' })}`, 'clases');
 
 const post = `<svg viewBox="0 0 1080 1080" role="img" aria-label="Publicación cuadrada para redes">
-<rect width="1080" height="1080" fill="${C.tinta}"/>${poseG('celebra', 560, 80, 4.6, { cara: C.tinta, acento: C.menta })}
-<text x="80" y="700" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="104" fill="${C.cal}">Tres semanas</text>
-<text x="80" y="810" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="104" fill="${C.cal}">seguidas.</text>
-<text x="80" y="920" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="104" fill="${C.menta}">Ya es costumbre.</text>
-${palabra(80, 1012, 34, C.niebla)}</svg>`;
+<rect width="1080" height="1080" fill="${C.tinta}"/>${poseG('celebra', 600, 70, 4.2, { cara: C.tinta, acento: C.menta })}
+${T(80, 640, 'Tres semanas', { tam: 104, peso: 800, color: C.cal, fam: 'titulo' })}${T(80, 750, 'seguidas.', { tam: 104, peso: 800, color: C.cal, fam: 'titulo' })}${T(80, 860, 'Ya es costumbre.', { tam: 104, peso: 800, color: C.menta, fam: 'titulo' })}
+${firma(80, 1000, 30, C.cal, C.rojo, C.tinta)}</svg>`;
+// Historia 9:16: lo importante queda entre los 250 px de arriba y los 340 de abajo que tapa la interfaz de la red
 const historia = `<svg viewBox="0 0 1080 1920" role="img" aria-label="Historia vertical para redes">
-<rect width="1080" height="1920" fill="${C.rojo}"/>${poseG('madruga', 220, 330, 6.4, { cara: C.rojo, pesa: C.tinta, acento: C.tinta })}
-<text x="90" y="1240" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="150" fill="${C.tinta}">5:00 a. m.</text>
-<text x="90" y="1380" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="96" fill="${C.tinta}">La sede ya está</text>
-<text x="90" y="1490" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="96" fill="${C.tinta}">despierta. Tú,</text>
-<text x="90" y="1600" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="96" fill="${C.tinta}">cuando puedas.</text>
-${palabra(90, 1800, 44, C.tinta)}</svg>`;
+<rect width="1080" height="1920" fill="${C.rojo}"/>${poseG('madruga', 250, 300, 5.6, { cara: C.rojo, pesa: C.tinta, acento: C.tinta })}
+${T(90, 1030, '5:00 a. m.', { tam: 150, peso: 800, fam: 'titulo' })}
+${T(90, 1156, 'La sede ya está', { tam: 92, peso: 800, fam: 'titulo' })}${T(90, 1260, 'despierta. Tú,', { tam: 92, peso: 800, fam: 'titulo' })}${T(90, 1364, 'cuando puedas.', { tam: 92, peso: 800, fam: 'titulo' })}
+${firma(90, 1560, 40, C.tinta, C.tinta, C.rojo)}</svg>`;
 
 const panel = `<svg viewBox="0 0 1200 760" role="img" aria-label="Panel en paradero con precio y condiciones visibles">
 <rect width="1200" height="760" fill="#1d1f26"/><rect x="60" y="40" width="1080" height="640" rx="8" fill="${C.cal}"/>
-${poseG('hola', 820, 90, 2.9)}
-<text x="110" y="190" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="80" fill="${C.tinta}">Primera clase</text>
-<text x="110" y="280" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="80" fill="${C.rojoTexto}">por nuestra cuenta.</text>
-<text x="110" y="390" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="36" fill="${C.tinta}">Un coach te acompaña la primera semana.</text>
-<rect x="110" y="430" width="560" height="150" rx="16" fill="${C.tinta}"/>
-<text x="140" y="500" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="58" fill="${C.cal}">S/ 89 al mes</text>
-<text x="140" y="548" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="24" fill="${C.cal}">Precio final con IGV · sin permanencia mínima</text>
-<text x="110" y="624" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="21" fill="${C.pizarra}">Sin matrícula hasta el 30 de noviembre de 2026 o hasta agotar 300 cupos.</text>
-<text x="110" y="654" font-family="Atkinson Hyperlegible Next, sans-serif" font-size="21" fill="${C.pizarra}">Condiciones en la web. Precio de ejemplo: Reset Fit es una marca ficticia.</text>
-${horizontalG(800, 470, 290)}</svg>`;
+${poseG('hola', 820, 92, 2.9)}
+${T(110, 190, 'Primera clase', { tam: 80, peso: 800, fam: 'titulo' })}${T(110, 280, 'por nuestra cuenta.', { tam: 80, peso: 800, color: C.rojoTexto, fam: 'titulo' })}
+${T(110, 360, 'Un coach te acompaña la primera semana.', { tam: 34 })}
+<rect x="110" y="400" width="560" height="150" rx="16" fill="${C.tinta}"/>${T(140, 470, 'S/ 89 al mes', { tam: 58, peso: 800, color: C.cal, fam: 'titulo' })}${T(140, 518, 'Precio final con IGV · sin permanencia mínima', { tam: 23, color: C.cal })}
+${T(110, 608, 'Sin matrícula hasta el 30 de noviembre de 2026 o hasta agotar 300 cupos.', { tam: 21, color: C.pizarra })}
+${T(110, 638, 'Condiciones en la web. Precio de ejemplo: Reset Fit es una marca ficticia.', { tam: 21, color: C.pizarra })}
+${firma(800, 520, 38, C.tinta)}</svg>`;
 
 const toalla = `<svg viewBox="0 0 400 560" role="img" aria-label="Toalla de sala">
-<rect x="40" y="20" width="320" height="520" rx="10" fill="${C.tinta}"/>
-${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="40" y="${470 + (i % 2) * 0}" width="320" height="0" />`).join('')}
-<rect x="40" y="460" width="320" height="10" fill="${C.menta}"/><rect x="40" y="480" width="320" height="10" fill="${C.menta}"/>
-${poseG('verano', 120, 90, 1.7, { cara: C.tinta, acento: C.menta })}
-<text x="200" y="360" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="34" fill="${C.cal}">Esta toalla</text>
-<text x="200" y="402" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="34" fill="${C.cal}">también descansa</text>
-<text x="200" y="444" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="34" fill="${C.menta}">entre series.</text></svg>`;
-const tomatodo = `<svg viewBox="0 0 400 560" role="img" aria-label="Tomatodo">
-<rect x="150" y="20" width="100" height="40" rx="10" fill="${C.tinta}"/><rect x="130" y="56" width="140" height="26" rx="8" fill="${C.menta}"/>
-<rect x="110" y="80" width="180" height="460" rx="46" fill="${C.rojo}"/>
-${poseG('hidrata', 136, 150, 1.25, { cara: C.rojo, pesa: C.cal, acento: C.tinta })}
-<g transform="translate(166 500) rotate(-90)">${palabra(0, 0, 22, C.tinta)}</g>
-<text x="200" y="320" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif" font-weight="700" font-size="20" fill="${C.tinta}">750 ml</text></svg>`;
-const bolsa = `<svg viewBox="0 0 400 560" role="img" aria-label="Bolsa de tela">
-<path d="M130 140 Q130 40 200 40 Q270 40 270 140" fill="none" stroke="#d9d6cc" stroke-width="16"/>
-<rect x="60" y="130" width="280" height="400" rx="6" fill="#ece9e1"/>
-${poseG('corre', 120, 190, 1.7, { acento: C.tinta })}
-<text x="200" y="450" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="30" fill="${C.tinta}">Voy, pero voy</text>
-<text x="200" y="488" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="30" fill="${C.rojoTexto}">a mi ritmo.</text></svg>`;
-const stickers = `<div class="stickers">${['celebra', 'siesta', 'madruga', 'levanta', 'medita', 'verano'].map((id, i) => `<div class="sticker" style="--giro:${[-6, 4, -3, 5, -4, 3][i]}deg">${pose(id, 104)}</div>`).join('')}</div>`;
+<rect x="50" y="20" width="300" height="520" rx="8" fill="${C.tinta}"/>
+<rect x="50" y="40" width="300" height="8" fill="${C.menta}"/><rect x="50" y="56" width="300" height="8" fill="${C.menta}"/>
+<rect x="50" y="476" width="300" height="8" fill="${C.menta}"/><rect x="50" y="492" width="300" height="8" fill="${C.menta}"/>
+${poseG('verano', 130, 96, 1.55, { cara: C.tinta, acento: C.menta })}
+${T(200, 320, 'Esta toalla', { tam: 30, peso: 800, color: C.cal, fam: 'titulo', ancla: 'middle' })}${T(200, 358, 'también descansa', { tam: 30, peso: 800, color: C.cal, fam: 'titulo', ancla: 'middle' })}${T(200, 396, 'entre series.', { tam: 30, peso: 800, color: C.menta, fam: 'titulo', ancla: 'middle' })}
+${firmaCentrada(200, 448, 18, C.cal, C.rojo, C.tinta)}</svg>`;
+
+const tomatodo = `<svg viewBox="0 0 400 560" role="img" aria-label="Tomatodo de 750 ml">
+<path d="M176 8 Q200 -4 224 8" fill="none" stroke="${C.tinta}" stroke-width="8" stroke-linecap="round"/>
+<rect x="150" y="14" width="100" height="44" rx="12" fill="${C.tinta}"/><rect x="132" y="54" width="136" height="24" rx="8" fill="${C.menta}"/>
+<rect x="112" y="76" width="176" height="470" rx="48" fill="${C.rojo}"/>
+${poseG('hidrata', 150, 114, 1.05, { cara: C.rojo, pesa: C.cal, acento: C.tinta })}
+<g transform="translate(214 500) rotate(-90)">${palabra(0, 0, 26, C.tinta)}</g>
+${[['750', 236], ['500', 336], ['250', 436]].map(([t, y]) => `<line x1="252" y1="${y}" x2="270" y2="${y}" stroke="${C.tinta}" stroke-width="3"/>${T(248, y + 6, t, { tam: 14, peso: 700, ancla: 'end' })}`).join('')}
+</svg>`;
+
+const bolsa = `<svg viewBox="0 0 400 580" role="img" aria-label="Bolsa de tela">
+<path d="M118 150 Q118 52 168 52 Q190 52 190 150" fill="none" stroke="#d6d2c6" stroke-width="14"/><path d="M210 150 Q210 52 232 52 Q282 52 282 150" fill="none" stroke="#d6d2c6" stroke-width="14"/>
+<rect x="60" y="140" width="280" height="420" rx="6" fill="#ece9e1"/>
+${poseG('corre', 118, 196, 1.7, { acento: C.tinta })}
+${T(200, 434, 'Voy, pero voy', { tam: 30, peso: 800, fam: 'titulo', ancla: 'middle' })}${T(200, 472, 'a mi ritmo.', { tam: 30, peso: 800, color: C.rojoTexto, fam: 'titulo', ancla: 'middle' })}
+${firmaCentrada(200, 530, 16, C.tinta)}</svg>`;
+
+// Stickers troquelados: el borde blanco sigue el contorno de la pose
+const sticker = (id, giro, i) => `<svg viewBox="-34.5 -44 161 161" width="150" height="150" role="img" aria-label="Sticker: ${geo.poses.find((p) => p.id === id).nombre}" style="transform:rotate(${giro}deg)">
+<defs><filter id="troquel-${i}" x="-30%" y="-30%" width="160%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="7" result="borde"/><feFlood flood-color="#fff"/><feComposite in2="borde" operator="in" result="blanco"/>
+<feOffset in="borde" dy="3" result="sombra0"/><feFlood flood-color="#cfcbbf"/><feComposite in2="sombra0" operator="in" result="sombra"/><feMerge><feMergeNode in="sombra"/><feMergeNode in="blanco"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#troquel-${i})">${poseG(id, 0, 0, 1)}</g></svg>`;
+const stickers = `<div class="stickers">${['celebra', 'siesta', 'madruga', 'levanta', 'medita', 'verano'].map((id, i) => sticker(id, [-6, 4, -3, 5, -4, 3][i], i)).join('')}</div>`;
 
 const correo = `<div class="correo"><div class="correo-cab">${leer('reset-fit-horizontal.svg')}</div>
-<div class="correo-cuerpo">${pose('hola', 120)}<h4>Bienvenida, Nombre</h4><p>Tu primera clase es el <b>jueves a las 19:00 en San Borja</b>. Llega diez minutos antes: un coach te muestra la sala y te arma una rutina para tu primera semana.</p><p>Si algo cambia, reprograma desde la app. Sin multas.</p><p class="firma">El equipo de Reset Fit San Borja</p></div>
+<div class="correo-cuerpo">${pose('hola', 96, { cara: C.cal, acento: C.tinta })}<h4>Bienvenida, Nombre</h4><p>Tu primera clase es el <b>jueves a las 19:00 en San Borja</b>. Llega diez minutos antes: un coach te muestra la sala y te arma una rutina para tu primera semana.</p><p>Si algo cambia, reprograma desde la app. Sin multas.</p><p class="firma">El equipo de Reset Fit San Borja</p></div>
 <p class="correo-pie">Reset Fit es una marca ficticia de demostración.</p></div>`;
 const documento = `<div class="documento"><div class="doc-cab">${leer('reset-fit-horizontal.svg')}<span>Contrato de membresía</span></div>
-<p><b>Precio mensual:</b> S/ 89, con IGV. <b>Matrícula:</b> S/ 0 hasta el 30/11/2026. <b>Permanencia mínima:</b> ninguna.</p>
-<p><b>Cómo cancelar:</b> desde la app o en recepción, con efecto al cierre del mes en curso. No hay penalidad.</p>
-<p class="doc-nota">En contratos, cobros, cancelaciones y avisos de seguridad no hay humor ni poses: solo el logo y la información completa.</p></div>`;
+<ol class="clausulas"><li><b>Precio mensual:</b> S/ 89, con IGV incluido.</li><li><b>Matrícula:</b> S/ 0 hasta el 30 de noviembre de 2026.</li><li><b>Permanencia mínima:</b> ninguna.</li><li><b>Cómo cancelar:</b> desde la app o en recepción, con efecto al cierre del mes en curso, sin penalidad.</li></ol></div>`;
 
 // ── Tablas de color medidas ──
 const pares = [
@@ -340,7 +375,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 .escala { display: grid; gap: 14px; } .escala div { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 16px; align-items: baseline; border-bottom: 1px solid var(--borde); padding-bottom: 12px; }
 .escala span { font-size: 13px; color: var(--texto-2); }
 .poses { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; }
-.pose-carta { margin: 0; background: var(--superficie); border: 1px solid var(--borde); border-radius: 18px; padding: 16px; display: grid; gap: 8px; justify-items: center; text-align: center; }
+.pose-carta { margin: 0; background: var(--superficie); border: 1px solid var(--borde); border-radius: 18px; padding: 16px; display: grid; gap: 8px; justify-items: center; align-content: start; text-align: center; }
 .pose-carta figcaption { display: grid; gap: 2px; } .pose-carta b { font-family: var(--f-titulo); font-size: 18px; color: var(--texto); }
 .anim { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
 .anim .saluda { animation: saludo 1.8s ease-in-out infinite; transform-origin: 50% 85%; }
@@ -348,15 +383,15 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 .aplic { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
 .aplic figure { margin: 0; display: grid; gap: 8px; align-content: start; }
 .ancho2 { grid-column: span 2; } @media (max-width: 640px) { .ancho2 { grid-column: auto; } }
-.stickers { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; padding: 18px; background: #e8e6df; border-radius: 18px; }
-.sticker { background: #fff; border-radius: 30px; padding: 10px; box-shadow: 0 4px 0 #d3d0c6; transform: rotate(var(--giro)); --cara: var(--rf-cal); --acento: var(--rf-tinta); }
+.stickers { display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: center; padding: 18px; background: #e8e6df; border-radius: 18px; }
+.stickers svg { flex: none; max-width: 30%; height: auto; }
 .correo { background: #fff; color: var(--rf-tinta); border-radius: 18px; overflow: hidden; border: 1px solid var(--borde); --cara: var(--rf-cal); --acento: var(--rf-tinta); }
 .correo-cab { padding: 18px 24px; border-bottom: 4px solid var(--rf-rojo); } .correo-cab svg { height: 40px; width: auto; display: block; }
 .correo-cuerpo { padding: 24px; display: grid; gap: 12px; justify-items: start; } .correo-cuerpo h4 { font-size: 30px; }
 .correo .firma { color: var(--rf-pizarra); } .correo-pie { padding: 12px 24px; font-size: 13px; color: var(--rf-pizarra); background: var(--rf-cal); }
 .documento { background: #fff; color: var(--rf-tinta); border-radius: 12px; padding: 28px; border: 1px solid var(--borde); display: grid; gap: 12px; font-size: 15px; }
 .doc-cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #dcdcd6; padding-bottom: 14px; } .doc-cab svg { height: 34px; width: auto; }
-.doc-cab span { font-weight: 700; } .doc-nota { font-size: 13px; color: var(--rf-pizarra); border-left: 3px solid var(--rf-pizarra); padding-left: 10px; }
+.doc-cab span { font-weight: 700; } .clausulas { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 .reglas { display: grid; gap: 10px; padding-left: 20px; margin: 0; } .reglas li { max-width: 72ch; }
 .pie { border-top: 1px solid var(--borde); margin-top: 64px; padding-block: 28px 48px; font-size: 14px; color: var(--texto-2); }
 :focus-visible { outline: 3px solid var(--acento-texto); outline-offset: 2px; }
@@ -414,7 +449,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 </div>
 <div class="rejilla">
   <div class="lienzo">${construccion}</div>
-  <div class="carta"><h3>Construcción</h3><ul class="reglas"><li>Grilla de 100 módulos. La pesa es un círculo de radio ${G.r} con base plana en y ${G.base}.</li><li>El asa tiene trazo ${G.asa.trazo}; los brazos, trazo ${G.brazo} con manos de radio ${G.mano}.</li><li>El conjunto va girado ${G.giro}°: un brazo más alto que el otro y la inclinación dan movimiento.</li><li><b>Área de protección:</b> la altura del asa sobre la pesa, alrededor de toda la firma.</li><li><b>Tamaño mínimo:</b> 24 px de alto en pantalla y 10 mm impreso para la firma; debajo de eso, la versión mínima.</li></ul></div>
+  <div class="carta"><h3>Construcción</h3><ul class="reglas"><li>Grilla de 100 módulos. La pesa es un círculo de radio ${G.r} con base plana en y ${G.base}.</li><li>El asa tiene trazo ${num(G.asa.trazo)}; los brazos, trazo ${num(G.brazo)} con manos de radio ${num(G.mano)}.</li><li>El conjunto va girado ${num(G.giro)}°: un brazo más alto que el otro y la inclinación dan movimiento.</li><li><b>Área de protección:</b> la altura del asa sobre la pesa, alrededor de toda la firma.</li><li><b>Tamaño mínimo:</b> 24 px de alto en pantalla y 10 mm impreso para la firma; debajo de eso, la versión mínima.</li></ul></div>
 </div>
 <h3>Usos incorrectos</h3>
 <div class="mal">${mal.map((m) => `<figure>${m.s}<b>${m.t}</b>${m.d ? `<span>${m.d}</span>` : ''}</figure>`).join('')}</div>
@@ -435,7 +470,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 <section class="parte" id="tipografia"><header><span class="num">5 · Tipografía</span><h2>Bricolage para hablar, Atkinson para que se lea.</h2>
 <p class="lead">Dos familias libres (licencia OFL) que la competencia no usa. Bricolage Grotesque tiene rasgos irregulares que le dan gracia sin volverla infantil. Atkinson Hyperlegible Next fue diseñada para máxima legibilidad: va en señalética, horarios y letra chica.</p></header>
 <div class="rejilla">
-  <div class="carta"><span class="tipo-muestra">¿Ñandú? ¡Al toque!</span><small>Bricolage Grotesque 800 · titulares y logotipo</small></div>
+  <div class="carta"><span class="tipo-muestra">¿Ñandú? ¡Al&nbsp;toque!</span><small>Bricolage Grotesque 800 · titulares y logotipo</small></div>
   <div class="carta"><p style="font-size:22px">Lunes a viernes de 5:00 a 23:00. Señalética, cañón, pingüino: 0123456789.</p><small>Atkinson Hyperlegible Next 400 y 700 · texto, horarios y sala, con números tabulares. El cero lleva barra para no confundirse con la O.</small></div>
 </div>
 <div class="escala">${[['Titular', 'clamp(48px, 8vw, 96px)', 'Ya es costumbre.'], ['Título', '40px', 'Tu primera semana'], ['Subtítulo', '24px', 'Un coach arma tu rutina contigo'], ['Texto', '17px', 'Llega diez minutos antes y te mostramos la sala.'], ['Letra chica', '14px', 'Precio final con IGV. Condiciones en la web.']].map(([n, t, e], i) => `<div><span>${n} · ${t.startsWith('clamp') ? '48 a 96 px' : t}</span><p style="font:${i < 3 ? '800' : '400'} ${t}/1.15 ${i < 3 ? 'var(--f-titulo)' : 'var(--f-texto)'}">${e}</p></div>`).join('')}</div>
@@ -468,25 +503,25 @@ ${poses}
 <p class="lead">El mismo sistema en cada punto de contacto: la firma estable, la pesa en la pose que corresponde y el texto que dice algo útil.</p></header>
 <div class="aplic">
   <figure class="ancho2"><div class="lienzo" style="padding:0">${fachada}</div><figcaption>Fachada de sede, de noche: letrero con la firma en negativo, bandera con la versión mínima y horario en Atkinson.</figcaption></figure>
-  <figure><div class="lienzo" style="padding:0">${senal('Pesas', ['Vuelve la pesa a su sitio.', 'Ella también quiere', 'descansar.'], 'siesta', C.cal, C.tinta, C.tinta)}</div><figcaption>Norma de sala con un guiño.</figcaption></figure>
-  <figure><div class="lienzo" style="padding:0">${senal('Agua', ['Bebedero cada 20 metros.', 'Llena tu tomatodo', 'cuantas veces quieras.'], 'hidrata', C.tinta, C.cal, C.menta)}</div><figcaption>Señal de servicio sobre tinta: objetos en menta.</figcaption></figure>
-  <figure><div class="lienzo" style="padding:0">${salida}</div><figcaption>Seguridad: norma técnica, sin pesa y sin humor.</figcaption></figure>
-  <figure><div class="lienzo claro">${polo('Coach', C.tinta, C.cal, C.menta)}</div><figcaption>Polo de coach: tinta con menta.</figcaption></figure>
-  <figure><div class="lienzo claro">${polo('Recepción', C.rojo, C.tinta, C.tinta)}</div><figcaption>Polo de recepción: rojo, para que se encuentre al toque.</figcaption></figure>
+  <figure><div class="lienzo" style="padding:0">${senal('Pesas', ['Vuelve la pesa a su sitio.', 'Ella también quiere', 'descansar.'], 'siesta', C.cal, C.tinta, C.tinta, 'Sala de pesas · piso 1')}</div><figcaption>Norma de sala con un guiño.</figcaption></figure>
+  <figure><div class="lienzo" style="padding:0">${senal('Agua', ['Hay un bebedero cada', '20 metros. Llena tu', 'tomatodo cuando quieras.'], 'hidrata', C.tinta, C.cal, C.menta, 'Zona de cardio · piso 2')}</div><figcaption>Señal de servicio sobre tinta: los objetos van en menta.</figcaption></figure>
+  <figure><div class="lienzo" style="padding:0">${salida}</div><figcaption>Seguridad: sin pesa y sin humor. En obra se usa el pictograma de la norma técnica peruana vigente; este es solo de referencia.</figcaption></figure>
+  <figure class="ancho2"><div class="lienzo claro">${polos('Coach', C.tinta, C.cal, C.menta, C.rojo)}</div><figcaption>Polo de coach: tinta con cuello menta. Pesa chica en el pecho, el rol grande en la espalda.</figcaption></figure>
+  <figure class="ancho2"><div class="lienzo claro">${polos('Recepción', C.rojo, C.tinta, C.tinta, C.tinta)}</div><figcaption>Polo de recepción: rojo, para encontrarlo al toque. Sobre rojo, la pesa va en tinta.</figcaption></figure>
   <figure class="ancho2"><div class="lienzo claro">${tarjeta}</div><figcaption>Tarjeta de socia física.</figcaption></figure>
   <figure><div class="lienzo claro" style="display:grid;place-items:center">${billetera}</div><figcaption>Tarjeta en la billetera del celular.</figcaption></figure>
   <figure><div class="lienzo claro" style="display:grid;place-items:center">${appInicio}</div><figcaption>App: inicio con la racha.</figcaption></figure>
   <figure><div class="lienzo claro" style="display:grid;place-items:center">${appVacio}</div><figcaption>App: estado vacío con la pesa en siesta.</figcaption></figure>
   <figure><div class="lienzo claro" style="display:grid;place-items:center">${appCargando}</div><figcaption>App: cargando, la pesa piensa.</figcaption></figure>
   <figure><div class="lienzo" style="padding:0">${post}</div><figcaption>Publicación: el logro como mensaje.</figcaption></figure>
-  <figure><div class="lienzo claro" style="display:grid;place-items:center"><div style="max-width:260px">${historia}</div></div><figcaption>Historia: horario de 5 a. m. sin culpa para quien no madruga.</figcaption></figure>
+  <figure><div class="lienzo claro" style="display:grid;place-items:center"><div style="max-width:260px">${historia}</div></div><figcaption>Historia: horario de 5 a. m. sin culpa para quien no madruga. Todo queda fuera de las zonas que tapa la interfaz de la red.</figcaption></figure>
   <figure class="ancho2"><div class="lienzo" style="padding:0">${panel}</div><figcaption>Panel en paradero: precio total con IGV, duración y cupos de la promoción visibles en la misma pieza (Ley 29571, art. 14).</figcaption></figure>
   <figure><div class="lienzo claro">${toalla}</div><figcaption>Toalla de sala.</figcaption></figure>
   <figure><div class="lienzo claro">${tomatodo}</div><figcaption>Tomatodo de 750 ml.</figcaption></figure>
   <figure><div class="lienzo claro">${bolsa}</div><figcaption>Bolsa de tela.</figcaption></figure>
-  <figure class="ancho2"><div>${stickers}</div><figcaption>Stickers de bienvenida: seis poses por temporada.</figcaption></figure>
+  <figure class="ancho2"><div>${stickers}</div><figcaption>Stickers troquelados de bienvenida: seis poses por temporada.</figcaption></figure>
   <figure><div>${correo}</div><figcaption>Correo de bienvenida.</figcaption></figure>
-  <figure><div>${documento}</div><figcaption>Contrato: solo información.</figcaption></figure>
+  <figure><div>${documento}</div><figcaption>Contrato: solo el logo y la información completa. En contratos, cobros, cancelaciones y avisos de seguridad no hay humor ni poses.</figcaption></figure>
 </div>
 </section>
 

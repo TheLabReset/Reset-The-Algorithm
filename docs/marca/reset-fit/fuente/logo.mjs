@@ -46,15 +46,16 @@ const BRAZOS = {
   minima: trazo('M23 60Q11 49 13 32M77 60Q90 47 87 27', 8.5) + punto(13, 29, 6.4) + punto(87, 24, 6.4),
 };
 
-// Objetos de las poses: en el color «acento» (tinta sobre fondo claro, menta sobre fondo oscuro), nunca tocando el rojo
+// Objetos de las poses: en el color «acento» (tinta sobre fondo claro, menta sobre fondo oscuro). Nunca tocan la pesa
+// ni las manos: siempre queda aire de fondo entre el objeto y el rojo (lo verifica la prueba de la guía).
 const A = 'var(--acento)';
 const EXTRAS = {
-  zetas: `<g fill="none" stroke="${A}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M70 12H80L70 22H80"/><path d="M84 2H90L84 8H90"/></g>`,
+  zetas: `<g fill="none" stroke="${A}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M76 0H86L76 10H86"/><path d="M90 -10H96L90 -4H96"/></g>`,
   cafe: `<g fill="none" stroke="${A}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M80 26H94V36Q94 42 87 42Q80 42 80 36Z"/><path d="M94 29Q99 29 99 33Q99 37 94 37"/><path d="M84 21Q82 18 84 15M90 21Q88 18 90 15"/></g>`,
-  pesita: `<g transform="translate(34 -24) scale(0.32)"><path d="${ASA}" fill="none" stroke="${A}" stroke-width="12" stroke-linecap="round"/><path d="${CAMPANA}" fill="${A}"/></g>`,
+  pesita: `<g transform="translate(34 -33) scale(0.32)"><path d="${ASA}" fill="none" stroke="${A}" stroke-width="12" stroke-linecap="round"/><path d="${CAMPANA}" fill="${A}"/></g>`,
   movimiento: `<g fill="none" stroke="${A}" stroke-width="3" stroke-linecap="round"><path d="M-6 50H1M-9 60H-2M-5 70H2"/></g>`,
   piernas: trazo('M40 83Q36 92 28 93M60 83Q68 88 72 96', 6) + punto(27, 93, 4.2) + punto(73, 96, 4.2),
-  tomatodo: `<g fill="none" stroke="${A}" stroke-width="3" stroke-linejoin="round"><rect x="84" y="5" width="11" height="21" rx="3.5"/><path d="M86 5V0H93V5M84 13H95"/></g>`,
+  tomatodo: `<g fill="none" stroke="${A}" stroke-width="3" stroke-linejoin="round"><rect x="84" y="1" width="11" height="21" rx="3.5"/><path d="M86 1V-4H93V1M84 9H95"/></g>`,
   lentes: `<g fill="var(--cara)"><rect x="34" y="55" width="14" height="9" rx="4"/><rect x="52" y="55" width="14" height="9" rx="4"/></g>` + trazo('M48 58.5H52', 2.4, 'var(--cara)'),
   puntos: `<g fill="${A}"><circle cx="80" cy="20" r="3"/><circle cx="89" cy="14" r="3"/><circle cx="98" cy="8" r="3"/></g>`,
   pregunta: `<g fill="none" stroke="${A}" stroke-width="3.6" stroke-linecap="round"><path d="M80 14Q80 6 87 6Q94 6 94 13Q94 18 87 20V25"/></g><circle cx="87" cy="32" r="2.4" fill="${A}"/>`,
@@ -79,8 +80,9 @@ export const POSES = [
   { id: 'duda', nombre: 'Duda', uso: 'Errores, página no encontrada, formularios incompletos', dibujo: pesa('duda', 'abajo', EXTRAS.pregunta, 4) },
 ];
 export const MINIMA = pesa('minima', 'minima');
-// Encuadre común de las poses: deja aire arriba del asa para lo que la pesa levanta o piensa
-export const ENCUADRE = { x: -6, y: -22, w: 112, h: 120 };
+// Encuadre común de las poses: la unión de las cajas de las 12 poses (medida con getBBox) más 5 unidades por los trazos
+export const ENCUADRE = { x: -14, y: -32, w: 120, h: 137 };
+const vbE = `${ENCUADRE.x} ${ENCUADRE.y} ${ENCUADRE.w} ${ENCUADRE.h}`;
 
 // ── Logotipo: «reset fit» en Bricolage Grotesque 800 (OFL), a trazos ──
 const fuente = fontkit.openSync(new URL('./node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff', import.meta.url).pathname);
@@ -93,8 +95,10 @@ function texto(t, tam, tracking = 0) {
 }
 const palabra = texto('reset fit', 100, -2);
 
-// Caja del símbolo canónico (medida a mano sobre la grilla, con el giro): x 6 a 93, y 6 a 89
-const caja = { x0: 5, y0: 7, x1: 94, y1: 89 };
+// Caja del símbolo canónico y de la versión mínima, medidas con getBBox en Chromium (incluyen el giro y las manos)
+const caja = { x0: 2.7, y0: 14.6, x1: 94.5, y1: 88.4 };
+const cajaMinima = { x0: 2.4, y0: 13.3, x1: 95.7, y1: 88.4 };
+const cxM = (cajaMinima.x0 + cajaMinima.x1) / 2, cyM = (cajaMinima.y0 + cajaMinima.y1) / 2, wM = cajaMinima.x1 - cajaMinima.x0;
 const simW = caja.x1 - caja.x0, simH = caja.y1 - caja.y0;
 const estilo = (pesaColor, cara, acento) => `style="color:${pesaColor};--cara:${cara};--acento:${acento}"`;
 const svg = (w, h, cuerpo, t = 'Reset Fit') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f(w)} ${f(h)}" role="img" aria-label="${t}"><title>${t}</title>${cuerpo}</svg>\n`;
@@ -102,7 +106,7 @@ const svg = (w, h, cuerpo, t = 'Reset Fit') => `<svg xmlns="http://www.w3.org/20
 const fijar = (s, pesaColor, cara, acento) => s.replaceAll('currentColor', pesaColor).replaceAll('var(--cara)', cara).replaceAll('var(--acento)', acento);
 
 const P = POSES[0].dibujo;
-const reserva = 10; // área de protección: la altura del asa sobre la pesa (≈ 10 unidades de la grilla)
+const reserva = 12; // área de protección: la altura del asa sobre la pesa (12 unidades de la grilla)
 // Monocromo: la cara se cala con una máscara (sin color de cara, deja ver el fondo)
 const calado = (dibujo, id) => `<defs><mask id="${id}" maskUnits="userSpaceOnUse" x="-50" y="-50" width="250" height="250"><rect x="-50" y="-50" width="250" height="250" fill="#fff"/>${fijar(dibujo, '#fff', '#000', '#000')}</mask></defs><g mask="url(#${id})">${fijar(dibujo, 'currentColor', 'currentColor', 'currentColor')}</g>`;
 const conCara = (dibujo, cp, cc, id) => (cc === 'none' ? calado(dibujo, id) : fijar(dibujo, cp, cc, cc));
@@ -122,8 +126,9 @@ const apil = { w: palabra.ancho + 2 * reserva * eA, h: simH * eA + sepA + palabr
 const apilada = (cp, cc, ct) => svg(apil.w, apil.h, fijar(`<g transform="translate(${f(reserva * eA + (palabra.ancho - simW * eA) / 2)} ${f(reserva * eA)}) scale(${f(eA)}) translate(${-caja.x0} ${-caja.y0})">${P}</g>`, cp, cc, cc) + `<path fill="${ct}" transform="translate(${f(reserva * eA)} ${f(reserva * eA + simH * eA + sepA + palabra.asc)})" d="${palabra.d}"/>`);
 
 // Ícono de app y favicon (versión mínima: brazos más gruesos, sin sonrisa)
-const icono = (fondo, cp, cc) => svg(1024, 1024, `<rect width="1024" height="1024" fill="${fondo}"/>` + fijar(`<g transform="translate(512 528) scale(7.6) translate(-49.5 -48)">${MINIMA}</g>`, cp, cc, cc));
-const favicon = svg(100, 100, fijar(`<g transform="translate(50 50) scale(1.08) translate(-50 -48)">${MINIMA}</g>`, C.rojo, C.cal, C.cal));
+// Ícono: la pesa ocupa el 68 % del ancho, centrada por su caja medida (margen de seguridad de 16 % por lado)
+const icono = (fondo, cp, cc) => svg(1024, 1024, `<rect width="1024" height="1024" fill="${fondo}"/>` + fijar(`<g transform="translate(512 512) scale(${f((1024 * 0.68) / wM)}) translate(${f(-cxM)} ${f(-cyM)})">${MINIMA}</g>`, cp, cc, cc));
+const favicon = svg(100, 100, fijar(`<g transform="translate(50 50) scale(${f(96 / wM)}) translate(${f(-cxM)} ${f(-cyM)})">${MINIMA}</g>`, C.rojo, C.cal, C.cal));
 
 const archivos = {
   'reset-fit-simbolo.svg': soloSimbolo(C.rojo, C.cal),
@@ -139,8 +144,9 @@ const archivos = {
 };
 for (const [n, s] of Object.entries(archivos)) writeFileSync(`${OUT}/${n}`, s);
 for (const p of POSES) {
-  writeFileSync(`${OUT}/poses/${p.id}.svg`, svg(100, 100, fijar(`<g transform="translate(6 16) scale(0.88)">${p.dibujo}</g>`, C.rojo, C.cal, C.tinta), `Reset Fit · ${p.nombre}`));
-  writeFileSync(`${OUT}/poses/${p.id}-negativo.svg`, svg(100, 100, fijar(`<g transform="translate(6 16) scale(0.88)">${p.dibujo}</g>`, C.rojo, C.tinta, C.menta), `Reset Fit · ${p.nombre}`));
+  const poseSvg = (cara, acento) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbE}" role="img" aria-label="Reset Fit · ${p.nombre}"><title>Reset Fit · ${p.nombre}</title>${fijar(p.dibujo, C.rojo, cara, acento)}</svg>\n`;
+  writeFileSync(`${OUT}/poses/${p.id}.svg`, poseSvg(C.cal, C.tinta));
+  writeFileSync(`${OUT}/poses/${p.id}-negativo.svg`, poseSvg(C.tinta, C.menta));
 }
-writeFileSync(`${OUT}/geometria.json`, JSON.stringify({ G, caja, simW, simH, palabra: palabra.d, palabraAncho: palabra.ancho, alturaX: palabra.x, CAMPANA, ASA, horiz, apil, e, reserva, poses: POSES.map(({ id, nombre, uso, dibujo }) => ({ id, nombre, uso, dibujo })), minima: MINIMA }, null, 1));
+writeFileSync(`${OUT}/geometria.json`, JSON.stringify({ G, caja, cajaMinima, encuadre: ENCUADRE, simW, simH, palabra: palabra.d, palabraAncho: palabra.ancho, alturaX: palabra.x, CAMPANA, ASA, horiz, apil, e, reserva, poses: POSES.map(({ id, nombre, uso, dibujo }) => ({ id, nombre, uso, dibujo })), minima: MINIMA }, null, 1));
 console.log(`símbolo ${simW} × ${simH} · altura x ${f(palabra.x)} · horizontal ${f(horiz.w)} × ${f(horiz.h)} · ${POSES.length} poses`);
