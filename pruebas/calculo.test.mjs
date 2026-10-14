@@ -46,10 +46,22 @@ cada('el embudo es anidado y las 5 partes suman 100', (v, id) => {
   assert.equal(suma(v.lee.crm.exclusivas, (x) => x.de100), 100, id);
   assert.equal(suma(v.lee.crm.porOrigen, (o) => o.leads), e[0], id);
 });
-cada('el CRM incluye a la pauta: nunca menos leads de pauta que lo que reportan las plataformas', (v, id) => {
-  if (v.lee.crm.estado !== 'ok' || v.lee.pauta.estado !== 'ok') return;
-  assert.ok(v.lee.crm.periodo.dePauta >= v.lee.pauta.leads, id);
-  if (!v.lee.pauta.diasParciales.length) assert.equal(v.lee.crm.periodo.dePauta, v.lee.pauta.leads, id);
+test('la plataforma reporta de más, nunca de menos: cada día medido, reportados ≥ leads que llegan al CRM', () => {
+  const crmDia = new Map();
+  for (const x of data.cohortes) { const k = `${x.canal}|${x.fecha}`; crmDia.set(k, (crmDia.get(k) || 0) + x.leads); }
+  for (const c of CONFIG.canales) {
+    let rep = 0, reales = 0;
+    for (const p of data.pauta[c.id]) {
+      const enCrm = crmDia.get(`${c.id}|${p.fecha}`) || 0;
+      if (p.sinDato) continue;
+      assert.ok(p.leads >= enCrm && p.leads <= 2 * enCrm, `${c.id} ${p.fecha}`);
+      rep += p.leads; reales += enCrm;
+    }
+    // en toda la serie, la inflación medida queda a menos de un punto de la declarada
+    assert.ok(Math.abs(rep / reales - 1 - c.inflacion) < 0.01, `${c.id} infla ${(rep / reales - 1).toFixed(3)}`);
+  }
+  // el día que Meta no entregó, el CRM igual recibió sus leads
+  assert.ok((crmDia.get('meta|2026-07-14') || 0) > 0);
 });
 cada('las sedes suman los leads del CRM del período', (v, id) => {
   if (v.analiza.sedes.estado !== 'ok' || v.lee.crm.estado !== 'ok') return;
@@ -92,4 +104,54 @@ test('escenario: no mira el futuro (lo mismo con o sin los meses posteriores al 
   const recortado = escenario({ ...data, config: { ...data.config, corte: origen } }, origen);
   assert.deepEqual(completo.acierto, recortado.acierto);
   assert.deepEqual(completo.meses.map((m) => [m.central, m.baja, m.alta, m.motivo]), recortado.meses.map((m) => [m.central, m.baja, m.alta, m.motivo]));
+});
+
+// ── Detalle de producción ──
+const SECCIONES = ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '2.1', '2.2', '2.3', '2.4', '2.5', '3.1', '3.2', '3.3', '3.4', '3.5'];
+cada('las campañas suman su plataforma y las plataformas suman 100 % de la inversión', (v, id) => {
+  const pl = v.lee.plataformas;
+  if (pl.estado !== 'ok') return;
+  for (const p of pl.plataformas) {
+    assert.ok(Math.abs(suma(p.campanas, (c) => c.inversion) - p.inversion) < 0.01, `${id} ${p.nombre}`);
+    assert.equal(suma(p.campanas, (c) => c.leads), p.leads, `${id} ${p.nombre}`);
+  }
+  assert.equal(suma(pl.plataformas, (p) => p.pctInversion), 100, id);
+  // Google Ads + Meta Ads + TikTok Ads = la pauta del período en días completos (la programática no entra)
+  if (!v.lee.pauta.diasParciales?.length && v.lee.pauta.estado === 'ok') assert.ok(Math.abs(suma(pl.plataformas, (p) => p.inversion) - v.lee.pauta.inversion) < 0.01, id);
+});
+cada('las palabras clave suman los clics de Search del período', (v, id) => {
+  const pl = v.lee.plataformas;
+  if (pl.estado !== 'ok') return;
+  const search = pl.plataformas.find((p) => p.id === 'google').campanas.filter((c) => c.canal === 'search');
+  assert.equal(suma(pl.palabras.nombradas, (k) => k.clics) + (pl.palabras.resto?.clics || 0), suma(search, (c) => c.clics), id);
+});
+cada('el CRM por dentro cuadra: etapas, salidas, fuentes y atención', (v, id) => {
+  const c = v.lee.crmDetalle;
+  if (c.estado !== 'ok') return;
+  const abiertos = suma(c.etapas.slice(0, 4), (e) => e.estan);
+  assert.equal(abiertos + c.salidas.inscritos + c.salidas.descartados, c.etapas[0].entraron, id);
+  c.etapas.forEach((e, k) => { if (k) assert.ok(e.entraron <= c.etapas[k - 1].entraron, `${id} ${e.nombre}`); });
+  assert.equal(suma(c.fuentes, (f) => f.leads), c.total, id);
+  assert.equal(suma(c.fuentes, (f) => f.pct), 100, id);
+  c.fuentes.forEach((f) => assert.ok(f.altas <= f.asisten && f.asisten <= f.citas && f.citas <= f.contactos && f.contactos <= f.leads, `${id} ${f.nombre}`));
+  assert.equal(c.atencion.conRegistro + c.atencion.sinRegistro, c.etapas[1].entraron, id);
+  assert.equal(suma(c.descarte.motivos, (m) => m.valor), c.descarte.total, id);
+  c.campanas.forEach((k) => assert.ok(k.altas <= k.leads, `${id} ${k.nombre}`));
+});
+cada('los temas no superan las menciones de la marca y el tono va de −1 a 1', (v, id) => {
+  const r = v.lee.redes;
+  if (r.estado !== 'ok') return;
+  assert.equal(suma(r.temas, (t) => t.menciones) + r.sinTema, r.menciones, id);
+  r.temas.forEach((t) => assert.ok(t.tono == null || (t.tono >= -1 && t.tono <= 1), `${id} ${t.nombre}`));
+});
+cada('lo que llega al CRM no supera lo reportado salvo días sin dato de la plataforma', (v, id) => {
+  const pc = v.analiza.pautaCrm;
+  if (pc.estado !== 'ok') return;
+  for (const p of pc.plataformas) {
+    const conCaida = v.lee.plataformas.plataformas.find((x) => x.id === p.id).diasSinDato > 0;
+    if (!conCaida) assert.ok(p.enCrm <= p.reportados, `${id} ${p.nombre}`);
+  }
+});
+cada('cada aviso de qué mirar apunta a una sección que existe', (v, id) => {
+  v.sugiere.queMirar.forEach((a) => { assert.ok(SECCIONES.includes(a.sostiene), `${id} ${a.id}`); assert.ok(['atencion', 'revisar'].includes(a.nivel), `${id} ${a.id}`); });
 });

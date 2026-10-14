@@ -10,6 +10,8 @@ import {
 import { calcularIndice, bandaDe } from './indice.js';
 import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
+import { queMirar } from './queMirar.js';
+import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeWebDetalle, analizaReparto, analizaPautaCrm } from './produccion.js';
 
 export function periodoDesdeFiltros(cfg, { mes, comparar = 'anio' }) {
   const desde = mes + '-01', hasta = finDeMes(mes);
@@ -162,6 +164,14 @@ export function armarVista(data, filtros, estado = {}) {
     };
   }
 
+  // Detalle de producción: plataformas y campañas, CRM por dentro, redes, competencia, sitio
+  const plataformas = estadoGrupo('pauta') === 'ok' ? { estado: 'ok', universo: 'Lo que reporta cada plataforma', ...leePlataformas(data, P) } : { estado: estadoGrupo('pauta') };
+  const crmDetalle = estadoGrupo('crm') === 'ok' ? { estado: 'ok', universo: 'Leads registrados en el CRM en el período', ...leeCrmDetalle(data, P) } : { estado: estadoGrupo('crm') };
+  if (busquedas.estado === 'ok') Object.assign(busquedas, leeBusquedasDetalle(data, P));
+  const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'TikTok y conversación pública sobre Reset Fit', ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
+  const competencia = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'Actividad pública de cada marca (cifras de muestra)', ...leeCompetencia(data, P), conversacion } : { estado: estadoGrupo('conversacion') };
+  if (web.estado === 'ok') Object.assign(web, leeWebDetalle(data, P));
+
   // ══════════════ CAPA 2 · ANALIZA ══════════════
   const diasComunes = fechas.filter((d) => leadsPautaDia(data, d) != null);
   const sumaComun = (id, k) => suma(diasComunes, (d) => ix.pautaDia[id].get(d)[k]);
@@ -264,10 +274,17 @@ export function armarVista(data, filtros, estado = {}) {
 
   const escenarioVista = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : { estado: 'ok', universo: 'Leads de pauta, si la inversión sigue el plan', ...escenario(data, hasta) };
 
-  return {
+  const reparto = plataformas.estado === 'ok' ? { estado: 'ok', universo: 'Inversión de plataformas por producto', ...analizaReparto(data, P, plataformas.plataformas) } : { estado: plataformas.estado };
+  const pautaCrm = plataformas.estado === 'ok' && crmDetalle.estado === 'ok'
+    ? { estado: 'ok', universo: 'Pauta × CRM: lo reportado contra lo que llega', plataformas: analizaPautaCrm(data, P, plataformas.plataformas) }
+    : { estado: plataformas.estado !== 'ok' ? plataformas.estado : crmDetalle.estado };
+
+  const vista = {
     periodo, fuentes,
-    lee: { pauta, crm, busquedas, conversacion, web },
-    analiza: { rendimiento, ritmo, demandaRespuesta, horaDia, sedes },
+    lee: { pauta, plataformas, crm, crmDetalle, busquedas, redes, competencia, conversacion, web },
+    analiza: { rendimiento, reparto, pautaCrm, ritmo, demandaRespuesta, horaDia, sedes },
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };
+  vista.sugiere.queMirar = fuera ? [] : queMirar(data, P, vista);
+  return vista;
 }

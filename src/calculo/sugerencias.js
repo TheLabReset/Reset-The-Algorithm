@@ -10,6 +10,9 @@ const curva = (L, I, Inuevo, beta) => (I > 0 ? L * (Inuevo / I) ** beta : 0);
 export function reasignacion(cfg, canales) {
   const sobre = canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl).sort((a, b) => b.cpl / b.metaCpl - a.cpl / a.metaCpl)[0];
   if (!sobre) return null;
+  // de dónde sacar: solo si la plataforma (CPL) y el CRM (costo por inscripción) coinciden en que es el más caro
+  const peorCrm = canales.filter((c) => c.cohorte?.cpa != null).sort((a, b) => b.cohorte.cpa - a.cohorte.cpa)[0];
+  if (!peorCrm || peorCrm.id !== sobre.id) return null;
   const candidatos = canales.filter((c) => c.id !== sobre.id && c.cpl != null && c.cpl <= c.metaCpl && c.cohorte.altas >= cfg.metodo.casosMinimos && c.cohorte.cpa != null);
   const destino = candidatos.sort((a, b) => a.cohorte.cpa - b.cohorte.cpa)[0];
   if (!destino) return null;
@@ -24,7 +27,7 @@ export function reasignacion(cfg, canales) {
   return {
     id: 'reasignar', sostiene: ['2.1'], tipo: 'estimacion',
     desde: sobre, hacia: destino, monto, leads, inscripciones,
-    supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Rendimientos decrecientes: leads ∝ inversión elevada a ${central} (rango ${baja} a ${alta})`, 'La tasa de inscripción de cada canal se mantiene'],
+    acuerdo: 'La plataforma y el CRM coinciden en que es el canal más caro; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Rendimientos decrecientes: leads ∝ inversión elevada a ${central} (rango ${baja} a ${alta})`, 'La tasa de inscripción de cada canal se mantiene'],
   };
 }
 

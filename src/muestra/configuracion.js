@@ -28,12 +28,14 @@ export const CONFIG = {
   // trae intención declarada y convierte más; el formulario instantáneo de redes, menos.
   // metaCpl: asumo. En una demo real la fija el cliente.
   canales: [
-    { id: 'meta', nombre: 'Meta', cpm: 12, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 12, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25 },
-    { id: 'search', nombre: 'Google Search', cpm: 90, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 25, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1 },
-    { id: 'tiktok', nombre: 'TikTok', cpm: 10, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 20, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25 },
-    { id: 'display', nombre: 'Google Display', cpm: 6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 45, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1 },
+    { id: 'meta', nombre: 'Meta', cpm: 12, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 12, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
+    { id: 'search', nombre: 'Google Search', cpm: 90, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 25, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
+    { id: 'tiktok', nombre: 'TikTok', cpm: 10, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 20, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25, inflacion: 0.18 },
+    { id: 'display', nombre: 'Google Display', cpm: 6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 45, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
   ],
   // webPropia: fracción de los leads del canal que entra por un formulario del sitio (el resto, formulario dentro de la plataforma)
+  // inflacion: cuánto de más reporta la plataforma sobre los leads que llegan al CRM (duplicados, pruebas, conversiones
+  // por vista). Asumo: los formularios dentro de redes inflan más que la búsqueda.
   // Leads que llegan por el sitio sin pauta: entran al CRM pero no son leads de pauta (asumo: convierten un poco más)
   organico: { id: 'organico', nombre: 'Sitio sin pauta', calidad: { cita: 1.1, alta: 1.1 } },
 
@@ -107,8 +109,155 @@ export const CONFIG = {
     { id: 'precio', termino: 'precio gimnasio', base: 38 },
     { id: 'personal', termino: 'entrenador personal', base: 22, crece: 0.35 },
     { id: 'spinning', termino: 'clases de spinning', base: 18, crece: -0.15 },
+    { id: 'pilates', termino: 'pilates reformer', base: 2, aparece: '2026-05-04', despues: 16 }, // casi no se buscaba antes de mayo de 2026
     { id: 'marca', termino: 'reset fit', base: 9, crece: 0.9, propia: true },
   ],
+
+  // ══════════ Detalle de producción (src/muestra/detalle.js). Todo «asumo» salvo que diga otra cosa ══════════
+  // Campañas por canal: el gasto del día se reparte por peso entre las activas; clics y leads, por multinomial
+  // con su CTR y conversión relativos. Suman exacto el total del canal. conversion 0 = campaña sin leads (alcance).
+  campanas: {
+    search: [
+      { id: 's-marca', nombre: 'RF | Search | Marca', producto: 'marca', peso: 0.16, ctr: 2.4, conversion: 1.7 },
+      { id: 's-membresias', nombre: 'RF | Search | Membresías Lima', producto: 'membresias', peso: 0.52, ctr: 1, conversion: 1 },
+      { id: 's-distritos', nombre: 'RF | Search | Gimnasio por distrito', producto: 'membresias', peso: 0.32, ctr: 0.9, conversion: 0.95 },
+    ],
+    display: [
+      { id: 'd-remarketing', nombre: 'RF | Display | Remarketing', producto: 'membresias', peso: 0.4, ctr: 1.7, conversion: 1.5 },
+      { id: 'd-prospeccion', nombre: 'RF | Display | Prospección', producto: 'marca', peso: 0.6, ctr: 0.55, conversion: 0.65 },
+    ],
+    meta: [
+      { id: 'm-prueba', nombre: 'RF | Leads | Clase de prueba', producto: 'membresias', peso: 0.5, ctr: 1, conversion: 1.1 },
+      { id: 'm-remarketing', nombre: 'RF | Leads | Remarketing', producto: 'membresias', peso: 0.2, ctr: 1.5, conversion: 1.35 },
+      { id: 'm-reto', nombre: 'RF | Leads | Reto de enero', producto: 'membresias', peso: 0.7, ctr: 1.2, conversion: 1.2, activa: [['2025-01-02', '2025-02-15'], ['2026-01-02', '2026-02-15']] },
+      { id: 'm-olivos', nombre: 'RF | Leads | Apertura Los Olivos', producto: 'membresias', peso: 0.3, ctr: 1.1, conversion: 1.25, activa: [['2026-02-16', '2026-04-30']] },
+      { id: 'm-alcance', nombre: 'RF | Alcance | Marca', producto: 'marca', peso: 0.18, ctr: 0.45, conversion: 0 },
+    ],
+    tiktok: [
+      { id: 't-prueba', nombre: 'RF | TikTok | Clase de prueba', producto: 'membresias', peso: 0.7, ctr: 1, conversion: 1 },
+      { id: 't-alcance', nombre: 'RF | TikTok | Alcance', producto: 'marca', peso: 0.3, ctr: 1.15, conversion: 0 },
+    ],
+  },
+  productos: { membresias: 'Membresías', marca: 'Marca' },
+
+  // Palabras clave de Search: reparten los clics y las conversiones del canal; el gasto, por clics × CPC relativo.
+  palabrasClave: [
+    { texto: 'reset fit', concordancia: 'exacta', clics: 0.11, conversion: 2.3, cpc: 0.4 },
+    { texto: 'gimnasio cerca de mí', concordancia: 'frase', clics: 0.15, conversion: 1, cpc: 1 },
+    { texto: 'gimnasio miraflores', concordancia: 'frase', clics: 0.08, conversion: 1.2, cpc: 1.15 },
+    { texto: 'gimnasio surco', concordancia: 'frase', clics: 0.07, conversion: 1.1, cpc: 1 },
+    { texto: 'gimnasio san isidro', concordancia: 'frase', clics: 0.06, conversion: 1.1, cpc: 1.25 },
+    { texto: 'gimnasio los olivos', concordancia: 'frase', clics: 0.06, conversion: 1.05, cpc: 0.8, desde: '2026-02-16' },
+    { texto: 'precio gimnasio lima', concordancia: 'amplia', clics: 0.09, conversion: 0.8, cpc: 0.9 },
+    { texto: 'membresía gimnasio', concordancia: 'frase', clics: 0.07, conversion: 1.3, cpc: 1.2 },
+    { texto: 'clase de prueba gimnasio', concordancia: 'frase', clics: 0.05, conversion: 1.7, cpc: 0.9 },
+    { texto: 'gimnasio 24 horas', concordancia: 'amplia', clics: 0.06, conversion: 0.12, cpc: 1.05 },
+    { texto: 'crossfit lima', concordancia: 'amplia', clics: 0.04, conversion: 0.05, cpc: 1.35 },
+    { texto: 'otras palabras', concordancia: '', clics: 0.16, conversion: 0.8, cpc: 1, resto: true },
+  ],
+  // Términos que de verdad se buscaron (otra lectura de los mismos clics de Search)
+  terminosBusqueda: [
+    { texto: 'reset fit', clics: 0.08, conversion: 2.3 },
+    { texto: 'reset fit horarios', clics: 0.03, conversion: 1.8 },
+    { texto: 'gimnasio cerca de mi', clics: 0.12, conversion: 1 },
+    { texto: 'gimnasios en miraflores', clics: 0.06, conversion: 1.15 },
+    { texto: 'gimnasio barato lima', clics: 0.07, conversion: 0.7 },
+    { texto: 'smart fit precios', clics: 0.05, conversion: 0.35 },
+    { texto: 'gimnasio con piscina', clics: 0.04, conversion: 0.2 },
+    { texto: 'gimnasio abierto 24 horas', clics: 0.05, conversion: 0.12 },
+    { texto: 'clases de baile para adultos', clics: 0.03, conversion: 0.4 },
+    { texto: 'otros términos', clics: 0.47, conversion: 1, resto: true },
+  ],
+
+  // Programática: llega en una planilla manual sin fecha por día; no sigue el período y no se suma a la inversión de plataformas
+  programatica: {
+    campana: 'RF | Programática | Prospección Lima Norte', desde: '2026-08-18', hasta: '2026-09-30',
+    fuente: 'Planilla del equipo de programática (carga manual)', sitios: 214,
+    formatos: [
+      { nombre: 'Notificación push', compra: 'CPC', audiencia: '18 a 34 años · Lima Norte', impresiones: 420000, ctr: 0.009, costoUnidad: 0.32 },
+      { nombre: 'Banners display', compra: 'CPM', audiencia: 'Alrededor de las sedes de Lima Norte', impresiones: 1600000, ctr: 0.0021, costoUnidad: 3.1 },
+      { nombre: 'Video en apps', compra: 'CPM', audiencia: '18 a 44 años · Lima', impresiones: 380000, ctr: 0.0042, costoUnidad: 7.4 },
+    ],
+  },
+
+  // CRM por dentro. Un lead que no pasó de etapa sigue «en la etapa» hasta cumplir su plazo; después se descarta.
+  crm: {
+    etapas: ['Nuevo lead', 'Contactado', 'Cita agendada', 'Asistió a clase de prueba', 'Inscrito'],
+    plazoAbierto: [5, 14, 10, 21], // días que un lead puede seguir en cada etapa antes de descartarse
+    // tiempo al primer contacto, por tramo; el fin de semana el equipo tarda más
+    tramosContacto: ['menos de 5 min', '5 a 30 min', '30 min a 2 h', '2 a 24 h', 'más de 24 h'],
+    contactoLaborable: [0.34, 0.3, 0.18, 0.12, 0.06],
+    contactoFinDeSemana: [0.12, 0.2, 0.24, 0.27, 0.17],
+    contactoLento: { desde: '2026-09-01', texto: 'Dos asesoras menos en el equipo', factor: [0.55, 0.85, 1.2, 1.5, 1.9] }, // historia de setiembre
+    sinRegistroContacto: 0.07,
+    intentos: [0.27, 0.24, 0.19, 0.12, 0.08, 0.1], // 1, 2, 3, 4, 5, 6 o más intentos de contacto
+    motivosDescarte: [
+      { motivo: 'Busca sede en otro distrito', peso: 0.23 },
+      { motivo: 'El precio no le acomoda', peso: 0.22 },
+      { motivo: 'Solo pedía horarios', peso: 0.17 },
+      { motivo: 'Dejó de responder', peso: 0.2 },
+      { motivo: 'Ya es socio', peso: 0.06 },
+      { motivo: 'Menor de edad', peso: 0.04 },
+      { motivo: 'Otros motivos', peso: 0.08 },
+    ],
+    ticketInscripcion: 189, // asumo: matrícula más primer mes, en soles; valor de una inscripción en el CRM
+    campanas: [
+      { id: 'reto-2025', nombre: 'Reto de enero 2025', desde: '2025-01-02', hasta: '2025-02-15', canales: ['meta', 'tiktok'], participacion: 0.8 },
+      { id: 'reto-2026', nombre: 'Reto de enero 2026', desde: '2026-01-02', hasta: '2026-02-15', canales: ['meta', 'tiktok'], participacion: 0.8 },
+      { id: 'olivos', nombre: 'Apertura Los Olivos', desde: '2026-02-16', hasta: '2026-04-30', sedes: ['lo'], participacion: 1 },
+      { id: 'anual', nombre: 'Plan anual con precio congelado', desde: '2026-08-15', hasta: '2026-10-31', canales: ['meta', 'search'], participacion: 0.3 },
+    ],
+    // participacion: de los leads que cumplen canal, sede y fechas, qué parte queda etiquetada con la campaña en el CRM
+  },
+
+  // Redes. TikTok: hashtags del rubro, lectura mensual (asumo órdenes de magnitud)
+  hashtags: [
+    { tag: '#gymperu', publicaciones: 520, vistasPorPublicacion: 4200, interaccion: 0.058 },
+    { tag: '#gymtok', publicaciones: 1900, vistasPorPublicacion: 9800, interaccion: 0.071 },
+    { tag: '#fitnessperu', publicaciones: 310, vistasPorPublicacion: 3100, interaccion: 0.064 },
+    { tag: '#rutinadegym', publicaciones: 680, vistasPorPublicacion: 7600, interaccion: 0.082 },
+    { tag: '#pilatesreformer', publicaciones: 140, vistasPorPublicacion: 5200, interaccion: 0.09, crece: 2.2 },
+    { tag: '#crossfitperu', publicaciones: 95, vistasPorPublicacion: 2600, interaccion: 0.05, crece: -0.2 },
+    { tag: '#limafit', publicaciones: 120, vistasPorPublicacion: 2900, interaccion: 0.061 },
+    { tag: '#resetfit', publicaciones: 18, vistasPorPublicacion: 2100, interaccion: 0.074, crece: 1.4, propia: true },
+  ],
+  // Conversación sobre Reset Fit por tema; el tono va de −1 a 1 y solo se lee para la marca propia
+  temas: [
+    { id: 'precios', nombre: 'Precios y promociones', peso: 0.24, tono: 0.2 },
+    { id: 'clases', nombre: 'Clases grupales', peso: 0.18, tono: 0.55 },
+    { id: 'atencion', nombre: 'Atención en sede', peso: 0.13, tono: 0.05, desde: '2026-08', tonoDesde: -0.45 },
+    { id: 'maquinas', nombre: 'Máquinas y mantenimiento', peso: 0.12, tono: -0.15 },
+    { id: 'entrenadores', nombre: 'Entrenadores', peso: 0.1, tono: 0.5 },
+    { id: 'aforo', nombre: 'Horarios y aforo', peso: 0.09, tono: -0.2 },
+    { id: 'limpieza', nombre: 'Limpieza y duchas', peso: 0.08, tono: -0.1 },
+  ],
+  sinTema: 0.06,
+  // Competencia en redes: publicaciones del mes, interacción por publicación y anuncios activos (biblioteca de anuncios de Meta)
+  redesMarcas: [
+    { id: 'smartfit', publicaciones: 34, interaccion: 1450, anuncios: 46 },
+    { id: 'b2', publicaciones: 22, interaccion: 380, anuncios: 9 },
+    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14 },
+    { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25 },
+    { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4 },
+    { id: 'resetfit', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true },
+  ],
+  formatosAnuncio: [{ nombre: 'Imagen', peso: 0.45 }, { nombre: 'Video', peso: 0.38 }, { nombre: 'Carrusel', peso: 0.17 }],
+
+  // Búsquedas por región: Google informa las regiones donde más se busca cada palabra (índice relativo, la primera = 100)
+  regiones: ['Lima', 'Callao', 'La Libertad', 'Lambayeque', 'Piura', 'Ica', 'Junín', 'Áncash'],
+  pesoRegion: {
+    gimnasio: [1, 0.92, 0.8, 0.7, 0.66, 0.6, 0.55, 0.5],
+    cerca: [1, 1.05, 0.62, 0.55, 0.5, 0.48, 0.4, 0.38],
+    precio: [0.9, 1, 0.85, 0.82, 0.75, 0.7, 0.66, 0.6],
+    personal: [1, 0.7, 0.58, 0.5, 0.45, 0.48, 0.35, 0.3],
+    spinning: [1, 0.66, 0.7, 0.62, 0.5, 0.55, 0.45, 0.4],
+    pilates: [1, 0.6, 0.45, 0.4, 0.36, 0.38, 0.3, 0.25],
+    marca: [1, 0.35, 0, 0, 0, 0, 0, 0],
+  },
+
+  // Sitio: tasa de sesiones con interacción por fuente y hora de las sesiones (Analytics no cruza día por hora)
+  interaccionWeb: { organica: 0.62, directo: 0.58, redes: 0.37, referidos: 0.55, ads: 0.49, redesPagadas: 0.31 },
+  perfilHoraWeb: [0.8, 0.4, 0.25, 0.2, 0.3, 0.9, 2.4, 3.6, 3.9, 3.6, 3.4, 3.5, 3.9, 3.6, 3.2, 3.1, 3.3, 3.8, 4.6, 5.2, 5.4, 4.6, 3.1, 1.7],
 
   // Eventos que la data cuenta y la pantalla anota
   eventos: [

@@ -10,7 +10,8 @@
 //  R15 nada después del corte
 //
 // Tres universos que NO se suman entre sí:
-//  · pauta: lo que reporta cada plataforma (puede faltar un día: «la fuente no entregó»)
+//  · pauta: lo que reporta cada plataforma: los leads reales más duplicados y conversiones que no llegan
+//    (puede faltar un día: «la fuente no entregó»)
 //  · CRM: los leads que de verdad entraron (los de pauta, aunque la plataforma no los reportara, más los del sitio sin pauta)
 //  · web: sesiones y solicitudes del sitio (las solicitudes desde pauta ya son leads de pauta)
 
@@ -74,7 +75,10 @@ export function generar(cfg) {
       const leads = az.binomial(clics, Math.min(0.9, cvr));
       return { fecha: d, inversion, impresiones, clics, leads };
     });
-    pauta[c.id] = real[c.id].map((r) => (caidas.has(`${c.id}|${r.fecha}`) ? { fecha: r.fecha, sinDato: true } : r));
+    // Lo que reporta la plataforma: los leads reales más duplicados, pruebas y conversiones que el CRM no recibe.
+    // Flujo de azar aparte: no cambia los leads reales ni nada de lo que sigue.
+    const azR = crearAzar(semillaDe(cfg.semilla, 'reporte', c.id));
+    pauta[c.id] = real[c.id].map((r) => (caidas.has(`${c.id}|${r.fecha}`) ? { fecha: r.fecha, sinDato: true } : { ...r, leads: r.leads + azR.binomial(r.leads, c.inflacion) }));
   }
 
   // ── Sitio web: sesiones, móviles y solicitudes por fuente ──
@@ -140,11 +144,16 @@ export function generar(cfg) {
   for (let s = inicioSemana(cfg.desde); s <= cfg.corte; s = sumarDias(s, 7)) if (s >= cfg.desde && sumarDias(s, 6) <= cfg.corte) semanas.push(s);
 
   const azB = crearAzar(semillaDe(cfg.semilla, 'busquedas'));
-  const crudas = cfg.busquedas.map((k) => semanas.map((s) => {
-    let v = k.base * cfg.estacionalidad[mes(sumarDias(s, 3)) - 1] * (1 + (k.crece || 0) * t(s)) * Math.exp(0.07 * azB.normal());
+  const crudas = cfg.busquedas.map((k) => {
+    // un término que aparece a mitad de la muestra lleva su propio flujo: agregarlo no cambia a los demás
+    const az = k.aparece ? crearAzar(semillaDe(cfg.semilla, 'busquedas', k.id)) : azB;
+    return semanas.map((s) => {
+    let v = k.base * cfg.estacionalidad[mes(sumarDias(s, 3)) - 1] * (1 + (k.crece || 0) * t(s)) * Math.exp(0.07 * az.normal());
+    if (k.aparece && s >= k.aparece) v *= 1 + (k.despues / k.base - 1) * Math.min(1, diasEntre(k.aparece, s) / 84); // sube en 12 semanas
     if (k.propia && s >= '2026-01-05' && s < '2026-02-16') v *= 1.6; // campaña de enero
     return v;
-  }));
+    });
+  });
   const maxB = Math.max(...crudas.flat());
   const busquedas = cfg.busquedas.map((k, i) => ({ id: k.id, termino: k.termino, propia: !!k.propia, semanas: semanas.map((s, j) => ({ semana: s, indice: Math.max(1, Math.round((crudas[i][j] / maxB) * 100)) })) }));
 
