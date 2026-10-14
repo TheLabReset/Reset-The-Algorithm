@@ -181,11 +181,16 @@ export function detallar(data) {
       return { mes: m, publicaciones, interacciones, anuncios, formatos: multinomial(azR, anuncios, cfg.formatosAnuncio.map((f) => f.peso)) };
     }),
   }));
-  // Tono del texto de cada marca, por mes: azar propio para no mover el resto de la muestra
-  const azTono = crearAzar(semillaDe(cfg.semilla, 'tono-texto'));
+  // Sentimiento de los comentarios en las publicaciones de cada marca, por mes: azar propio para no mover el resto
+  const azTono = crearAzar(semillaDe(cfg.semilla, 'sentimiento'));
   redes.forEach((r, i) => {
-    const base = cfg.redesMarcas[i].tonoTexto;
-    r.meses.forEach((x) => { x.tonoTexto = Math.max(52, Math.min(80, Math.round(base + (azTono.ruido(0.05) - 1) * 100))); });
+    const { positivo, negativo } = cfg.redesMarcas[i].sentimiento;
+    r.meses.forEach((x) => {
+      const comentarios = Math.round(x.interacciones * 0.06); // asumo: 6 de cada 100 interacciones son comentarios
+      const pos = Math.min(0.8, positivo * azTono.ruido(0.06)), neg = Math.min(0.3, negativo * azTono.ruido(0.1));
+      const [positivos, neutros, negativos] = multinomial(azTono, comentarios, [pos, 1 - pos - neg, neg]);
+      x.sentimiento = { positivos, neutros, negativos };
+    });
     r.palabras = cfg.redesMarcas[i].palabras;
   });
 

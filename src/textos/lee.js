@@ -105,18 +105,18 @@ export function redesTemas(v) {
   const r = v.lee.redes;
   const t = r.pideLectura;
   const titulo = 'Qué se dice de Fit Lab';
-  if (!t) return { titulo, lectura: `${capital(numero(r.menciones))} menciones en el mes. Ningún tema con casos suficientes tiene tono claramente negativo.` };
-  const giro = t.tonoPrevio != null && t.tonoPrevio - t.tono > 0.15 ? `; en ${comparacionTexto(P(v))} el tono era mejor` : '';
-  return { titulo, lectura: `«${t.nombre}» es el tema con peor tono: ${numero(t.negativas)} de sus ${numero(t.menciones)} menciones son negativas${giro}.` };
+  if (!t) return { titulo, lectura: `${capital(numero(r.menciones))} menciones en el mes. Ningún tema con casos suficientes tiene sentimiento claramente negativo.` };
+  const giro = t.tonoPrevio != null && t.tonoPrevio - t.tono > 0.15 ? `; en ${comparacionTexto(P(v))} el sentimiento era mejor` : '';
+  return { titulo, lectura: `«${t.nombre}» es el tema con peor sentimiento: ${numero(t.negativas)} de sus ${numero(t.menciones)} menciones son negativas${giro}.` };
 }
 
 export function competenciaLectura(v) {
   const m = v.lee.competencia.marcas;
   const propia = m.find((x) => x.propia);
   const puesto = m.indexOf(propia) + 1;
-  const masAlto = [...m].sort((a, b) => b.tono - a.tono)[0];
-  const tono = masAlto.id === propia.id ? ', el más alto de las marcas leídas' : '';
-  return { titulo: 'Interacción y tono en Facebook', lectura: `${m[0].nombre} junta la mayor interacción del mes. Fit Lab queda en el puesto ${numero(puesto)} de ${numero(m.length)} y escribe con un tono de ${numero(propia.tono)} de 100${tono}.` };
+  const mejor = [...m].sort((a, b) => b.sentimiento.indice - a.sentimiento.indice)[0];
+  const extra = mejor.id === propia.id ? ', el más alto de las marcas leídas' : '';
+  return { titulo: 'Interacción y sentimiento en Facebook', lectura: `${m[0].nombre} junta la mayor interacción del mes. Fit Lab queda en el puesto ${numero(puesto)} de ${numero(m.length)}; ${numero(propia.sentimiento.pctPos)} de cada 100 comentarios en sus publicaciones son positivos y su sentimiento es de ${numero(propia.sentimiento.indice)} de 100${extra}.` };
 }
 
 export function competenciaAnuncios(v) {

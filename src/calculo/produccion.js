@@ -224,6 +224,14 @@ export function leeRedes(data, P) {
 // ══════════ 1.5 Competencia: lectura del mes, sin comparación ══════════
 // Como en producción: publicaciones del mes y anuncios activos de la biblioteca de Meta. No hay historia de la
 // competencia, así que no se compara con otro período.
+// Sentimiento de 0 a 100: 50 + 50 × (positivos − negativos) / total. 0 es todo negativo, 50 neutro, 100 todo positivo
+export const indiceSentimiento = (positivos, negativos, total) => (total ? Math.round(50 + (50 * (positivos - negativos)) / total) : null);
+function sentimientoDe({ positivos, neutros, negativos }) {
+  const total = positivos + neutros + negativos;
+  const [pctPos, pctNeu, pctNeg] = total ? mayorResto([positivos, neutros, negativos]) : [null, null, null];
+  return { positivos, neutros, negativos, total, pctPos, pctNeu, pctNeg, indice: indiceSentimiento(positivos, negativos, total) };
+}
+
 export function leeCompetencia(data, P) {
   const det = detalleDe(data);
   const mes = P.hasta.slice(0, 7);
@@ -231,7 +239,7 @@ export function leeCompetencia(data, P) {
     const m = r.meses.find((x) => x.mes === mes);
     return {
       id: r.id, nombre: r.nombre, propia: r.propia, publicaciones: m.publicaciones, interacciones: m.interacciones,
-      porPublicacion: razon(m.interacciones, m.publicaciones), anuncios: m.anuncios, formatos: m.formatos, tono: m.tonoTexto, palabras: r.palabras,
+      porPublicacion: razon(m.interacciones, m.publicaciones), anuncios: m.anuncios, formatos: m.formatos, sentimiento: sentimientoDe(m.sentimiento), palabras: r.palabras,
     };
   }).sort((a, b) => b.interacciones - a.interacciones);
   return { mes, formatos: data.config.formatosAnuncio.map((f) => f.nombre), marcas };

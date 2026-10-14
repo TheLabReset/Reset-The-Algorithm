@@ -23,16 +23,28 @@ const partesConResto = (partes, nombreResto) => {
   ];
 };
 
-// Competencia: dispersión de interacción y tono; al elegir un punto, su ficha al lado. Arranca en la marca propia.
+// Competencia: dispersión de interacción y sentimiento; al elegir un punto, su ficha al lado. Arranca en la marca propia.
+// Reparto del sentimiento: positivo en menta, neutro en un gris, negativo en rojo (dos polos y un centro gris)
+function Sentimiento({ s }) {
+  const partes = [['positivo', s.pctPos, 'q-sent-pos'], ['neutro', s.pctNeu, 'q-sent-neu'], ['negativo', s.pctNeg, 'q-sent-neg']];
+  return (
+    <span className="q-sentimiento">
+      <span className="q-sentimiento-barra" aria-hidden="true">{partes.map(([n, p, c]) => <i key={n} className={c} style={{ flexGrow: p }} />)}</span>
+      <span className="q-sentimiento-leyenda">{partes.map(([n, p, c]) => <span key={n}><i className={c} aria-hidden="true" />{numero(p)} % {n}</span>)}</span>
+      <span className="q-sentimiento-base">{numero(s.total)} comentarios</span>
+    </span>
+  );
+}
+
 function Competencia({ marcas }) {
   const [elegida, setElegida] = useState(() => marcas.find((m) => m.propia)?.id);
   const m = marcas.find((x) => x.id === elegida) || marcas[0];
   return (
     <div className="q-competencia">
       <div>
-        <Dispersion etiqueta="Interacción y tono del texto de cada marca" rotuloX="Interacción en el mes" rotuloY="Tono del texto, de 0 a 100"
-          formatoX={compacto} notas={{ neutro: 'neutro', arriba: 'tono positivo', abajo: 'tono negativo' }}
-          puntos={marcas.map((x) => ({ id: x.id, nombre: x.nombre, propia: x.propia, x: x.interacciones, y: x.tono }))}
+        <Dispersion etiqueta="Interacción y sentimiento de cada marca" rotuloX="Interacción en el mes" rotuloY="Sentimiento, de 0 a 100"
+          formatoX={compacto} notas={{ neutro: 'neutro', arriba: 'positivo', abajo: 'negativo' }}
+          puntos={marcas.map((x) => ({ id: x.id, nombre: x.nombre, propia: x.propia, x: x.interacciones, y: x.sentimiento.indice }))}
           elegido={m.id} onElegir={setElegida} />
         <p className="q-nota-bloque">Elige un punto para ver el detalle de cada marca.</p>
       </div>
@@ -40,7 +52,8 @@ function Competencia({ marcas }) {
         <h4>{m.nombre}</h4>
         <dl>
           <div><dt>Interacción</dt><dd><b>{compacto(m.interacciones)}</b> en {numero(m.publicaciones)} {m.publicaciones === 1 ? 'publicación' : 'publicaciones'}</dd></div>
-          <div><dt>Tono del texto</dt><dd><b>{numero(m.tono)}</b> de 100 · 50 es neutro</dd></div>
+          <div><dt>Sentimiento de los comentarios</dt><dd><b>{numero(m.sentimiento.indice)}</b> de 100 · 50 es neutro
+            <Sentimiento s={m.sentimiento} /></dd></div>
           <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b> {m.anuncios ? `· ${m.formatos.map((n, i) => `${numero(n)} ${['en imagen', 'en video', 'en carrusel'][i]}`).filter((t) => !t.startsWith('0 ')).join(', ')}` : ''}</dd></div>
           <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
         </dl>
@@ -181,10 +194,10 @@ export default function Lee({ capa, vista: v }) {
                 filas={v.lee.redes.hashtags.map((h) => [h.tag, porcentaje(h.interaccion * 100, 1), compacto(h.vistas), numero(h.publicaciones)])} />
             </Bloque>
             <Bloque universo="conversacion" ancho="mitad" {...L.redesTemas(v)}
-              ayuda={<p>Tono: menciones positivas menos negativas, sobre el total del tema, de −100 a 100. Solo se lee para Fit Lab. El punto hueco es {comparacionTexto(v.periodo)}.</p>}>
-              <Pesas etiqueta="Tono de cada tema" min={-100} max={100} rotuloA={comparacionTexto(v.periodo)} rotuloB={periodoTexto(v.periodo)}
+              ayuda={<p>Sentimiento: 50 más la mitad de (menciones positivas menos negativas) sobre el total del tema, de 0 (todo negativo) a 100 (todo positivo); 50 es neutro. Solo se lee para Fit Lab. El punto hueco es {comparacionTexto(v.periodo)}.</p>}>
+              <Pesas etiqueta="Sentimiento de cada tema" min={0} max={100} centro={50} rotuloA={comparacionTexto(v.periodo)} rotuloB={periodoTexto(v.periodo)}
                 formato={(n) => (n == null ? NO_MEDIDO : numero(n))}
-                filas={v.lee.redes.temas.map((t) => ({ nombre: `${t.nombre} (${numero(t.menciones)})`, a: t.tonoPrevio == null ? null : Math.round(t.tonoPrevio * 100), b: t.tono == null ? null : Math.round(t.tono * 100) }))} />
+                filas={v.lee.redes.temas.map((t) => ({ nombre: `${t.nombre} (${numero(t.menciones)})`, a: t.tonoPrevio == null ? null : Math.round(50 + 50 * t.tonoPrevio), b: t.tono == null ? null : Math.round(50 + 50 * t.tono) }))} />
             </Bloque>
           </>}
         </SeccionDe>
@@ -193,7 +206,7 @@ export default function Lee({ capa, vista: v }) {
         <SeccionDe def={s15} vista={v}>
           {v.lee.competencia.estado !== 'ok' ? <Bloque titulo="Competencia" universo="conversacion" estado={sinDato(v.lee.competencia.estado)} /> : <>
             <Bloque universo="conversacion" {...L.competenciaLectura(v)}
-              ayuda={<><p>Interacción: reacciones, comentarios y compartidos de las publicaciones del mes. Tono del texto: qué tan positivo es lo que cada marca escribe en sus publicaciones, de 0 a 100; 50 es neutro. No mide lo que la gente dice de la marca: eso está en Redes.</p><p>No se compara con otro período: de la competencia solo se lee lo que está publicado.</p></>}
+              ayuda={<><p>Interacción: reacciones, comentarios y compartidos de las publicaciones del mes. Sentimiento: los comentarios en esas publicaciones, clasificados en positivos, neutros y negativos; el índice va de 0 (todo negativo) a 100 (todo positivo) y 50 es neutro.</p><p>No se compara con otro período: de la competencia solo se lee lo que está publicado.</p></>}
               pie={<><span>Publicaciones de {periodoTexto(v.periodo)} · anuncios activos al {fecha(v.periodo.hasta)}</span><span>Facebook y biblioteca de anuncios de Meta · marcas reales con cifras de muestra: no describen su desempeño real</span></>}>
               <Competencia marcas={v.lee.competencia.marcas} />
             </Bloque>

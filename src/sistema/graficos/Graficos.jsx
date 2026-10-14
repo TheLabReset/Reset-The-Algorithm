@@ -125,13 +125,13 @@ export function Multiplos({ paneles, formato = numero, etiqueta }) {
 }
 
 // ─────────────── Pesas: dos valores de la misma escala por fila ───────────────
-export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB, etiqueta }) {
+export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB, centro = min < 0 ? 0 : null, etiqueta }) {
   const tabla = { columnas: ['', rotuloA, rotuloB], filas: filas.map((f) => [f.nombre, formato(f.a), formato(f.b)]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
         const fila = 32, m = { t: 6, r: 64, b: 6, l: margenRotulos(filas.map((f) => f.nombre), ancho) };
-        const alto = m.t + filas.length * fila + m.b + (min < 0 ? 18 : 0);
+        const alto = m.t + filas.length * fila + m.b + (centro != null ? 18 : 0);
         const tope = max ?? marcas(Math.max(1, ...filas.flatMap((f) => [f.a ?? 0, f.b ?? 0])), 4).at(-1);
         const x = lineal(min, tope, m.l, ancho - m.r);
         return (
@@ -148,7 +148,7 @@ export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB,
                   <text className="q-rotulo-fila" x={m.l - 10} y={cy + 4} textAnchor="end">{recortar(f.nombre, m.l)}</text>
                   <Zona x={0} y={cy - fila / 2} w={ancho} h={fila} pista={`${f.nombre}\n${rotuloA}: ${formato(f.a)}\n${rotuloB}: ${formato(f.b)}`} />
                   <line className="q-rejilla" x1={m.l} x2={ancho - m.r} y1={cy} y2={cy} />
-                  {min < 0 && <line className="q-separador" x1={x(0)} x2={x(0)} y1={cy - 10} y2={cy + 10} />}
+                  {centro != null && <line className="q-separador" x1={x(centro)} x2={x(centro)} y1={cy - 10} y2={cy + 10} />}
                   {f.a != null && f.b != null && <line className="q-pesa" x1={x(f.a)} x2={x(f.b)} y1={cy} y2={cy} />}
                   {f.a != null && <circle className="q-punto-previo" cx={x(f.a)} cy={cy} r="5" data-valor={f.a} />}
                   {f.b != null && <circle className="q-punto-actual" cx={x(f.b)} cy={cy} r="6" data-valor={f.b} />}
@@ -156,7 +156,7 @@ export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB,
                 </g>
               );
             })}
-            {min < 0 && [min, 0, tope].map((t) => <text key={t} className="q-eje" x={x(t)} y={alto - 2} textAnchor="middle">{formato(t)}</text>)}
+            {centro != null && [min, centro, tope].map((t) => <text key={t} className="q-eje" x={x(t)} y={alto - 2} textAnchor="middle">{formato(t)}</text>)}
           </Svg>
           </>
         );

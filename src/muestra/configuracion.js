@@ -223,7 +223,7 @@ export const CONFIG = {
     { tag: '#limafit', publicaciones: 120, vistasPorPublicacion: 2900, interaccion: 0.061 },
     { tag: '#fitlab', publicaciones: 18, vistasPorPublicacion: 2100, interaccion: 0.074, crece: 1.4, propia: true },
   ],
-  // Conversación sobre Fit Lab por tema; el tono va de −1 a 1 y solo se lee para la marca propia
+  // Conversación sobre Fit Lab por tema; tono: sentimiento neto de −1 a 1 (se muestra de 0 a 100); solo para la marca propia
   temas: [
     { id: 'precios', nombre: 'Precios y promociones', peso: 0.24, tono: 0.2 },
     { id: 'clases', nombre: 'Clases grupales', peso: 0.18, tono: 0.55 },
@@ -236,16 +236,16 @@ export const CONFIG = {
   sinTema: 0.06,
   // Competencia en redes: publicaciones del mes, interacción por publicación y anuncios activos (biblioteca de anuncios de Meta)
   // Competencia en Facebook: lectura del mes (sin comparación: en producción la biblioteca de anuncios y las
-  // publicaciones se leen al día, no hay historia de la competencia). tonoTexto: tono del texto de SUS publicaciones,
-  // de 0 a 100 (50 neutro). Asumo de 52 a 80: una marca escribe en tono promocional; ninguna marca real queda
-  // en «tono negativo» con cifras inventadas. palabras: genéricas del rubro, de muestra.
+  // publicaciones se leen al día, no hay historia de la competencia). sentimiento: reparto de los comentarios en sus
+  // publicaciones entre positivos y negativos (el resto, neutros). Asumo repartos moderados: ningún competidor real
+  // queda con sentimiento negativo con cifras inventadas. palabras: genéricas del rubro, de muestra.
   redesMarcas: [
-    { id: 'smartfit', publicaciones: 34, interaccion: 1450, anuncios: 46, tonoTexto: 64, palabras: ['plan', 'precio', 'sedes', 'app'] },
-    { id: 'b2', publicaciones: 22, interaccion: 380, anuncios: 9, tonoTexto: 58, palabras: ['funcional', 'clases', 'comunidad'] },
-    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14, tonoTexto: 71, palabras: ['bienestar', 'piscina', 'clases'] },
-    { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25, tonoTexto: 61, palabras: ['boxeo', 'reto', 'entrenamiento'] },
-    { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4, tonoTexto: 55, palabras: ['máquinas', 'horario', 'promoción'] },
-    { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true, tonoTexto: 74, palabras: ['primera semana', 'clase de prueba', 'coach'] },
+    { id: 'smartfit', publicaciones: 34, interaccion: 1450, anuncios: 46, sentimiento: { positivo: 0.48, negativo: 0.16 }, palabras: ['plan', 'precio', 'sedes', 'app'] },
+    { id: 'b2', publicaciones: 22, interaccion: 380, anuncios: 9, sentimiento: { positivo: 0.5, negativo: 0.12 }, palabras: ['funcional', 'clases', 'comunidad'] },
+    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14, sentimiento: { positivo: 0.58, negativo: 0.09 }, palabras: ['bienestar', 'piscina', 'clases'] },
+    { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25, sentimiento: { positivo: 0.55, negativo: 0.11 }, palabras: ['boxeo', 'reto', 'entrenamiento'] },
+    { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4, sentimiento: { positivo: 0.46, negativo: 0.15 }, palabras: ['máquinas', 'horario', 'promoción'] },
+    { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true, sentimiento: { positivo: 0.6, negativo: 0.1 }, palabras: ['primera semana', 'clase de prueba', 'coach'] },
   ],
   formatosAnuncio: [{ nombre: 'Imagen', peso: 0.45 }, { nombre: 'Video', peso: 0.38 }, { nombre: 'Carrusel', peso: 0.17 }],
 

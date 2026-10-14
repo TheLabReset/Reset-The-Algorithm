@@ -8,7 +8,7 @@ import { CAPAS } from './capas/estructura.js';
 import { fecha } from './sistema/formato.js';
 import { mesTexto } from './textos/comun.js';
 import { NavegacionCapas, Selector, Grupo, SelloMuestra } from './sistema/Componentes.jsx';
-import logoCliente from '../public/marca/reset-fit-horizontal-monocromo.svg?raw';
+import logoCliente from '../public/marca/fit-lab-horizontal-negativo.svg?raw';
 import Lee from './pantallas/Lee.jsx';
 import Analiza from './pantallas/Analiza.jsx';
 import Sugiere from './pantallas/Sugiere.jsx';
