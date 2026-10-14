@@ -28,3 +28,22 @@ export const capital = (t) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
 // Lista con «y»: a, b y c
 export const lista = (xs) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`);
+
+// Cantidades chicas en letras (al inicio de una frase o en un sujeto): «dos campañas», «tres plataformas»
+const LETRAS_M = ['cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
+export const enLetras = (n, femenino = false) => (n >= 0 && n <= 10 && Number.isInteger(n) ? (n === 1 ? (femenino ? 'una' : 'un') : LETRAS_M[n]) : numero(n));
+
+// «Los leads por día bajan 1 % frente a setiembre de 2025», «se mantienen igual que en…»
+export function variacionFrase(sujeto, cambio, P) {
+  if (cambio == null) return null;
+  const r = Math.round(Math.abs(cambio));
+  if (r === 0) return `${sujeto} se mantienen igual que en ${comparacionTexto(P)}`;
+  return `${sujeto} ${cambio > 0 ? 'suben' : 'bajan'} ${numero(r)} % frente a ${comparacionTexto(P)}`;
+}
+
+// «del 24 al 30 de setiembre» si es el mismo mes; si no, cada fecha completa
+export function tramoFechas(desde, hasta) {
+  const d = desde.slice(8, 10), h = hasta.slice(8, 10);
+  if (desde.slice(0, 7) === hasta.slice(0, 7)) return `del ${Number(d)} al ${Number(h)} de ${mesLargo(+hasta.slice(5, 7))}`;
+  return `del ${Number(d)} de ${mesLargo(+desde.slice(5, 7))} al ${Number(h)} de ${mesLargo(+hasta.slice(5, 7))}`;
+}

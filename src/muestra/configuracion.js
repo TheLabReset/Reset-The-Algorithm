@@ -188,11 +188,11 @@ export const CONFIG = {
   crm: {
     etapas: ['Nuevo lead', 'Contactado', 'Cita agendada', 'Asistió a clase de prueba', 'Inscrito'],
     plazoAbierto: [5, 14, 10, 21], // días que un lead puede seguir en cada etapa antes de descartarse
-    // tiempo al primer contacto, por tramo; el fin de semana el equipo tarda más
-    tramosContacto: ['menos de 5 min', '5 a 30 min', '30 min a 2 h', '2 a 24 h', 'más de 24 h'],
-    contactoLaborable: [0.34, 0.3, 0.18, 0.12, 0.06],
-    contactoFinDeSemana: [0.12, 0.2, 0.24, 0.27, 0.17],
-    contactoLento: { desde: '2026-09-01', texto: 'Dos asesoras menos en el equipo', factor: [0.55, 0.85, 1.2, 1.5, 1.9] }, // historia de setiembre
+    // tiempo al primer contacto, por tramo; el fin de semana el equipo atiende con menos personas y tarda más (asumo)
+    tramosContacto: ['menos de 1 h', '1 a 4 h', '4 a 24 h', '1 a 2 días', 'más de 2 días'],
+    contactoLaborable: [0.42, 0.26, 0.2, 0.08, 0.04],
+    contactoFinDeSemana: [0.18, 0.2, 0.32, 0.18, 0.12],
+    contactoLento: { desde: '2026-09-01', texto: 'Dos asesoras menos en el equipo', factor: [0.75, 0.95, 1.1, 1.6, 2] }, // historia de setiembre
     sinRegistroContacto: 0.07,
     intentos: [0.27, 0.24, 0.19, 0.12, 0.08, 0.1], // 1, 2, 3, 4, 5, 6 o más intentos de contacto
     motivosDescarte: [

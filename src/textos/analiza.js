@@ -16,7 +16,7 @@ export function inversionContraLeads(v) {
   const menos = [...c].sort((a, b) => (a.pctLeads - a.pctInversion) - (b.pctLeads - b.pctInversion))[0];
   return {
     titulo: 'Parte de la inversión contra parte de los leads',
-    lectura: `${mas.nombre} se lleva ${numero(mas.pctInversion)} de cada 100 dólares y trae ${numero(mas.pctLeads)} de cada 100 leads. ${menos.nombre}: ${numero(menos.pctInversion)} de cada 100 dólares y ${numero(menos.pctLeads)} de cada 100 leads.`,
+    lectura: `${mas.nombre} trae más leads de los que le tocarían por su inversión. ${menos.nombre}, al revés: se lleva ${numero(menos.pctInversion)} de cada 100 dólares y trae ${numero(menos.pctLeads)} de cada 100 leads.`,
   };
 }
 
@@ -66,8 +66,9 @@ export function sedes(v) {
   const conTasa = s.filter((x) => x.tasa && !x.tasa.pocosCasos);
   const mejor = [...conTasa].sort((a, b) => b.tasa.valor - a.tasa.valor)[0];
   const nuevas = v.analiza.sedes.items.filter((x) => x.estado === 'abrio-en-el-periodo' || x.estado === 'sin-anterior');
-  let lectura = `${mas.nombre} recibe más leads (${numero(mas.leads)}).`;
-  if (mejor) lectura += ` ${mejor.nombre} inscribe a ${numero(mejor.tasa.valor * 100, 1)} de cada 100 en tres meses de cohortes cerradas.`;
-  if (nuevas.length) lectura += ` ${capital(lista(nuevas.map((x) => x.nombre)))} no ${nuevas.length === 1 ? 'tiene' : 'tienen'} comparación completa.`;
+  let lectura = `${mas.nombre} recibe más leads.`;
+  if (mejor && mejor.id !== mas.id) lectura += ` ${mejor.nombre} es la que mejor inscribe: ${numero(mejor.tasa.valor * 100, 1)} de cada 100 leads.`;
+  else if (mejor) lectura += ` También es la que mejor inscribe: ${numero(mejor.tasa.valor * 100, 1)} de cada 100 leads.`;
+  void nuevas;
   return { titulo: 'Leads por sede, agrupadas por zona', lectura };
 }

@@ -90,7 +90,7 @@ export default function Lee({ capa, vista: v }) {
               <Linea serie={pa.serie} previa={pa.seriePrevia} eventos={pa.eventos} etiqueta="Leads reportados por día, con el mismo tramo de la comparación en gris" />
             </Bloque>
             <Bloque universo="pauta" ancho="mitad" {...L.plataformasLectura(v)}
-              ayuda={<p>Costo por lead de cada plataforma contra su objetivo. El objetivo de Google Ads combina el de Search y el de Display según lo que invirtió cada uno. La zona gris llega hasta el objetivo; la raya vertical es el objetivo.</p>}>
+              ayuda={<p>Costo por lead de cada plataforma contra su objetivo. El objetivo de Google Ads combina el de Search y el de Display según lo que invirtió cada uno. La zona gris llega hasta el objetivo, marcado con la raya vertical.</p>}>
               <Bala max={Math.ceil(Math.max(...v.lee.plataformas.plataformas.map((p) => Math.max(p.cpl ?? 0, p.objetivo) * 1.25)) / 5) * 5} formato={(n) => dolares(n, 2)} formatoEje={(n) => dolares(n)}
                 etiqueta="Costo por lead de cada plataforma contra su objetivo"
                 filas={v.lee.plataformas.plataformas.map((p) => ({
@@ -153,8 +153,8 @@ export default function Lee({ capa, vista: v }) {
               : <Bloque universo="crm" titulo="Del lead a la inscripción" estado={sinDato(v.lee.crm.estado)} />}
             <Bloque universo="crm" ancho="mitad" {...L.crmAtencion(v)}>
               <Histograma etiqueta="Tiempo al primer contacto" formato={(n) => `${numero(n)} leads`}
-                barras={v.lee.crmDetalle.atencion.tramos.map((t) => ({ nombre: t.nombre, corto: t.nombre.replace('menos de ', '< ').replace('más de ', '> '), valor: t.valor }))} resaltar={[0]} />
-              <p className="q-nota-bloque">Mitad de los leads con {numero(v.lee.crmDetalle.atencion.medianaIntentos)} {v.lee.crmDetalle.atencion.medianaIntentos === 1 ? 'intento' : 'intentos'} de contacto o menos. {numero(v.lee.crmDetalle.atencion.sinRegistro)} contactos sin registro de hora.</p>
+                barras={v.lee.crmDetalle.atencion.tramos.map((t) => ({ nombre: t.nombre, corto: t.nombre.replace('menos de ', '< ').replace('más de ', '> '), valor: t.valor }))} resaltar={[]} />
+              <p className="q-nota-bloque">La mitad de los leads tuvo {numero(v.lee.crmDetalle.atencion.medianaIntentos)} {v.lee.crmDetalle.atencion.medianaIntentos === 1 ? 'intento' : 'intentos'} de contacto o menos. {numero(v.lee.crmDetalle.atencion.sinRegistro)} contactos sin registro de hora.</p>
             </Bloque>
             <Bloque universo="crm" ancho="mitad" {...L.crmDescarte(v)}>
               <Barras etiqueta="Motivos de descarte" filas={v.lee.crmDetalle.descarte.motivos.map((m) => ({ nombre: m.nombre, valor: m.valor }))} />
@@ -191,7 +191,7 @@ export default function Lee({ capa, vista: v }) {
                 filas={v.lee.redes.hashtags.map((h) => [h.tag, porcentaje(h.interaccion * 100, 1), compacto(h.vistas), numero(h.publicaciones)])} />
             </Bloque>
             <Bloque universo="conversacion" ancho="mitad" {...L.redesTemas(v)}
-              ayuda={<p>Sentimiento: 50 más la mitad de (menciones positivas menos negativas) sobre el total del tema, de 0 (todo negativo) a 100 (todo positivo); 50 es neutro. Solo se lee para Fit Lab. El punto hueco es {comparacionTexto(v.periodo)}.</p>}>
+              ayuda={<p>Sentimiento: va de 0 (todas las menciones negativas) a 100 (todas positivas); 50 es neutro. Solo se mide para Fit Lab. El punto hueco es {comparacionTexto(v.periodo)}.</p>}>
               <Pesas etiqueta="Sentimiento de cada tema" min={0} max={100} centro={50} rotuloA={comparacionTexto(v.periodo)} rotuloB={periodoTexto(v.periodo)}
                 formato={(n) => (n == null ? NO_MEDIDO : numero(n))}
                 filas={v.lee.redes.temas.map((t) => ({ nombre: `${t.nombre} (${numero(t.menciones)})`, a: t.tonoPrevio == null ? null : Math.round(50 + 50 * t.tonoPrevio), b: t.tono == null ? null : Math.round(50 + 50 * t.tono) }))} />

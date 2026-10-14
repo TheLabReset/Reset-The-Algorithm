@@ -168,7 +168,7 @@ export const NIVELES = {
   bien: { icono: CircleCheck, nombre: 'Va bien' },
 };
 
-export function Alerta({ id, nivel, titulo, dato, porque, accion, senal, sostener, fuente, ir, irTexto }) {
+export function Alerta({ id, nivel, titulo, dato, mirar, fuente, ir, irTexto }) {
   const n = NIVELES[nivel];
   return (
     <article className={`q-alerta q-alerta-${nivel}`} id={id}>
@@ -178,12 +178,7 @@ export function Alerta({ id, nivel, titulo, dato, porque, accion, senal, sostene
       </div>
       <h3>{titulo}</h3>
       <p className="q-alerta-dato">{dato}</p>
-      <dl className="q-alerta-detalle">
-        {porque && <div><dt>Por qué importa</dt><dd>{porque}</dd></div>}
-        {accion && <div><dt>Qué se puede hacer</dt><dd>{accion}</dd></div>}
-        {sostener && <div><dt>Qué sostener</dt><dd>{sostener}</dd></div>}
-        {senal && <div><dt>Cómo saber si funcionó</dt><dd>{senal}</dd></div>}
-      </dl>
+      {mirar && <p className="q-alerta-mirar"><b>{nivel === 'bien' ? 'Qué sostener:' : 'Qué mirar:'}</b> {mirar}</p>}
       {ir && <a className="q-alerta-ir" href={'#' + ir}>Ver el dato en {irTexto}<Ir size={14} aria-hidden="true" /></a>}
     </article>
   );
@@ -219,7 +214,7 @@ export function Resumen({ titulo, items, pie, avisos }) {
               <span className="q-resumen-rotulo">{i.rotulo}</span>
               <span className={`q-cifra-valor${i.valor == null ? ' q-cifra-sin-dato' : ''}`} data-clave={i.dataClave}>{i.valor ?? NO_MEDIDO}</span>
               {i.delta ? <Delta {...i.delta} /> : i.nota ? <span className="q-delta">{i.nota}</span> : null}
-              <a className="q-resumen-ir" href={'#' + i.ir}>{u && <u.icono size={13} aria-hidden="true" />}{i.irTexto}</a>
+              {i.ir && <a className="q-resumen-ir" href={'#' + i.ir}>{u && <u.icono size={13} aria-hidden="true" />}{i.irTexto}</a>}
             </li>
           );
         })}

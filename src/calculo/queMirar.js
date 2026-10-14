@@ -10,8 +10,8 @@ import { leeCrmDetalle, interaccionCanal } from './produccion.js';
 
 export const UMBRALES = {
   sinConversion: 0.08, // gasto en palabras casi sin conversiones, sobre el gasto de Search
-  caidaContactoRapido: 5, // puntos menos de contacto en menos de 5 minutos contra el mes anterior
-  finDeSemanaLento: 0.5, // más de la mitad de los leads del fin de semana espera más de 2 horas
+  caidaContactoEnElDia: 5, // puntos menos de leads con primer contacto en menos de 24 horas, contra el mes anterior
+  finDeSemanaEspera: 0.25, // más de un cuarto de los leads del fin de semana espera más de un día por su primer contacto
   llegaAlCrm: 0.85, // de cada lead reportado, cuántos llegan al CRM
   subeBusqueda: 50, // % de subida en tres meses
   caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior
@@ -48,10 +48,10 @@ export function queMirar(data, P, v) {
     const mesAnt = sumarMeses(P.hasta.slice(0, 7), -1);
     if (mesAnt + '-01' >= cfg.desde) {
       const ant = leeCrmDetalle(data, { ...P, desde: mesAnt + '-01', hasta: finDeMes(mesAnt), compararDesde: P.compararDesde, compararHasta: P.compararHasta });
-      const caida = (ant.atencion.rapidos - cd.atencion.rapidos) * 100;
-      if (caida >= UMBRALES.caidaContactoRapido) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '1.2', datos: { ahora: cd.atencion.rapidos, antes: ant.atencion.rapidos, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null } });
+      const caida = (ant.atencion.enElDia - cd.atencion.enElDia) * 100;
+      if (caida >= UMBRALES.caidaContactoEnElDia) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '1.2', datos: { ahora: cd.atencion.enElDia, antes: ant.atencion.enElDia, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null, causaDesde: cd.atencion.cambioDesde?.desde || null } });
     }
-    if (cd.atencion.lentosFinDeSemana > UMBRALES.finDeSemanaLento) add({ id: 'fin-de-semana', nivel: 'revisar', fuente: 'CRM', sostiene: '1.2', datos: { finDeSemana: cd.atencion.lentosFinDeSemana, laborable: cd.atencion.lentosLaborable } });
+    if (cd.atencion.masDeUnDiaFinDeSemana > UMBRALES.finDeSemanaEspera) add({ id: 'fin-de-semana', nivel: 'revisar', fuente: 'CRM', sostiene: '1.2', datos: { finDeSemana: cd.atencion.masDeUnDiaFinDeSemana, laborable: cd.atencion.masDeUnDiaLaborable } });
   }
 
   const r = v.analiza.rendimiento;

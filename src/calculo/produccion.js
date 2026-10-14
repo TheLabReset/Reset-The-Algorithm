@@ -151,7 +151,7 @@ export function leeCrmDetalle(data, P) {
   }));
   const conRegistro = suma(tramos, (v) => v);
   const pctTramos = mayorResto(tramos);
-  const lentos = (t) => razon(t[3] + t[4], suma(t, (v) => v)); // más de 2 horas
+  const masDeUnDia = (t) => razon(t[3] + t[4], suma(t, (v) => v)); // primer contacto después de 24 horas
   // mediana de intentos: el tramo donde se llega a la mitad
   let acc = 0, medianaIntentos = null;
   const totalIntentos = suma(intentos, (v) => v);
@@ -172,7 +172,7 @@ export function leeCrmDetalle(data, P) {
     abierta: diasEntre(P.hasta, cfg.corte) < Math.max(...c.plazoAbierto),
     atencion: {
       tramos: c.tramosContacto.map((nombre, k) => ({ nombre, valor: tramos[k], pct: pctTramos[k] })), conRegistro, sinRegistro,
-      rapidos: razon(tramos[0], conRegistro), lentosLaborable: lentos(tramosLab), lentosFinDeSemana: lentos(tramosFinDe),
+      enElDia: razon(tramos[0] + tramos[1] + tramos[2], conRegistro), masDeUnDiaLaborable: masDeUnDia(tramosLab), masDeUnDiaFinDeSemana: masDeUnDia(tramosFinDe),
       intentos: intentos.map((v, k) => ({ nombre: k === intentos.length - 1 ? `${k + 1} o más` : String(k + 1), valor: v })), medianaIntentos,
       cambioDesde: c.contactoLento.desde <= P.hasta && c.contactoLento.desde >= P.desde ? c.contactoLento : null,
     },

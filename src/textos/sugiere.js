@@ -1,81 +1,64 @@
-// Textos de la capa Sugiere. Cada alerta dice qué pasó (con su dato), por qué importa, qué se puede cambiar
-// y cómo se sabría si el cambio funcionó. Observan y proponen; no ordenan ni prometen.
-import { numero, dolares, porcentaje, fechaCorta } from '../sistema/formato.js';
-import { mesTexto, lista, capital } from './comun.js';
+// Textos de la capa Sugiere, como en producción: cada alerta es un título con su dato y una sola línea de qué mirar.
+// Lo que se propone queda dentro de lo que maneja la agencia (pauta, piezas, páginas, palabras clave).
+// Lo que depende del cliente (su equipo, sus sedes) se conversa con él; nunca se le pide más al personal.
+import { numero, dolares, porcentaje, fecha } from '../sistema/formato.js';
+import { mesTexto, lista, capital, enLetras, tramoFechas } from './comun.js';
 
 const pct = (x, d = 0) => porcentaje(x * 100, d);
+const de100 = (x) => numero(Math.round(x * 100));
+const dia = (iso) => fecha(iso).replace(/ de \d{4}$/, '');
 
 // Alertas de «qué mirar»: una función por regla de src/calculo/queMirar.js
 const ALERTAS = {
   'cpl-objetivo': (d) => ({
     titulo: `${d.plataforma} pasó su objetivo de costo por lead en la última semana`,
-    dato: `${dolares(d.cpl, 2)} por lead del ${fechaCorta(d.desde)} al ${fechaCorta(d.hasta)}, contra un objetivo de ${dolares(d.objetivo, 2)} (${numero(d.leads)} leads).`,
-    porque: 'Si sigue así, el mes cierra con menos leads por la misma inversión.',
-    accion: 'Revisar qué campaña y qué palabras subieron de costo, y bajar la puja o pausar lo que no trae leads antes de mover presupuesto.',
-    senal: 'El costo por lead de los próximos 7 días vuelve bajo el objetivo.',
+    dato: `${capital(tramoFechas(d.desde, d.hasta))}, ${dolares(d.cpl, 2)} por lead con un objetivo de ${dolares(d.objetivo, 2)} (${numero(d.leads)} leads).`,
+    mirar: `En ${d.plataforma}, qué campañas y palabras subieron de costo esos días. Se puede ajustar la puja antes de mover inversión entre plataformas.`,
   }),
   'dia-fuera': (d) => ({
     titulo: `${d.plataforma} tuvo ${d.dias.length === 1 ? 'un día' : `${numero(d.dias.length)} días`} fuera de lo normal`,
-    dato: `${lista(d.dias.map((x) => `${fechaCorta(x.fecha)} (${x.sinDato ? 'sin dato' : dolares(x.inversion)})`))}; un día normal invierte unos ${dolares(d.mediana)}.`,
-    porque: 'Un día sin dato o con muy poca inversión puede ser un corte de la campaña o una falla del reporte.',
-    accion: 'Confirmar en la plataforma si la campaña estuvo pausada o si faltó el dato.',
-    senal: 'El dato del día aparece o la causa queda anotada.',
+    dato: `${capital(lista(d.dias.map((x) => `${dia(x.fecha)} (${x.sinDato ? 'sin dato' : dolares(x.inversion)})`)))}. Un día normal invierte unos ${dolares(d.mediana)}.`,
+    mirar: 'En la plataforma, si la campaña estuvo en pausa o si faltó el dato del reporte.',
   }),
   'palabras-sin-conversion': (d) => ({
-    titulo: 'Palabras clave que gastan y casi no traen leads',
-    dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} en el mes, ${pct(d.pct)} de lo invertido en Search.`,
-    porque: 'Es plata que hoy no trae leads.',
-    accion: 'Bajar la puja o pausarlas, y agregar como negativas las búsquedas que no buscan un gimnasio como Fit Lab.',
-    senal: 'El costo por lead de Search baja sin perder leads.',
+    titulo: `${d.palabras.length === 1 ? 'Una palabra clave gasta' : `${capital(enLetras(d.palabras.length, true))} palabras clave gastan`} y casi no trae${d.palabras.length === 1 ? '' : 'n'} leads`,
+    dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} en el mes, ${pct(d.pct)} de la inversión en Search.`,
+    mirar: 'Si esas búsquedas corresponden a lo que ofrece Fit Lab. Si no, se pueden pausar o agregar como negativas en Search.',
   }),
   'contacto-lento': (d) => ({
-    titulo: 'El equipo contacta menos leads a tiempo',
-    dato: `${pct(d.ahora)} de los leads se contactó en menos de 5 minutos; en ${mesTexto(d.mesAntes)}, ${pct(d.antes)}.${d.causa ? ` En el CRM figura un cambio: ${d.causa.toLowerCase()}.` : ''}`,
-    porque: 'Un lead contactado tarde agenda menos clases de prueba: la pauta se paga igual.',
-    accion: 'Cubrir los turnos con menos asesoras o activar una respuesta automática que agende la clase en el momento.',
-    senal: 'El contacto en menos de 5 minutos vuelve a estar sobre el mes anterior.',
+    titulo: 'Más leads esperan más de un día por su primer contacto',
+    dato: `${de100(d.ahora)} de cada 100 leads recibió su primer contacto en menos de un día; en ${mesTexto(d.mesAntes)}, ${de100(d.antes)}.${d.causa ? ` El CRM registra un cambio desde el ${dia(d.causaDesde)}: ${d.causa.toLowerCase()}.` : ''}`,
+    mirar: 'Conversar con Fit Lab si conviene ajustar el volumen de pauta a lo que el equipo puede atender mientras vuelve a estar completo.',
   }),
   'fin-de-semana': (d) => ({
-    titulo: 'El fin de semana los leads esperan demasiado',
-    dato: `${pct(d.finDeSemana)} de los leads del sábado y domingo esperó más de 2 horas; entre semana, ${pct(d.laborable)}.`,
-    porque: 'El domingo en la noche es cuando más gente mira el sitio: el interés llega cuando nadie responde.',
-    accion: 'Un turno corto el domingo en la tarde, o un mensaje automático que ofrezca horarios de clase de prueba.',
-    senal: 'Baja la proporción de leads del fin de semana que espera más de 2 horas.',
+    titulo: 'Los leads del fin de semana esperan más',
+    dato: `${de100(d.finDeSemana)} de cada 100 leads del sábado y el domingo esperó más de un día por su primer contacto; entre semana, ${de100(d.laborable)}.`,
+    mirar: 'Ver con Fit Lab si conviene poner más inversión de lunes a jueves, cuando el equipo responde en el día.',
   }),
   'plataforma-vs-crm': (d) => ({
-    titulo: 'La plataforma y el CRM no premian al mismo canal',
+    titulo: 'La plataforma y el CRM no coinciden en qué canal rinde más',
     dato: `${d.porLead} trae el lead más barato; ${d.porInscripcion}, la inscripción más barata.`,
-    porque: 'Optimizar solo por costo por lead empuja al canal que inscribe menos.',
-    accion: 'Mirar el costo por inscripción antes de mover presupuesto (está en Analiza).',
-    senal: 'Las decisiones de presupuesto citan el costo por inscripción.',
+    mirar: 'El costo por inscripción, en Analiza, antes de mover inversión entre estos dos canales.',
   }),
   'llega-poco': (d) => ({
     titulo: `De ${d.plataforma} llegan al CRM menos leads de los que reporta`,
     dato: `De cada 100 leads que reporta, ${numero(d.de100)} están en el CRM (${numero(d.enCrm)} de ${numero(d.reportados)}).`,
-    porque: 'La plataforma optimiza hacia leads que nunca llegan: el costo por lead real es más alto que el reportado.',
-    accion: 'Revisar la integración del formulario con el CRM y los leads duplicados o de prueba.',
-    senal: 'Llegan al CRM al menos 85 de cada 100 leads reportados.',
+    mirar: `Con quien administra el CRM, la conexión del formulario de ${d.plataforma} y los leads duplicados o de prueba.`,
   }),
   'tema-negativo': (d) => ({
-    titulo: `Crecen los comentarios negativos sobre «${d.tema.toLowerCase()}»`,
-    dato: `Sentimiento de ${numero(Math.round(50 + 50 * d.tono))} de 100 en ${numero(d.menciones)} menciones${d.tonoPrevio != null ? `; un año antes, ${numero(Math.round(50 + 50 * d.tonoPrevio))}` : ''}.`,
-    porque: 'Lo que se dice de la atención en sede pesa en quien está decidiendo inscribirse.',
-    accion: 'Leer las menciones con el equipo de sedes y responder en las redes con lo que se va a corregir.',
-    senal: 'El sentimiento del tema vuelve sobre 50 (neutro).',
+    titulo: `Suben los comentarios negativos sobre «${d.tema.toLowerCase()}»`,
+    dato: `El sentimiento del tema está en ${numero(Math.round(50 + 50 * d.tono))} de 100, en ${numero(d.menciones)} menciones${d.tonoPrevio != null ? `; un año antes, en ${numero(Math.round(50 + 50 * d.tonoPrevio))}` : ''}.`,
+    mirar: 'Compartir las menciones con Fit Lab para que las revise el equipo de sedes. Desde la pauta no se corrige.',
   }),
   'interaccion-cae': (d) => ({
-    titulo: `Las sesiones de ${d.canal.toLowerCase()} interactúan menos`,
-    dato: `${pct(d.ahora)} de las sesiones tuvo interacción; en ${mesTexto(d.mesAntes)}, ${pct(d.antes)} (${numero(d.sesiones)} sesiones).${d.evento ? ` Coincide con «${d.evento.texto}» (${fechaCorta(d.evento.fecha)}).` : ''}`,
-    porque: 'El clic se paga igual: si la gente se va sin mirar, el costo de cada visita útil sube.',
-    accion: 'Revisar la página a la que llevan los anuncios: carga en celular, que la oferta coincida con el anuncio y un botón visible.',
-    senal: 'La tasa de interacción de ese canal vuelve a la del mes anterior.',
+    titulo: `Las visitas desde ${d.canal.toLowerCase()} interactúan menos`,
+    dato: `${de100(d.ahora)} de cada 100 sesiones tuvo interacción; en ${mesTexto(d.mesAntes)}, ${de100(d.antes)}.${d.evento ? ` Coincide con «${d.evento.texto}», del ${dia(d.evento.fecha)}.` : ''}`,
+    mirar: 'La página a la que llevan los anuncios: que cargue bien en el celular y que muestre la oferta del anuncio.',
   }),
   'busqueda-sube': (d) => ({
     titulo: `Sube el interés por «${d.termino}»`,
-    dato: d.sinBase ? 'Hace tres meses casi no se buscaba y hoy sí.' : `${numero(d.cambio)} % más interés que hace tres meses.`,
-    porque: 'Es demanda que llega sola: quien la atienda primero se queda con esa búsqueda.',
-    accion: 'Probar una campaña chica de Search con esa palabra y contar en las redes las clases que ya existen.',
-    senal: 'La palabra trae leads a un costo cercano al objetivo de Search.',
+    dato: d.sinBase ? 'Hace tres meses casi no se buscaba en Google; hoy sí.' : `En Google, ${numero(d.cambio)} % más interés que hace tres meses.`,
+    mirar: 'Si Fit Lab ofrece esa clase o piensa ofrecerla, se puede probar con una campaña chica de Search. Si no, queda anotado.',
   }),
 };
 
@@ -87,24 +70,24 @@ export function alerta(a) {
 // Lo que va bien: una función por señal de queVaBien
 const BIEN = {
   'bajo-objetivo': (d) => ({
-    titulo: `${d.plataforma} está bajo su objetivo`,
-    dato: `${dolares(d.cpl, 2)} por lead contra ${dolares(d.objetivo, 2)} de objetivo: ${pct(d.margen)} por debajo${d.anual != null && d.anual > 0 ? `, y ${pct(d.anual)} más barato que hace un año` : ''}.`,
-    sostener: 'Mantener lo que funciona antes de probar cambios en esta plataforma.',
+    titulo: `${d.plataforma} está bajo su objetivo de costo por lead`,
+    dato: `${dolares(d.cpl, 2)} por lead con un objetivo de ${dolares(d.objetivo, 2)}${d.anual != null && d.anual > 0 ? `, y ${pct(d.anual)} menos que un año antes` : ''}.`,
+    mirar: `Mantener lo que funciona en ${d.plataforma} antes de probar cambios.`,
   }),
   'mejora-anual': (d) => ({
-    titulo: `${d.plataforma} está más barato que hace un año`,
+    titulo: `${d.plataforma} consigue leads más baratos que hace un año`,
     dato: `${dolares(d.cpl, 2)} por lead; un año antes, ${dolares(d.previo, 2)}.`,
-    sostener: 'Ver qué cambió para repetirlo en otra plataforma.',
+    mirar: 'Qué cambió, por si se puede repetir en otra plataforma.',
   }),
   'piezas-nuevas': (d) => ({
-    titulo: `Las piezas nuevas de ${d.canal} recuperaron el clic`,
-    dato: `El CTR pasó de ${pct(d.antes, 2)} a ${pct(d.despues, 2)} desde el ${fechaCorta(d.fecha)}.`,
-    sostener: 'Las piezas funcionan; lo que hay que mirar es la página a la que llevan (ver la alerta de GA4).',
+    titulo: `Las piezas nuevas de ${d.canal} subieron el clic`,
+    dato: `El CTR pasó de ${pct(d.antes, 2)} a ${pct(d.despues, 2)} desde el ${dia(d.fecha)}.`,
+    mirar: 'Las piezas funcionan. Lo que falta revisar es la página a la que llevan (ver la alerta de GA4).',
   }),
   'mejor-sentimiento': (d) => ({
-    titulo: 'Fit Lab tiene el mejor sentimiento de las marcas leídas',
-    dato: `${numero(d.indice)} de 100 en los comentarios de sus publicaciones; le sigue ${d.segundo} con ${numero(d.segundoIndice)}.`,
-    sostener: 'El tono de las publicaciones funciona: vale más mantenerlo que cambiarlo.',
+    titulo: 'Fit Lab tiene el mejor sentimiento entre las marcas comparadas',
+    dato: `${numero(d.indice)} de 100 en los comentarios de sus publicaciones; ${d.segundo}, ${numero(d.segundoIndice)}.`,
+    mirar: 'El tono de las publicaciones funciona. Conviene mantenerlo.',
   }),
 };
 
@@ -113,39 +96,28 @@ export function bien(b) {
   return f ? { ...f(b.datos), fuente: b.fuente, sostiene: b.sostiene, id: b.id } : null;
 }
 
-// Resumen de una línea para el resumen de la capa Lee
+// Una línea para el resumen de la capa Lee
 export function conteo(alertas, buenas) {
   const at = alertas.filter((a) => a.nivel === 'atencion').length, re = alertas.filter((a) => a.nivel === 'revisar').length, op = alertas.filter((a) => a.nivel === 'oportunidad').length;
   const partes = [];
-  if (at) partes.push(`${numero(at)} ${at === 1 ? 'alerta' : 'alertas'} de atención`);
+  if (at) partes.push(`${numero(at)} de atención`);
   if (re) partes.push(`${numero(re)} para revisar`);
   if (op) partes.push(`${numero(op)} ${op === 1 ? 'oportunidad' : 'oportunidades'}`);
-  if (buenas) partes.push(`${numero(buenas)} ${buenas === 1 ? 'cosa que va bien' : 'cosas que van bien'}`);
-  return partes.length ? `Este mes: ${lista(partes)}.` : 'Este mes no hay nada fuera de lo esperado.';
+  if (buenas) partes.push(`${numero(buenas)} que ${buenas === 1 ? 'va' : 'van'} bien`);
+  return partes.length ? `Este mes: ${lista(partes)}.` : 'Este mes nada se sale de lo esperado.';
 }
 
-// Qué mover: sugerencias del modelo. Las estimaciones van con rango y diciendo que no son promesa
+// Qué mover: el modelo solo propone mover inversión cuando la plataforma y el CRM coinciden en el canal más caro
 export function sugerencia(s) {
-  if (s.id === 'reasignar') {
-    const d = s.desde, h = s.hacia, r = (x) => numero(Math.round(x));
-    return {
-      titulo: `Mover ${dolares(s.monto)} al mes de ${d.nombre} a ${h.nombre}`,
-      dato: `${d.nombre}: ${dolares(d.cpl, 2)} por lead y ${dolares(d.cohorte.cpa)} por inscripción. ${h.nombre}: ${dolares(h.cpl, 2)} y ${dolares(h.cohorte.cpa)}.`,
-      estimacion: `Podría sumar entre ${r(s.leads.baja)} y ${r(s.leads.alta)} leads al mes (unos ${r(s.leads.central)}) y unas ${r(s.inscripciones.central)} inscripciones. Es una estimación con rango, no una promesa.`,
-      sostiene: s.acuerdo + (d.cohorte.pocosCasos ? `. Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción es inestable.` : '.'),
-      supuestos: s.supuestos, ir: 's-1-1', irTexto: 'Pauta pagada',
-    };
-  }
-  if (s.id === 'agendar') {
-    return {
-      titulo: 'Agendar más clases de prueba con quienes ya se contactó',
-      dato: `${numero(s.sinCita.de100)} de cada 100 leads de la cohorte se contactan y no agendan: es la mayor pérdida del camino a la inscripción.`,
-      estimacion: `Si la tasa de cita subiera ${numero(Math.round(s.mejora * 100))} puntos (de ${porcentaje(s.tasaCita * 100)} a ${porcentaje((s.tasaCita + s.mejora) * 100)}), serían unas ${numero(Math.round(s.nuevasAltas))} inscripciones más por cohorte. Es un escenario, no una estimación del efecto.`,
-      sostiene: 'Va junto con las alertas de contacto lento: un lead que espera agenda menos.',
-      supuestos: s.supuestos, ir: 's-1-2', irTexto: 'CRM',
-    };
-  }
-  return null;
+  if (s.id !== 'reasignar') return null;
+  const d = s.desde, h = s.hacia, r = (x) => numero(Math.round(x));
+  return {
+    titulo: `Pasar ${dolares(s.monto)} al mes de ${d.nombre} a ${h.nombre}`,
+    dato: `${d.nombre} cuesta ${dolares(d.cpl, 2)} por lead y ${dolares(d.cohorte.cpa)} por inscripción; ${h.nombre}, ${dolares(h.cpl, 2)} y ${dolares(h.cohorte.cpa)}.`,
+    estimacion: `Podría sumar entre ${r(s.leads.baja)} y ${r(s.leads.alta)} leads al mes y unas ${r(s.inscripciones.central)} inscripciones. Es una estimación con rango, no una promesa.`,
+    sostiene: `La plataforma y el CRM coinciden en que ${d.nombre} es el canal más caro.${d.cohorte.pocosCasos ? ` Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción puede cambiar mucho de un mes a otro.` : ''}`,
+    supuestos: s.supuestos, ir: 's-2-2', irTexto: 'De la pauta al CRM',
+  };
 }
 
 // Escenario si nada cambia: con pinzas. Dice cuánto acertó el método antes y qué meses no muestra
@@ -153,10 +125,11 @@ export function escenarioTexto(e) {
   const m1 = e.meses.find((m) => m.central != null);
   const ocultos = e.meses.filter((m) => m.central == null);
   const r = (x) => numero(Math.round(x));
-  const acierto = m1 ? `A un mes, el rango contuvo el resultado real en ${numero(m1.acierto.dentro)} de ${numero(m1.acierto.probados)} pruebas con meses ya cerrados.` : '';
   return {
     titulo: 'Si la inversión sigue el plan',
-    lectura: m1 ? `${capital(mesTexto(m1.mes))} cerraría entre ${r(m1.baja)} y ${r(m1.alta)} leads reportados. ${acierto}` : 'No hay un mes con suficientes pruebas para mostrar un rango.',
-    nota: `El método se equivoca en promedio ${porcentaje(e.error.metodo * 100)}; repetir el mes anterior, ${porcentaje(e.error.ingenuo * 100)}.${ocultos.length ? ` ${capital(lista(ocultos.map((m) => mesTexto(m.mes))))} no se ${ocultos.length === 1 ? 'muestra' : 'muestran'}: a ese plazo el método acierta poco.` : ''} No es una meta ni una promesa: es lo que pasaría si nada cambia.`,
+    lectura: m1
+      ? `${capital(mesTexto(m1.mes))} cerraría entre ${r(m1.baja)} y ${r(m1.alta)} leads reportados. Probado con meses ya cerrados, ese rango contuvo el resultado real ${numero(m1.acierto.dentro)} de ${numero(m1.acierto.probados)} veces.`
+      : 'Ningún mes tiene pruebas suficientes para mostrar un rango.',
+    nota: `En promedio el método se equivoca ${porcentaje(e.error.metodo * 100)}; repetir el mes anterior se equivoca ${porcentaje(e.error.ingenuo * 100)}.${ocultos.length ? ` ${capital(lista(ocultos.map((m) => mesTexto(m.mes))))} no se ${ocultos.length === 1 ? 'muestra' : 'muestran'}: a ese plazo acierta poco.` : ''} No es una meta: es lo que pasaría si nada cambia.`,
   };
 }

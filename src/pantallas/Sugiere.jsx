@@ -9,9 +9,9 @@ import { sugerencia, escenarioTexto } from '../textos/sugiere.js';
 import { periodoTexto } from '../textos/comun.js';
 
 const GRUPOS = [
-  { nivel: 'atencion', titulo: 'Atención', bajada: 'Cuesta plata o leads mientras siga así.' },
-  { nivel: 'revisar', titulo: 'Para revisar', bajada: 'Puede ser un problema; conviene mirarlo antes de decidir.' },
-  { nivel: 'oportunidad', titulo: 'Oportunidades', bajada: 'Algo crece afuera y nadie lo atiende todavía.' },
+  { nivel: 'atencion', titulo: 'Atención', bajada: 'Afecta los leads o la inversión de este mes.' },
+  { nivel: 'revisar', titulo: 'Para revisar', bajada: 'Conviene mirarlo antes de decidir.' },
+  { nivel: 'oportunidad', titulo: 'Oportunidades', bajada: 'Algo que crece en las búsquedas.' },
   { nivel: 'bien', titulo: 'Lo que va bien', bajada: 'Lo que conviene sostener.' },
 ];
 
@@ -39,20 +39,20 @@ export default function Sugiere({ capa, vista: v }) {
   return (
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={`Qué mirar en ${periodoTexto(v.periodo)}`}
-        pie={<span>Cada alerta sale de una regla con su umbral escrito en el código; se dispara con el dato del mes, no con una opinión.</span>}
-        items={GRUPOS.map((g) => ({ rotulo: g.titulo, valor: numero(cuenta(g.nivel)), nota: g.bajada, ir: s31.id, irTexto: 'Qué mirar', universo: 'modelo' }))} />
+        pie={<span>Cada alerta sale de una regla con un umbral fijo y se activa con el dato del mes.</span>}
+        items={GRUPOS.map((g) => ({ rotulo: g.titulo, valor: numero(cuenta(g.nivel)), nota: g.bajada }))} />
 
       <SeccionDe def={s31} vista={v} conAvisos={false}>
         {GRUPOS.map((g) => <Grupo key={g.nivel} g={g} items={todas.filter((a) => a.nivel === g.nivel)} />)}
       </SeccionDe>
 
       <SeccionDe def={s32} vista={v} conAvisos={false}>
-        {sugerencias.length === 0 && <Bloque titulo="Sin cambios que el dato sostenga" universo="modelo" lectura="Ninguna regla de sugerencia se cumple este mes." />}
+        {sugerencias.length === 0 && <Bloque titulo="El modelo no propone mover el reparto" universo="modelo" lectura="Este mes la plataforma y el CRM no coinciden en qué canal es el más caro." />}
         {sugerencias.map((s) => (
           <Bloque key={s.titulo} universo="modelo" titulo={s.titulo} lectura={s.dato}
             pie={<a className="q-alerta-ir" href={'#' + s.ir}>Ver el dato en {s.irTexto}<ArrowUpRight size={14} aria-hidden="true" /></a>}>
             <p className="q-estimacion">{s.estimacion}</p>
-            <Datos pares={[['Por qué se sostiene', s.sostiene], ...s.supuestos.map((x, i) => [i === 0 ? 'Supuestos' : '', x])]} />
+            <Datos pares={[['Por qué', s.sostiene], ...s.supuestos.map((x, i) => [i === 0 ? 'Supuestos' : '', x])]} />
           </Bloque>
         ))}
       </SeccionDe>
@@ -67,8 +67,8 @@ export default function Sugiere({ capa, vista: v }) {
       </SeccionDe>
 
       <SeccionDe def={s34} vista={v} conAvisos={false}>
-        <Bloque universo="modelo" titulo={`${numero(ix.valor)} de 100`} lectura="Qué tan favorable está el mercado para captar socios este mes: cinco componentes, cada uno dentro de su propio rango histórico. 50 es un mes típico."
-          pie={<span>Cada componente vale de 0 a 100 dentro de su rango; el índice es su promedio ponderado.</span>}>
+        <Bloque universo="modelo" titulo={`${numero(ix.valor)} de 100`} lectura="Qué tan favorable está el mercado para captar socios este mes. Junta cinco componentes, cada uno medido contra su propia historia; 50 es la mitad de su rango."
+          pie={<span>Cada componente va de 0 a 100 dentro de su rango; el índice es su promedio ponderado.</span>}>
           <Barras etiqueta="Componentes del índice de oportunidad" formato={(n) => numero(Math.round(n))} max={100}
             filas={ix.componentes.map((c) => ({ nombre: c.nombre, valor: Math.round(c.puntaje), nota: `peso ${numero(Math.round(c.pesoEfectivo * 100))} %` }))} />
         </Bloque>

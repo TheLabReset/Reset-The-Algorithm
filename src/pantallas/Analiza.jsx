@@ -64,8 +64,8 @@ export default function Analiza({ capa, vista: v }) {
       <SeccionDe def={s23} vista={v}>
         {a.demandaRespuesta.estado !== 'ok' ? <Bloque titulo="Demanda y respuesta" universo="busquedas" estado={sinDato(a.demandaRespuesta.estado)} /> : (
           <Bloque universo="busquedas" {...A.demanda(v)}
-            ayuda={<p>Dos líneas, cada una con su escala: nunca un doble eje. La correlación mide si suben y bajan juntas; no dice qué causa qué.</p>}
-            pie={<span>Semanas de lunes a domingo. {a.demandaRespuesta.semanasIncompletas.length ? `${numero(a.demandaRespuesta.semanasIncompletas.length)} semana con un día sin dato no entra en la correlación.` : ''}</span>}>
+            ayuda={<p>Cada línea tiene su propia escala. La correlación mide si suben y bajan juntas; no dice qué causa qué.</p>}
+            pie={<span>Semanas de lunes a domingo. {a.demandaRespuesta.semanasIncompletas.length === 1 ? 'Una semana con un día sin dato no entra en la correlación.' : a.demandaRespuesta.semanasIncompletas.length > 1 ? `${numero(a.demandaRespuesta.semanasIncompletas.length)} semanas con días sin dato no entran en la correlación.` : ''}</span>}>
             <DosLineas etiqueta="Interés de búsqueda y leads de pauta por semana"
               a={{ nombre: 'Interés por «gimnasio», de 0 a 100', serie: a.demandaRespuesta.busqueda, formato: (n) => numero(n) }}
               b={{ nombre: 'Leads de pauta por semana', serie: a.demandaRespuesta.leads, formato: (n) => numero(n) }} />
@@ -77,7 +77,7 @@ export default function Analiza({ capa, vista: v }) {
       <SeccionDe def={s24} vista={v}>
         {a.horaDia.estado !== 'ok' ? <Bloque titulo="Cuándo entra el lead" universo="crm" estado={sinDato(a.horaDia.estado)} /> : (
           <Bloque universo="crm" {...A.hora(v)}
-            pie={<span>Promedio de leads que entran al CRM en cada hora, por día de la semana. Se lee junto al tiempo de contacto del CRM.</span>}>
+            pie={<span>Promedio de leads que entran al CRM en cada hora, por día de la semana. Conviene leerlo junto al primer contacto, en el capítulo CRM de Lee.</span>}>
             <MapaCalor matriz={a.horaDia.matriz} formato={(n) => (n == null ? 'sin dato' : numero(n, 1))} etiqueta="Leads por hora y día de la semana" />
           </Bloque>
         )}
