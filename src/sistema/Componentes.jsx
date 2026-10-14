@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, Wallet, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
+  Eye, TrendingUp, ArrowUpRight as Ir,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
 
@@ -141,7 +142,7 @@ export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance,
 
 // ── Capítulo: un panel que agrupa las tarjetas de una fuente. Se lee como parte del flujo, no como un corte ──
 export const numeroCapitulo = (numero) => String(numero).split('.').at(-1).padStart(2, '0');
-export function Seccion({ id, numero, titulo, pregunta, fuentes = [], children }) {
+export function Seccion({ id, numero, titulo, pregunta, fuentes = [], avisos, children }) {
   const conProblema = fuentes.filter((f) => f.estado !== 'ok');
   return (
     <section className="q-capitulo" id={id} aria-labelledby={id + '-t'} data-seccion={numero}>
@@ -153,13 +154,60 @@ export function Seccion({ id, numero, titulo, pregunta, fuentes = [], children }
         </div>
         {conProblema.length > 0 && <div className="q-capitulo-avisos">{conProblema.map((f) => <ChipFuente key={f.nombre} {...f} />)}</div>}
       </header>
+      {avisos}
       <div className="q-capitulo-cuerpo">{children}</div>
     </section>
   );
 }
 
+// ── Alertas: el nivel lleva icono, palabra y color (el color nunca va solo) ──
+export const NIVELES = {
+  atencion: { icono: TriangleAlert, nombre: 'Atención' },
+  revisar: { icono: Eye, nombre: 'Para revisar' },
+  oportunidad: { icono: TrendingUp, nombre: 'Oportunidad' },
+  bien: { icono: CircleCheck, nombre: 'Va bien' },
+};
+
+export function Alerta({ id, nivel, titulo, dato, porque, accion, senal, sostener, fuente, ir, irTexto }) {
+  const n = NIVELES[nivel];
+  return (
+    <article className={`q-alerta q-alerta-${nivel}`} id={id}>
+      <div className="q-alerta-cab">
+        <span className="q-nivel"><n.icono size={14} aria-hidden="true" strokeWidth={2.4} />{n.nombre}</span>
+        <span className="q-alerta-fuente">{fuente}</span>
+      </div>
+      <h3>{titulo}</h3>
+      <p className="q-alerta-dato">{dato}</p>
+      <dl className="q-alerta-detalle">
+        {porque && <div><dt>Por qué importa</dt><dd>{porque}</dd></div>}
+        {accion && <div><dt>Qué se puede hacer</dt><dd>{accion}</dd></div>}
+        {sostener && <div><dt>Qué sostener</dt><dd>{sostener}</dd></div>}
+        {senal && <div><dt>Cómo saber si funcionó</dt><dd>{senal}</dd></div>}
+      </dl>
+      {ir && <a className="q-alerta-ir" href={'#' + ir}>Ver el dato en {irTexto}<Ir size={14} aria-hidden="true" /></a>}
+    </article>
+  );
+}
+
+// Avisos de un capítulo: una línea por alerta, que lleva a su detalle en Sugiere
+export function AvisosCapitulo({ avisos }) {
+  if (!avisos.length) return null;
+  return (
+    <ul className="q-avisos" aria-label="Alertas de este capítulo">
+      {avisos.map((a) => {
+        const n = NIVELES[a.nivel];
+        return (
+          <li key={a.id} className={`q-aviso q-alerta-${a.nivel}`}>
+            <a href={'#' + a.id}><span className="q-nivel"><n.icono size={14} aria-hidden="true" strokeWidth={2.4} />{n.nombre}</span><span className="q-aviso-texto">{a.titulo}</span><Ir size={14} aria-hidden="true" /></a>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 // ── Resumen de la capa: pocas cifras, cada una lleva a su capítulo ──
-export function Resumen({ titulo, items, pie }) {
+export function Resumen({ titulo, items, pie, avisos }) {
   return (
     <section className="q-resumen" aria-labelledby="resumen-t" id="resumen">
       <h2 id="resumen-t" className="q-resumen-titulo">{titulo}</h2>
@@ -176,6 +224,7 @@ export function Resumen({ titulo, items, pie }) {
           );
         })}
       </ul>
+      {avisos}
       {pie && <footer className="q-bloque-pie">{pie}</footer>}
     </section>
   );
@@ -211,9 +260,9 @@ export function NavegacionCapas({ capas, activa, onCambiar }) {
 }
 
 // ── Índice de la capa: al costado, fijo, marca el capítulo que se está leyendo ──
-export function IndiceCapa({ secciones, etiqueta }) {
-  const [activa, setActiva] = useState('resumen');
-  const ids = ['resumen', ...secciones.map((s) => s.id)];
+export function IndiceCapa({ secciones, etiqueta, conResumen = true }) {
+  const [activa, setActiva] = useState(conResumen ? 'resumen' : secciones[0]?.id);
+  const ids = [...(conResumen ? ['resumen'] : []), ...secciones.map((s) => s.id)];
   useEffect(() => {
     const visibles = new Map();
     const io = new IntersectionObserver((entradas) => {
@@ -228,7 +277,7 @@ export function IndiceCapa({ secciones, etiqueta }) {
     <nav className="q-indice" aria-label={etiqueta}>
       <span className="q-indice-titulo">En esta capa</span>
       <ol>
-        <li><a href="#resumen" aria-current={activa === 'resumen' ? 'true' : undefined}>Resumen</a></li>
+        {conResumen && <li><a href="#resumen" aria-current={activa === 'resumen' ? 'true' : undefined}>Resumen</a></li>}
         {secciones.map((s) => (
           <li key={s.id}><a href={'#' + s.id} aria-current={s.id === activa ? 'true' : undefined}>{s.titulo}</a></li>
         ))}

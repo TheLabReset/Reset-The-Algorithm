@@ -11,7 +11,7 @@ export const CAPAS = [
       { id: 's-1-3', numero: '1.3', titulo: 'Búsquedas en Google', pregunta: '¿Cuánto interés hay y en qué palabras?', universos: ['busquedas'], fuentes: ['busquedas'] },
       { id: 's-1-4', numero: '1.4', titulo: 'Redes', pregunta: '¿De qué se habla en TikTok y qué se dice de Fit Lab?', universos: ['conversacion'], fuentes: ['conversacion'] },
       { id: 's-1-5', numero: '1.5', titulo: 'Competencia', pregunta: '¿Qué tan activos están los otros gimnasios?', universos: ['conversacion'], fuentes: ['conversacion'] },
-      { id: 's-1-6', numero: '1.6', titulo: 'Sitio web', pregunta: '¿Quién entra al sitio, desde dónde y qué mira?', universos: ['web'], fuentes: ['web'] },
+      { id: 's-1-6', numero: '1.6', titulo: 'Sitio web (GA4)', pregunta: '¿Cuánta gente entra, desde dónde, qué mira y a qué hora?', universos: ['web'], fuentes: ['web'] },
     ],
   },
   {
@@ -27,13 +27,12 @@ export const CAPAS = [
   },
   {
     id: 'sugiere', numero: '3', nombre: 'Sugiere', descripcion: 'Qué mirar y qué mover',
-    titulo: 'Qué mirar y qué mover', bajada: 'Cada sugerencia dice qué la sostiene. Las estimaciones van con su rango y sus supuestos.',
+    titulo: 'Qué mirar y qué mover', bajada: 'Lo que se salió de lo esperado, lo que va bien y qué cambio sostiene el dato. Cada alerta dice de dónde sale; cada estimación, su rango y sus supuestos.',
     secciones: [
-      { id: 's-3-1', numero: '3.1', titulo: 'Índice de oportunidad', pregunta: '¿Qué tan favorable está el mercado para captar socios?', universos: ['modelo'], fuentes: [] },
-      { id: 's-3-2', numero: '3.2', titulo: 'Qué mirar', pregunta: '¿Qué se salió de lo esperado en la última lectura?', universos: ['modelo'], fuentes: [] },
-      { id: 's-3-3', numero: '3.3', titulo: 'Sugerencias', pregunta: '¿Qué mover y cuánto podría dar?', universos: ['modelo'], fuentes: [] },
-      { id: 's-3-4', numero: '3.4', titulo: 'Pilares de contenido', pregunta: '¿De qué conviene hablar, según los estudios?', universos: ['modelo'], fuentes: [] },
-      { id: 's-3-5', numero: '3.5', titulo: 'Escenario si nada cambia', pregunta: '¿Cuántos leads habría si la inversión sigue el plan?', universos: ['modelo'], fuentes: ['meta', 'search', 'tiktok', 'display'] },
+      { id: 's-3-1', numero: '3.1', titulo: 'Qué mirar', pregunta: '¿Qué se salió de lo esperado este mes y qué va bien?', universos: ['modelo'], fuentes: [] },
+      { id: 's-3-2', numero: '3.2', titulo: 'Qué mover', pregunta: '¿Qué cambio sostiene el dato y cuánto podría dar?', universos: ['modelo'], fuentes: [] },
+      { id: 's-3-3', numero: '3.3', titulo: 'Escenario si nada cambia', pregunta: '¿Cuántos leads habría si la inversión sigue el plan?', universos: ['modelo'], fuentes: ['meta', 'search', 'tiktok', 'display'] },
+      { id: 's-3-4', numero: '3.4', titulo: 'Índice de oportunidad', pregunta: '¿Qué tan favorable está el mercado para captar socios?', universos: ['modelo'], fuentes: [] },
     ],
   },
 ];

@@ -1,9 +1,11 @@
 // Capa 1 · Lee: lo que dice cada fuente, por separado. No calcula: pinta la vista y las lecturas de src/textos.
 import { Bloque, Cifra, Tabla, Resumen } from '../sistema/Componentes.jsx';
 import { useState } from 'react';
-import { Linea, Multiplos, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion } from '../sistema/graficos/Graficos.jsx';
+import { Linea, Multiplos, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion, MapaCalor } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, compacto, variacion, rangoFechas, fecha, diaSemanaLargo, mesCorto, NO_MEDIDO } from '../sistema/formato.js';
-import { MarcoCapa, SeccionDe } from './comun.jsx';
+import { MarcoCapa, SeccionDe, alertasDe, buenasDe } from './comun.jsx';
+import { conteo } from '../textos/sugiere.js';
+import { ArrowRight } from 'lucide-react';
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 
@@ -71,12 +73,13 @@ export default function Lee({ capa, vista: v }) {
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={`Resumen de ${periodoTexto(v.periodo)}`}
         pie={<span>Cada variación compara los días medidos de {periodoTexto(v.periodo)} con los mismos días de {comparacionTexto(v.periodo)}. Pauta, CRM y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
+        avisos={<p className="q-resumen-avisos"><span>{conteo(alertasDe(v), buenasDe(v).length)}</span><a href="#s-3-1">Ver qué mirar<ArrowRight size={14} aria-hidden="true" /></a></p>}
         items={[
           { rotulo: 'Leads de las plataformas', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? numero(pa.leads) : null, delta: ok(pa) ? deltaCorto(pa.cambio, 'sube', v) : null, dataClave: 'pauta-leads' },
           { rotulo: 'Inversión en pauta', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? dolares(pa.inversion) : null, nota: `en ${numero(v.lee.plataformas.plataformas.length)} plataformas` },
           { rotulo: 'Costo por lead', universo: 'pauta', ir: s11.id, irTexto: s11.titulo, valor: ok(pa) ? dolares(pa.cpl, 2) : null, delta: ok(pa) ? deltaCorto(pa.cambioCpl, 'baja', v) : null },
           { rotulo: 'Leads en el CRM', universo: 'crm', ir: s12.id, irTexto: s12.titulo, valor: ok(cr) ? numero(cr.total) : null, delta: ok(cr) ? deltaCorto(cr.cambio, 'sube', v) : null, dataClave: 'crm-total' },
-          { rotulo: 'Sesiones del sitio', universo: 'web', ir: s16.id, irTexto: s16.titulo, valor: ok(w) ? compacto(w.sesiones) : null, delta: ok(w) ? deltaCorto(w.sesionesCambio, 'sube', v) : null },
+          { rotulo: 'Usuarios activos al día', universo: 'web', ir: s16.id, irTexto: 'Sitio web', valor: ok(w) ? numero(Math.round(w.usuariosPorDia)) : null, delta: ok(w) ? deltaCorto(w.cambioUsuarios, 'sube', v) : null },
         ]} />
       {/* ───── 1.1 Pauta pagada ───── */}
         <SeccionDe def={s11} vista={v}>
@@ -115,12 +118,6 @@ export default function Lee({ capa, vista: v }) {
               <Tabla etiqueta="Términos de búsqueda con más clics" numericas={[1, 2]}
                 columnas={['Término que se buscó', 'Clics', 'Leads']}
                 filas={v.lee.plataformas.terminos.map((t) => [t.texto, numero(t.clics), numero(t.leads)])} />
-            </Bloque>
-            <Bloque universo="pauta" alcance={`${rangoFechas(v.lee.plataformas.programatica.desde, v.lee.plataformas.programatica.hasta)} · no sigue el período`} {...L.programaticaLectura(v)}
-              pie={<span>{v.lee.plataformas.programatica.fuente} · {numero(v.lee.plataformas.programatica.sitios)} sitios y apps</span>}>
-              <Tabla etiqueta="Formatos de la pauta programática" numericas={[3, 4, 5, 6]}
-                columnas={['Formato', 'Compra', 'Audiencia', 'Impresiones', 'Clics', 'CTR', 'Consumo']}
-                filas={v.lee.plataformas.programatica.formatos.map((f) => [f.nombre, f.compra, f.audiencia, numero(f.impresiones), numero(f.clics), porcentaje(f.ctr * 100, 2), dolares(f.consumo)])} />
             </Bloque>
           </>}
         </SeccionDe>
@@ -219,35 +216,35 @@ export default function Lee({ capa, vista: v }) {
           </>}
         </SeccionDe>
 
-        {/* ───── 1.6 Sitio web ───── */}
+        {/* ───── 1.6 Sitio web (GA4): tráfico, sin leads ───── */}
         <SeccionDe def={s16} vista={v}>
-          {v.lee.web.estado !== 'ok' ? <Bloque titulo="Sitio web" universo="web" estado={sinDato(v.lee.web.estado)} /> : <>
-            <Bloque universo="web" {...L.webLectura(v)} pie={<span>Las solicitudes desde pauta ({numero(v.lee.web.desdePauta)}) ya están en los leads de Pauta pagada: no se suman.</span>}>
+          {w.estado !== 'ok' ? <Bloque titulo="Sitio web" universo="web" estado={sinDato(w.estado)} /> : <>
+            <Bloque universo="web" {...L.webLectura(v)}
+              ayuda={<p>Usuarios activos: personas distintas con al menos una sesión en el día, según GA4. Sesión con interacción: dura más de 10 segundos, ve dos páginas o más, o completa un evento clave. GA4 mide tráfico; los leads del sitio están en el CRM.</p>}
+              pie={<span>Promedio de usuarios activos al día · GA4</span>}>
               <div className="q-cifras">
-                <Cifra valor={numero(v.lee.web.solicitudes)} rotulo="solicitudes de clase de prueba" tamano="chica" />
-                <Cifra valor={porcentaje(v.lee.web.tasaInteraccion * 100)} rotulo="sesiones con interacción" tamano="chica" />
+                <Cifra valor={compacto(w.sesiones)} rotulo="sesiones en el mes" tamano="chica" />
+                <Cifra valor={porcentaje(w.tasaInteraccion * 100)} rotulo="sesiones con interacción" tamano="chica" />
+                <Cifra valor={`${numero(Math.floor(w.segundosMedios / 60))} min ${numero(Math.round(w.segundosMedios % 60))} s`} rotulo="de interacción por sesión" tamano="chica" />
+                <Cifra valor={porcentaje(w.movil * 100)} rotulo="desde el celular" tamano="chica" />
               </div>
-              <Linea serie={v.lee.web.serie} previa={v.lee.web.seriePrevia} formato={compacto} etiqueta="Sesiones por día, con la comparación en gris" />
+              <Linea serie={w.serie} previa={w.seriePrevia} formato={compacto} etiqueta="Usuarios activos por día, con la comparación en gris" />
             </Bloque>
-            <Bloque universo="web" ancho="mitad" {...L.webFuentes(v)} pie={<span>Las fuentes con pauta traen sesiones de anuncios; sus solicitudes ya cuentan como leads en Pauta pagada.</span>}>
-              <Franja etiqueta="Sesiones por fuente" formato={(p) => porcentaje(p)}
-                partes={partesConResto([...v.lee.web.fuentes].sort((a, b) => b.sesiones - a.sesiones).map((f) => ({ nombre: f.nombre, valor: f.sesiones, pct: f.pct })), 'Otras fuentes')} />
-              <Tabla etiqueta="Sesiones y solicitudes por fuente" numericas={[1, 2, 3]}
-                columnas={['Fuente', 'Sesiones', 'Solicitudes', 'Por cada 100 sesiones']}
-                filas={[...v.lee.web.fuentes].sort((a, b) => b.sesiones - a.sesiones).map((f) => [f.nombre, compacto(f.sesiones), numero(f.solicitudes), numero((f.solicitudes / f.sesiones) * 100, 1)])} />
+            <Bloque universo="web" ancho="mitad" {...L.webCanales(v)}
+              pie={<span>Canal predeterminado de GA4. «Interacción»: sesiones con interacción de cada 100.</span>}>
+              <Franja etiqueta="Sesiones por canal" formato={(p) => porcentaje(p)}
+                partes={partesConResto(w.canales.map((c) => ({ nombre: c.nombre, valor: c.sesiones, pct: c.pct })), 'Otros canales')} />
+              <Tabla etiqueta="Sesiones e interacción por canal" numericas={[1, 2, 3]}
+                columnas={['Canal', 'Sesiones', 'Interacción', 'Tiempo por sesión']}
+                filas={w.canales.map((c) => [c.nombre, compacto(c.sesiones), numero(Math.round(c.tasa * 100)), `${numero(Math.round(c.segundos))} s`])} />
             </Bloque>
             <Bloque universo="web" ancho="mitad" {...L.webPaginas(v)}>
-              <Tabla etiqueta="Páginas del sitio" numericas={[1, 2, 3]}
-                columnas={['Página', 'Sesiones', 'Solicitudes', 'Por cada 100 sesiones']}
-                filas={v.lee.web.paginas.map((p) => [p.ruta, compacto(p.sesiones), numero(p.solicitudes), numero(p.tasa * 100, 1)])} />
+              <Barras etiqueta="Vistas de cada página" formato={compacto} resaltar={w.paginas.find((p) => p.desde)?.ruta}
+                filas={w.paginas.map((p) => ({ nombre: p.ruta, valor: p.vistas, nota: `${numero(p.pct)} de 100` }))} />
             </Bloque>
-            <Bloque universo="web" {...L.webHoras(v)}>
-              <div className="q-dos-columnas">
-                <Histograma etiqueta="Sesiones por hora del día" formato={compacto}
-                  barras={v.lee.web.porHora.map((n, h) => ({ nombre: `${h} h`, corto: String(h), valor: n }))} resaltar={v.lee.web.horasPico} />
-                <Histograma etiqueta="Sesiones promedio por día de la semana" formato={(n) => numero(n)}
-                  barras={v.lee.web.porDiaSemana.map((n, i) => ({ nombre: diaSemanaLargo(i), corto: diaSemanaLargo(i).slice(0, 3), valor: n == null ? 0 : Math.round(n) }))} />
-              </div>
+            <Bloque universo="web" {...L.webHoras(v)}
+              pie={<span>Promedio de usuarios activos en cada hora, por día de la semana, en el mes.</span>}>
+              <MapaCalor matriz={w.matriz} formato={(n) => (n == null ? 'sin dato' : numero(n))} etiqueta="Usuarios activos por hora y día de la semana" />
             </Bloque>
           </>}
         </SeccionDe>

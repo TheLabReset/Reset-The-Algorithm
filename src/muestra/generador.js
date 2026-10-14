@@ -13,7 +13,8 @@
 //  · pauta: lo que reporta cada plataforma: los leads reales más duplicados y conversiones que no llegan
 //    (puede faltar un día: «la fuente no entregó»)
 //  · CRM: los leads que de verdad entraron (los de pauta, aunque la plataforma no los reportara, más los del sitio sin pauta)
-//  · web: sesiones y solicitudes del sitio (las solicitudes desde pauta ya son leads de pauta)
+//  · web (GA4): sesiones del sitio por canal y por página. Las solicitudes del sitio sin pauta alimentan al CRM;
+//    la pantalla del sitio no muestra leads: GA4 mide tráfico, no ventas
 
 import { crearAzar } from './azar.js';
 import { rango, mes, diaSemana, diasEntre, inicioSemana, sumarDias } from './calendario.js';
@@ -102,7 +103,7 @@ export function generar(cfg) {
     }
     const sesionesDia = Object.values(fuentes).reduce((s, x) => s + x.sesiones, 0);
     const solicitudesDia = Object.values(fuentes).reduce((s, x) => s + x.solicitudes, 0);
-    const paginas = multinomial(azW, sesionesDia, cfg.web.paginas.map((p) => p.peso));
+    const paginas = multinomial(azW, sesionesDia, cfg.web.paginas.map((p) => (p.desde && d >= p.desde ? p.pesoDesde : p.peso)));
     const solicitudesPorPagina = multinomial(azW, solicitudesDia, cfg.web.paginas.map((p) => p.peso * p.conversion));
     return { fecha: d, fuentes, organicos, paginas, solicitudesPorPagina };
   });

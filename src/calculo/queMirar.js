@@ -6,7 +6,7 @@
 
 import { rango, sumarDias } from '../muestra/calendario.js';
 import { suma, razon, cuantil, indices, sumarMeses, finDeMes } from './base.js';
-import { leeCrmDetalle } from './produccion.js';
+import { leeCrmDetalle, interaccionCanal } from './produccion.js';
 
 export const UMBRALES = {
   sinConversion: 0.08, // gasto en palabras casi sin conversiones, sobre el gasto de Search
@@ -14,7 +14,7 @@ export const UMBRALES = {
   finDeSemanaLento: 0.5, // más de la mitad de los leads del fin de semana espera más de 2 horas
   llegaAlCrm: 0.85, // de cada lead reportado, cuántos llegan al CRM
   subeBusqueda: 50, // % de subida en tres meses
-  caidaConversionWeb: 15, // % de caída de la conversión del sitio, últimos 7 días contra los 7 anteriores
+  caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior
   diaBajo: 0.5, // un día con menos de la mitad de la inversión mediana del período
 };
 
@@ -65,14 +65,49 @@ export function queMirar(data, P, v) {
   if (re.estado === 'ok' && re.pideLectura) add({ id: 'tema-negativo', nivel: 'revisar', fuente: 'Escucha social', sostiene: '1.4', datos: { tema: re.pideLectura.nombre, tono: re.pideLectura.tono, tonoPrevio: re.pideLectura.tonoPrevio, menciones: re.pideLectura.menciones } });
 
   const bu = v.lee.busquedas;
-  if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'revisar', fuente: 'Google Trends', sostiene: '1.3', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });
+  if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'oportunidad', fuente: 'Google Trends', sostiene: '1.3', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });
 
+  // GA4: un canal pagado cuyas sesiones interactúan bastante menos que el mes anterior (el clic se paga igual).
+  // Si en el período hay un evento anotado en una plataforma de ese canal, se cita como coincidencia, no como causa.
   if (v.lee.web.estado === 'ok') {
-    const tasa = (dias) => { let s = 0, q = 0; dias.forEach((d) => { const w = ix.webDia.get(d); if (w) { s += suma(Object.values(w.fuentes), (f) => f.sesiones); q += suma(Object.values(w.fuentes), (f) => f.solicitudes); } }); return razon(q, s); };
-    const a = tasa(rango(sumarDias(P.hasta, -6), P.hasta)), b = tasa(rango(sumarDias(P.hasta, -13), sumarDias(P.hasta, -7)));
-    if (a != null && b && ((b - a) / b) * 100 >= UMBRALES.caidaConversionWeb) add({ id: 'web-convierte-menos', nivel: 'atencion', fuente: 'Analítica web', sostiene: '1.6', datos: { ahora: a, antes: b } });
+    const mesAnt = sumarMeses(P.hasta.slice(0, 7), -1);
+    if (mesAnt + '-01' >= cfg.desde) for (const f of cfg.web.fuentes.filter((x) => x.deClics)) {
+      const ahora = interaccionCanal(data, f.id, P.desde, P.hasta), antes = interaccionCanal(data, f.id, mesAnt + '-01', finDeMes(mesAnt));
+      if (ahora.sesiones < 300 || !antes.tasa) continue;
+      const caida = ((antes.tasa - ahora.tasa) / antes.tasa) * 100;
+      if (caida < UMBRALES.caidaInteraccion) continue;
+      const evento = cfg.eventos.find((e) => e.fecha >= P.desde && e.fecha <= P.hasta && f.deClics.includes(e.canal));
+      add({ id: 'interaccion-cae', nivel: 'atencion', fuente: 'GA4', sostiene: '1.6', datos: { canal: f.nombre, ahora: ahora.tasa, antes: antes.tasa, mesAntes: mesAnt, sesiones: ahora.sesiones, evento } });
+    }
   }
 
-  const orden = { atencion: 0, revisar: 1 };
+  const orden = { atencion: 0, revisar: 1, oportunidad: 2 };
   return avisos.sort((x, y) => orden[x.nivel] - orden[y.nivel]);
+}
+
+// Lo que va bien: el algoritmo también dice qué sostener. Mismas reglas de honestidad: cada señal trae su dato.
+export const UMBRALES_BIEN = {
+  bajoObjetivo: 0.1, // una plataforma con costo por lead al menos 10 % bajo su objetivo en el mes
+  mejoraAnual: 0.15, // costo por lead al menos 15 % más bajo que un año antes
+  recuperaCtr: 0.2, // las piezas nuevas suben el CTR al menos 20 %
+};
+
+export function queVaBien(data, P, v) {
+  const bien = [];
+  const pl = v.lee.plataformas;
+  if (pl.estado === 'ok') for (const p of pl.plataformas) {
+    if (p.cpl == null || p.objetivo == null) continue;
+    const margen = (p.objetivo - p.cpl) / p.objetivo;
+    const anual = p.cplPrevio ? (p.cplPrevio - p.cpl) / p.cplPrevio : null;
+    if (margen >= UMBRALES_BIEN.bajoObjetivo) bien.push({ id: 'bajo-objetivo', fuente: p.nombre, sostiene: '1.1', datos: { plataforma: p.nombre, cpl: p.cpl, objetivo: p.objetivo, margen, anual } });
+    else if (anual != null && anual >= UMBRALES_BIEN.mejoraAnual) bien.push({ id: 'mejora-anual', fuente: p.nombre, sostiene: '1.1', datos: { plataforma: p.nombre, cpl: p.cpl, previo: p.cplPrevio, anual } });
+  }
+  const renovar = v.sugiere.sugerencias.find((s) => s.id === 'renovar');
+  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '1.1', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
+  const co = v.lee.competencia;
+  if (co.estado === 'ok') {
+    const orden = [...co.marcas].sort((a, b) => b.sentimiento.indice - a.sentimiento.indice);
+    if (orden[0].propia) bien.push({ id: 'mejor-sentimiento', fuente: 'Escucha social', sostiene: '1.5', datos: { indice: orden[0].sentimiento.indice, segundo: orden[1].nombre, segundoIndice: orden[1].sentimiento.indice } });
+  }
+  return bien;
 }

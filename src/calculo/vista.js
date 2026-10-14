@@ -10,8 +10,8 @@ import {
 import { calcularIndice, bandaDe } from './indice.js';
 import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
-import { queMirar } from './queMirar.js';
-import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeWebDetalle, analizaReparto, analizaPautaCrm } from './produccion.js';
+import { queMirar, queVaBien } from './queMirar.js';
+import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeGa4, analizaReparto, analizaPautaCrm } from './produccion.js';
 
 export function periodoDesdeFiltros(cfg, { mes, comparar = 'anio' }) {
   const desde = mes + '-01', hasta = finDeMes(mes);
@@ -49,7 +49,7 @@ export function armarVista(data, filtros, estado = {}) {
   const fuentes = [
     ...cfg.canales.map((c) => ({ id: c.id, grupo: 'pauta', nombre: c.nombre, corte: ultimoMedido(c), sinDato: ventanaCanal(data, c.id, desde, hasta).sinDato })),
     { id: 'crm', grupo: 'crm', nombre: 'CRM', corte: cfg.corte, sinDato: [] },
-    { id: 'web', grupo: 'web', nombre: 'Analítica web', corte: cfg.corte, sinDato: [] },
+    { id: 'web', grupo: 'web', nombre: 'GA4', corte: cfg.corte, sinDato: [] },
     { id: 'busquedas', grupo: 'busquedas', nombre: 'Google Trends', corte: sumarDias(data.semanas.at(-1), 6), sinDato: [], semanal: true },
     { id: 'conversacion', grupo: 'conversacion', nombre: 'Escucha social', corte: sumarDias(data.semanas.at(-1), 6), sinDato: [], semanal: true },
   ].map((f) => ({ ...f, estado: caidas.has(f.id) || caidas.has(f.grupo) ? 'no-cargo' : f.sinDato.length ? 'parcial' : 'ok' }));
@@ -148,22 +148,8 @@ export function armarVista(data, filtros, estado = {}) {
     };
   }
 
-  // Web
-  let web;
-  if (estadoGrupo('web') !== 'ok') web = { estado: estadoGrupo('web') };
-  else {
-    const wa = ventanaWeb(data, desde, hasta), wb = ventanaWeb(data, compararDesde, compararHasta);
-    const pctSes = mayorResto(cfg.web.fuentes.map((f) => wa.fuentes[f.id].sesiones));
-    const desdePauta = cfg.web.fuentes.filter((f) => f.deClics).reduce((s, f) => s + wa.fuentes[f.id].solicitudes, 0);
-    web = {
-      estado: 'ok', universo: 'Sesiones y solicitudes de prueba del sitio',
-      sesiones: wa.sesiones, sesionesCambio: !compFuera ? cambioPct(wa.sesiones / wa.dias, wb.sesiones / wb.dias) : null,
-      solicitudes: wa.solicitudes, desdePauta, sinPauta: wa.solicitudes - desdePauta,
-      movil: razon(wa.movil, wa.sesiones),
-      fuentes: cfg.web.fuentes.map((f, i) => ({ id: f.id, nombre: f.nombre, pauta: !!f.deClics, sesiones: wa.fuentes[f.id].sesiones, pct: pctSes[i], solicitudes: wa.fuentes[f.id].solicitudes })),
-      paginas: cfg.web.paginas.map((p, i) => ({ ...p, sesiones: wa.paginas[i].sesiones, solicitudes: wa.paginas[i].solicitudes, tasa: razon(wa.paginas[i].solicitudes, wa.paginas[i].sesiones) })).sort((a, b) => b.solicitudes - a.solicitudes),
-    };
-  }
+  // Sitio: GA4 (tráfico; los leads del sitio viven en el CRM)
+  const web = estadoGrupo('web') !== 'ok' ? { estado: estadoGrupo('web') } : { estado: 'ok', universo: 'Tráfico del sitio según GA4', ...leeGa4(data, P) };
 
   // Detalle de producción: plataformas y campañas, CRM por dentro, redes, competencia, sitio
   const plataformas = estadoGrupo('pauta') === 'ok' ? { estado: 'ok', universo: 'Lo que reporta cada plataforma', ...leePlataformas(data, P) } : { estado: estadoGrupo('pauta') };
@@ -171,7 +157,6 @@ export function armarVista(data, filtros, estado = {}) {
   if (busquedas.estado === 'ok') Object.assign(busquedas, leeBusquedasDetalle(data, P));
   const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'TikTok y conversación pública sobre Fit Lab', ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
   const competencia = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'Publicaciones y anuncios de cada marca (cifras de muestra)', ...leeCompetencia(data, P) } : { estado: estadoGrupo('conversacion') };
-  if (web.estado === 'ok') Object.assign(web, leeWebDetalle(data, P));
 
   // ══════════════ CAPA 2 · ANALIZA ══════════════
   const diasComunes = fechas.filter((d) => leadsPautaDia(data, d) != null);
@@ -287,5 +272,6 @@ export function armarVista(data, filtros, estado = {}) {
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };
   vista.sugiere.queMirar = fuera ? [] : queMirar(data, P, vista);
+  vista.sugiere.queVaBien = fuera ? [] : queVaBien(data, P, vista);
   return vista;
 }

@@ -1,6 +1,6 @@
 // Lecturas de la capa Lee. Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
-import { numero, dolares, porcentaje, compacto } from '../sistema/formato.js';
+import { numero, dolares, porcentaje, compacto, diaSemanaLargo } from '../sistema/formato.js';
 import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista } from './comun.js';
 
 const P = (v) => v.periodo;
@@ -43,11 +43,6 @@ export function terminosLectura(v) {
   const titulo = 'Lo que de verdad se buscó';
   if (!comp.length) return { titulo, lectura: 'Los términos que activaron anuncios, ordenados por clics.' };
   return { titulo, lectura: `Entre los términos que activaron anuncios aparece ${lista(comp.map((x) => `«${x.texto}»`))}: búsquedas de otra marca que convierten poco.` };
-}
-
-export function programaticaLectura(v) {
-  const g = v.lee.plataformas.programatica;
-  return { titulo: 'Pauta programática', lectura: `${numero(g.impresiones)} impresiones y ${numero(g.clics)} clics por ${dolares(g.consumo)} en toda la campaña. Viene de una planilla sin fecha por día: no se reparte por mes ni se suma a la inversión de plataformas.` };
 }
 
 export function crmPorDia(v) {
@@ -125,27 +120,28 @@ export function competenciaAnuncios(v) {
   return { titulo: 'Publicaciones y anuncios activos', lectura: `${m[0].nombre} tiene más anuncios activos (${numero(m[0].anuncios)}). Fit Lab tiene ${numero(propia.anuncios)} y publicó ${numero(propia.publicaciones)} veces en el mes.` };
 }
 
-export function webFuentes(v) {
-  const f = [...v.lee.web.fuentes].sort((a, b) => b.sesiones - a.sesiones);
-  return { titulo: 'De dónde llegan', lectura: `${f[0].nombre} trae ${numero(f[0].pct)} de cada 100 sesiones; ${f[1].nombre.toLowerCase()}, ${numero(f[1].pct)}.` };
+// Sitio (GA4): tráfico. Nunca leads: GA4 no mide ventas y los leads del sitio están en el CRM
+export function webLectura(v) {
+  const w = v.lee.web;
+  const base = `${capital(numero(Math.round(w.usuariosPorDia)))} usuarios activos al día en ${periodoTexto(P(v))}`;
+  return { titulo: 'Quién entra al sitio', lectura: w.cambioUsuarios == null ? `${base}.` : `${base}: ${frente(w.cambioUsuarios, P(v))}. ${porcentaje(w.tasaInteraccion * 100)} de las sesiones tuvo interacción.` };
+}
+
+export function webCanales(v) {
+  const c = v.lee.web.canales;
+  const peor = [...c].filter((x) => x.pauta && x.sesiones > 500).sort((a, b) => a.tasa - b.tasa)[0];
+  const base = `${c[0].nombre} trae ${numero(c[0].pct)} de cada 100 sesiones; ${c[1].nombre.toLowerCase()}, ${numero(c[1].pct)}.`;
+  return { titulo: 'De dónde llegan', lectura: peor ? `${base} De los canales pagados, ${peor.nombre.toLowerCase()} es el que menos interactúa: ${numero(Math.round(peor.tasa * 100))} de cada 100 sesiones.` : base };
 }
 
 export function webPaginas(v) {
   const p = v.lee.web.paginas;
-  const masSol = [...p].sort((a, b) => b.solicitudes - a.solicitudes)[0], mejor = [...p].sort((a, b) => b.tasa - a.tasa)[0];
-  const lectura = masSol.id === mejor.id
-    ? `«${masSol.nombre}» junta más solicitudes y también es la que mejor convierte: ${numero(mejor.tasa * 100, 1)} por cada 100 sesiones.`
-    : `«${masSol.nombre}» junta más solicitudes; «${mejor.nombre}» convierte mejor por sesión.`;
-  return { titulo: 'Qué páginas convierten', lectura };
-}
-
-export function webLectura(v) {
-  const w = v.lee.web;
-  const base = `${capital(compacto(w.sesiones))} sesiones y ${numero(w.solicitudes)} solicitudes de clase de prueba en ${periodoTexto(P(v))}.`;
-  return { titulo: 'Quién entra al sitio', lectura: w.sesionesCambio == null ? base : `${base} Por día, ${frente(w.sesionesCambio, P(v))}.` };
+  const nueva = p.find((x) => x.desde);
+  const base = `«${p[0].ruta}» junta más vistas: ${numero(p[0].pct)} de cada 100.`;
+  return { titulo: 'Qué páginas se ven', lectura: nueva ? `${base} «${nueva.ruta}», publicada el ${Number(nueva.desde.slice(8, 10))}, ya suma ${numero(nueva.pct)} de cada 100.` : base };
 }
 
 export function webHoras(v) {
   const w = v.lee.web;
-  return { titulo: 'Cuándo se visita el sitio', lectura: `Las cuatro horas con más sesiones juntan ${porcentaje(w.pctHorasPico * 100)} del total. Analítica entrega la hora y el día por separado: no hay cruce de día por hora.` };
+  return { titulo: 'Cuándo están activos', lectura: `El pico es el ${diaSemanaLargo(w.pico.dia)} a las ${w.pico.hora}:00, con ${numero(w.pico.v)} usuarios activos en promedio. Las noches de semana también concentran visitas.` };
 }

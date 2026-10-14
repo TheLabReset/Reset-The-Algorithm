@@ -18,7 +18,15 @@ const PANTALLAS = { lee: Lee, analiza: Analiza, sugiere: Sugiere };
 // Preferencias del visitante: si el navegador no deja guardar, la página funciona igual
 const leerPref = (k, porDefecto) => { try { return localStorage.getItem('algoritmo:' + k) || porDefecto; } catch { return porDefecto; } };
 const guardarPref = (k, v) => { try { localStorage.setItem('algoritmo:' + k, v); } catch { /* sin almacenamiento */ } };
-const capaDeLaUrl = () => { const h = typeof location !== 'undefined' ? location.hash.slice(1) : ''; return CAPAS.some((c) => c.id === h) ? h : 'lee'; };
+// El ancla dice la capa: «lee», «s-1-3» (capítulo de Lee), «a-cpl-objetivo» (una alerta, en Sugiere)
+const capaDeAncla = (h) => {
+  if (CAPAS.some((c) => c.id === h)) return h;
+  const capitulo = h.match(/^s-(\d)-/);
+  if (capitulo) return CAPAS.find((c) => c.numero === capitulo[1])?.id || null;
+  return /^(a|b)-/.test(h) ? 'sugiere' : null;
+};
+const ancla = () => (typeof location !== 'undefined' ? location.hash.slice(1) : '');
+const capaDeLaUrl = () => capaDeAncla(ancla()) || 'lee';
 
 export default function App() {
   const data = useMemo(() => generar(CONFIG), []);
@@ -36,6 +44,13 @@ export default function App() {
     window.addEventListener('hashchange', alCambiar);
     return () => window.removeEventListener('hashchange', alCambiar);
   }, []);
+  // Al cambiar de capa por un ancla, llevar la vista a ese capítulo o alerta cuando ya está dibujado
+  useEffect(() => {
+    const h = ancla();
+    if (!h || CAPAS.some((c) => c.id === h)) return;
+    const t = setTimeout(() => document.getElementById(h)?.scrollIntoView({ block: 'start' }), 60);
+    return () => clearTimeout(t);
+  }, [capa]);
   const irACapa = (id) => { setCapa(id); history.replaceState(null, '', '#' + id); window.scrollTo({ top: 0 }); };
 
   const vista = useMemo(() => armarVista(data, { mes, comparar }), [data, mes, comparar]);

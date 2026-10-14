@@ -206,12 +206,21 @@ export function detallar(data) {
     }),
   }));
 
-  // ── Sitio: sesiones con interacción y por hora ──
+  // ── Sitio (GA4): por canal, usuarios, sesiones con interacción y segundos de interacción; por hora; vistas por página ──
   const azW = crearAzar(semillaDe(cfg.semilla, 'web-detalle'));
+  const factorInteraccion = (f, d) => cfg.cambiosInteraccion.filter((c) => c.fuente === f && d >= c.desde).reduce((x, c) => x * c.factor, 1);
   const web = data.web.map((w) => {
-    const conInteraccion = Object.fromEntries(Object.entries(w.fuentes).map(([f, x]) => [f, azW.binomial(x.sesiones, cfg.interaccionWeb[f])]));
+    const conInteraccion = {}, usuarios = {}, segundos = {};
+    for (const [f, x] of Object.entries(w.fuentes)) {
+      conInteraccion[f] = azW.binomial(x.sesiones, Math.min(0.95, cfg.interaccionWeb[f] * factorInteraccion(f, w.fecha)));
+      usuarios[f] = Math.round(x.sesiones / (cfg.usuariosWeb[f] * azW.ruido(0.04)));
+      segundos[f] = Math.round(conInteraccion[f] * cfg.segundosWeb[f] * azW.ruido(0.1));
+    }
     const sesiones = Object.values(w.fuentes).reduce((s, x) => s + x.sesiones, 0);
-    return { fecha: w.fecha, conInteraccion, porHora: multinomial(azW, sesiones, cfg.perfilHoraWeb) };
+    const usuariosDia = Object.values(usuarios).reduce((s, x) => s + x, 0);
+    const vistas = multinomial(azW, Math.round(sesiones * cfg.vistasPorSesion * azW.ruido(0.05)), w.paginas.map((n) => n || 0));
+    // usuarios activos por hora: los usuarios del día repartidos con el perfil horario (un usuario puede volver otra hora)
+    return { fecha: w.fecha, conInteraccion, usuarios, segundos, vistas, porHora: multinomial(azW, sesiones, cfg.perfilHoraWeb), usuariosPorHora: multinomial(azW, usuariosDia, cfg.perfilHoraWeb) };
   });
 
   return { campanas, palabras, terminos, programatica, crm, hashtags, temas, redes, regiones, web, meses };

@@ -53,10 +53,11 @@ export const CONFIG = {
     fuentes: [
       { id: 'organica', nombre: 'Búsqueda orgánica', base: 520, conversion: 0.012, movil: 0.72 },
       { id: 'directo', nombre: 'Directo', base: 210, conversion: 0.016, movil: 0.6 },
-      { id: 'redes', nombre: 'Redes sin pauta', base: 160, conversion: 0.006, movil: 0.92 },
-      { id: 'referidos', nombre: 'Referidos', base: 60, conversion: 0.01, movil: 0.55 },
-      { id: 'ads', nombre: 'Google Ads', deClics: ['search', 'display'], llegada: 0.88, movil: 0.7 },
-      { id: 'redesPagadas', nombre: 'Redes con pauta', deClics: ['meta', 'tiktok'], llegada: 0.7, movil: 0.95 },
+      { id: 'redes', nombre: 'Redes sociales orgánicas', base: 160, conversion: 0.006, movil: 0.92 },
+      { id: 'referidos', nombre: 'Referencia', base: 60, conversion: 0.01, movil: 0.55 },
+      { id: 'ads', nombre: 'Búsqueda pagada', deClics: ['search'], llegada: 0.88, movil: 0.7 },
+      { id: 'display', nombre: 'Display', deClics: ['display'], llegada: 0.8, movil: 0.75 },
+      { id: 'redesPagadas', nombre: 'Redes sociales pagadas', deClics: ['meta', 'tiktok'], llegada: 0.7, movil: 0.95 },
     ],
     paginas: [
       { id: 'inicio', ruta: '/', nombre: 'Inicio', peso: 0.3, conversion: 0.3 },
@@ -67,6 +68,7 @@ export const CONFIG = {
       { id: 'horarios', ruta: '/horarios', nombre: 'Horarios', peso: 0.08, conversion: 0.4 },
       { id: 'blog', ruta: '/blog', nombre: 'Blog', peso: 0.05, conversion: 0.15 },
       { id: 'contacto', ruta: '/contacto', nombre: 'Contacto', peso: 0.03, conversion: 1.0 },
+      { id: 'promo', ruta: '/promo-setiembre', nombre: 'Promo de setiembre', peso: 0, conversion: 0, desde: '2026-09-08', pesoDesde: 0.16 },
     ],
   },
 
@@ -242,7 +244,7 @@ export const CONFIG = {
   redesMarcas: [
     { id: 'smartfit', publicaciones: 34, interaccion: 1450, anuncios: 46, sentimiento: { positivo: 0.48, negativo: 0.16 }, palabras: ['plan', 'precio', 'sedes', 'app'] },
     { id: 'b2', publicaciones: 22, interaccion: 380, anuncios: 9, sentimiento: { positivo: 0.5, negativo: 0.12 }, palabras: ['funcional', 'clases', 'comunidad'] },
-    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14, sentimiento: { positivo: 0.58, negativo: 0.09 }, palabras: ['bienestar', 'piscina', 'clases'] },
+    { id: 'bioritmo', publicaciones: 26, interaccion: 520, anuncios: 14, sentimiento: { positivo: 0.54, negativo: 0.1 }, palabras: ['bienestar', 'piscina', 'clases'] },
     { id: 'ko', publicaciones: 18, interaccion: 610, anuncios: 6, crece: 0.25, sentimiento: { positivo: 0.55, negativo: 0.11 }, palabras: ['boxeo', 'reto', 'entrenamiento'] },
     { id: 'megaforce', publicaciones: 15, interaccion: 290, anuncios: 4, sentimiento: { positivo: 0.46, negativo: 0.15 }, palabras: ['máquinas', 'horario', 'promoción'] },
     { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true, sentimiento: { positivo: 0.6, negativo: 0.1 }, palabras: ['primera semana', 'clase de prueba', 'coach'] },
@@ -262,7 +264,16 @@ export const CONFIG = {
   },
 
   // Sitio: tasa de sesiones con interacción por fuente y hora de las sesiones (Analytics no cruza día por hora)
-  interaccionWeb: { organica: 0.62, directo: 0.58, redes: 0.37, referidos: 0.55, ads: 0.49, redesPagadas: 0.31 },
+  // GA4: de cada sesión, cuántas cuentan como sesión con interacción (más de 10 s, una conversión o dos páginas). Asumo.
+  interaccionWeb: { organica: 0.62, directo: 0.58, redes: 0.37, referidos: 0.55, ads: 0.49, display: 0.22, redesPagadas: 0.42 },
+  // Sesiones por usuario al día y segundos de interacción por sesión con interacción, por canal (asumo)
+  usuariosWeb: { organica: 1.15, directo: 1.3, redes: 1.1, referidos: 1.1, ads: 1.12, display: 1.05, redesPagadas: 1.06 },
+  segundosWeb: { organica: 74, directo: 92, redes: 41, referidos: 66, ads: 58, display: 22, redesPagadas: 33 },
+  // Historia de la muestra: desde las piezas nuevas de Meta (8 set) los clics suben, pero llegan a /promo-setiembre,
+  // que carga lento en celular, y la interacción de las sesiones de redes pagadas cae
+  cambiosInteraccion: [{ fuente: 'redesPagadas', desde: '2026-09-08', factor: 0.62, texto: 'las piezas nuevas de Meta llevan a /promo-setiembre' }],
+  // Vistas de página por sesión, por página (asumo)
+  vistasPorSesion: 2.1,
   perfilHoraWeb: [0.8, 0.4, 0.25, 0.2, 0.3, 0.9, 2.4, 3.6, 3.9, 3.6, 3.4, 3.5, 3.9, 3.6, 3.2, 3.1, 3.3, 3.8, 4.6, 5.2, 5.4, 4.6, 3.1, 1.7],
 
   // Eventos que la data cuenta y la pantalla anota

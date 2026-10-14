@@ -56,7 +56,7 @@
 
 /* Proyección: lo real es barra, lo proyectado es punto con su rango; la zona futura cambia de superficie */
 .q-svg .q-zona-proyeccion { fill: var(--superficie-capitulo); }
-.q-svg .q-barra-real { fill: var(--texto-3); }
+.q-svg .q-barra-real { fill: var(--borde-control); }
 .q-svg .q-banda-proy { stroke: var(--s1); stroke-width: 6; stroke-linecap: round; stroke-opacity: 0.45; }
 .q-svg .q-punto-proy { fill: var(--s1); stroke: var(--superficie-capitulo); stroke-width: 2; }
 

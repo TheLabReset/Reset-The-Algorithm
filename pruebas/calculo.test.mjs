@@ -68,12 +68,14 @@ cada('las sedes suman los leads del CRM del período', (v, id) => {
   assert.equal(suma(v.analiza.sedes.items, (s) => s.leads ?? 0), v.lee.crm.periodo.leads, id);
   v.analiza.sedes.items.filter((s) => s.abre && s.abre > v.periodo.hasta).forEach((s) => assert.equal(s.leads, null, `${id} ${s.nombre}`));
 });
-cada('web: fuentes suman 100 y las solicitudes desde pauta no superan a los leads de pauta', (v, id) => {
+cada('GA4: canales suman 100, usuarios ≤ sesiones y no hay leads en el sitio', (v, id) => {
   if (v.lee.web.estado !== 'ok') return;
-  assert.equal(suma(v.lee.web.fuentes, (f) => f.pct), 100, id);
-  assert.equal(suma(v.lee.web.fuentes, (f) => f.solicitudes), v.lee.web.solicitudes, id);
-  if (v.lee.crm.estado === 'ok') assert.ok(v.lee.web.desdePauta <= v.lee.crm.periodo.dePauta, id);
+  assert.equal(suma(v.lee.web.canales, (f) => f.pct), 100, id);
+  assert.equal(suma(v.lee.web.canales, (f) => f.sesiones), v.lee.web.sesiones, id);
+  assert.ok(v.lee.web.canales.every((c) => c.usuarios <= c.sesiones && c.tasa >= 0 && c.tasa <= 1), id);
   assert.ok(v.lee.web.movil >= 0 && v.lee.web.movil <= 1, id);
+  assert.ok(v.lee.web.matriz.flat().every((n) => n == null || n >= 0), id);
+  assert.ok(!('solicitudes' in v.lee.web), 'GA4 no muestra leads');
 });
 cada('conversación: cada mes suma 100 y no hay puestos inventados', (v, id) => {
   if (v.lee.conversacion.estado !== 'ok') return;
@@ -153,5 +155,9 @@ cada('lo que llega al CRM no supera lo reportado salvo días sin dato de la plat
   }
 });
 cada('cada aviso de qué mirar apunta a una sección que existe', (v, id) => {
-  v.sugiere.queMirar.forEach((a) => { assert.ok(SECCIONES.includes(a.sostiene), `${id} ${a.id}`); assert.ok(['atencion', 'revisar'].includes(a.nivel), `${id} ${a.id}`); });
+  v.sugiere.queMirar.forEach((a) => { assert.ok(SECCIONES.includes(a.sostiene), `${id} ${a.id}`); assert.ok(['atencion', 'revisar', 'oportunidad'].includes(a.nivel), `${id} ${a.id}`); });
+});
+
+cada('lo que va bien apunta a una sección y trae su dato', (v, id) => {
+  (v.sugiere.queVaBien || []).forEach((b) => { assert.ok(SECCIONES.includes(b.sostiene), `${id} ${b.id}`); assert.ok(b.datos && Object.keys(b.datos).length, `${id} ${b.id}`); });
 });

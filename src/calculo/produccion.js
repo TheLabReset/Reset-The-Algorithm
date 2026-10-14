@@ -245,30 +245,68 @@ export function leeCompetencia(data, P) {
   return { mes, formatos: data.config.formatosAnuncio.map((f) => f.nombre), marcas };
 }
 
-// ══════════ 1.6 Sitio: interacción, por día, por hora y por día de semana ══════════
-export function leeWebDetalle(data, P) {
-  const det = detalleDe(data), ix = indices(data);
-  const fechas = rango(P.desde, P.hasta);
-  const desfase = diasEntre(P.compararDesde, P.desde);
-  const sesionesDia = (d) => { const w = ix.webDia.get(d); return w ? suma(Object.values(w.fuentes), (f) => f.sesiones) : null; };
+// ══════════ 1.6 Sitio (GA4): tráfico, sin leads ══════════
+// GA4 mide tráfico: usuarios, sesiones, interacción, páginas y horas. No mide ventas ni leads (esos viven en el CRM).
+export function leeGa4(data, P) {
+  const cfg = data.config, det = detalleDe(data);
   const detDia = new Map(det.web.map((w) => [w.fecha, w]));
-  let conInteraccion = 0, sesiones = 0;
-  const porHora = new Array(24).fill(0);
-  const porDiaSemana = new Array(7).fill(0), veces = new Array(7).fill(0);
-  fechas.forEach((d) => {
-    const w = detDia.get(d); if (!w) return;
-    conInteraccion += suma(Object.values(w.conInteraccion), (v) => v);
-    w.porHora.forEach((v, h) => { porHora[h] += v; });
-    const s = sesionesDia(d); sesiones += s; porDiaSemana[diaSemana(d)] += s; veces[diaSemana(d)]++;
-  });
-  const top4 = [...porHora.map((v, h) => ({ v, h }))].sort((a, b) => b.v - a.v).slice(0, 4).map((x) => x.h);
-  return {
-    conInteraccion, tasaInteraccion: razon(conInteraccion, sesiones),
-    serie: fechas.map((d) => ({ fecha: d, valor: sesionesDia(d) })),
-    seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: sesionesDia(f) }; }),
-    porHora, horasPico: top4, pctHorasPico: razon(suma(top4, (h) => porHora[h]), sesiones),
-    porDiaSemana: porDiaSemana.map((v, i) => (veces[i] ? v / veces[i] : null)),
+  const crudo = new Map(data.web.map((w) => [w.fecha, w]));
+  const ids = cfg.web.fuentes.map((f) => f.id);
+  const ventana = (desde, hasta) => {
+    const c = Object.fromEntries(ids.map((id) => [id, { sesiones: 0, usuarios: 0, conInteraccion: 0, segundos: 0, movil: 0 }]));
+    const vistas = cfg.web.paginas.map(() => 0);
+    let dias = 0;
+    for (const d of rango(desde, hasta)) {
+      const w = crudo.get(d), x = detDia.get(d);
+      if (!w || !x) continue;
+      dias++;
+      for (const id of ids) {
+        c[id].sesiones += w.fuentes[id].sesiones; c[id].movil += w.fuentes[id].movil;
+        c[id].usuarios += x.usuarios[id]; c[id].conInteraccion += x.conInteraccion[id]; c[id].segundos += x.segundos[id];
+      }
+      x.vistas.forEach((n, i) => { vistas[i] += n; });
+    }
+    const t = (k) => suma(ids, (id) => c[id][k]);
+    return { c, vistas, dias, sesiones: t('sesiones'), usuarios: t('usuarios'), conInteraccion: t('conInteraccion'), segundos: t('segundos'), movil: t('movil') };
   };
+  const a = ventana(P.desde, P.hasta), b = ventana(P.compararDesde, P.compararHasta);
+  const porDia = (v, k) => (v.dias ? v[k] / v.dias : null);
+  const pct = mayorResto(ids.map((id) => a.c[id].sesiones));
+  const canales = cfg.web.fuentes.map((f, i) => {
+    const x = a.c[f.id];
+    return { id: f.id, nombre: f.nombre, pauta: !!f.deClics, sesiones: x.sesiones, pct: pct[i], usuarios: x.usuarios, tasa: razon(x.conInteraccion, x.sesiones), segundos: razon(x.segundos, x.conInteraccion) };
+  }).sort((p, q) => q.sesiones - p.sesiones);
+  const totalVistas = suma(a.vistas, (n) => n);
+  const pctVistas = mayorResto(a.vistas);
+  const paginas = cfg.web.paginas.map((p, i) => ({ id: p.id, ruta: p.ruta, nombre: p.nombre, vistas: a.vistas[i], pct: pctVistas[i], desde: p.desde }))
+    .filter((p) => p.vistas > 0).sort((p, q) => q.vistas - p.vistas);
+  // usuarios activos por día de la semana × hora: promedio de los días de ese tipo en el período
+  const matriz = Array.from({ length: 7 }, () => new Array(24).fill(0)), veces = new Array(7).fill(0);
+  const fechas = rango(P.desde, P.hasta);
+  fechas.forEach((d) => { const x = detDia.get(d); if (!x) return; const w = diaSemana(d); veces[w]++; x.usuariosPorHora.forEach((n, h) => { matriz[w][h] += n; }); });
+  const promedio = matriz.map((fila, w) => fila.map((n) => (veces[w] ? Math.round(n / veces[w]) : null)));
+  let pico = { dia: 0, hora: 0, v: -1 };
+  promedio.forEach((fila, w) => fila.forEach((n, h) => { if (n != null && n > pico.v) pico = { dia: w, hora: h, v: n }; }));
+  const usuariosDia = (d) => { const x = detDia.get(d); return x ? suma(ids, (id) => x.usuarios[id]) : null; };
+  const desfase = diasEntre(P.compararDesde, P.desde);
+  return {
+    sesiones: a.sesiones, usuariosPorDia: porDia(a, 'usuarios'), usuariosPorDiaPrevio: porDia(b, 'usuarios'),
+    cambioUsuarios: cambioPct(porDia(a, 'usuarios'), porDia(b, 'usuarios')), cambioSesiones: cambioPct(porDia(a, 'sesiones'), porDia(b, 'sesiones')),
+    conInteraccion: a.conInteraccion, tasaInteraccion: razon(a.conInteraccion, a.sesiones), tasaInteraccionPrevia: razon(b.conInteraccion, b.sesiones),
+    segundosMedios: razon(a.segundos, a.conInteraccion), movil: razon(a.movil, a.sesiones),
+    vistas: totalVistas, canales, paginas, matriz: promedio, pico,
+    serie: fechas.map((d) => ({ fecha: d, valor: usuariosDia(d) })),
+    seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: usuariosDia(f) }; }),
+  };
+}
+
+// Interacción de un canal del sitio en dos ventanas de días (para las alertas)
+export function interaccionCanal(data, id, desde, hasta) {
+  const det = detalleDe(data);
+  const crudo = new Map(data.web.map((w) => [w.fecha, w]));
+  let s = 0, q = 0;
+  det.web.forEach((x) => { if (x.fecha < desde || x.fecha > hasta) return; s += crudo.get(x.fecha).fuentes[id].sesiones; q += x.conInteraccion[id]; });
+  return { sesiones: s, tasa: razon(q, s) };
 }
 
 // ══════════ 2.1 Reparto por producto y por canal contra objetivo ══════════
