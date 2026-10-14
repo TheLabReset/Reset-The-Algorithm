@@ -3,7 +3,7 @@
 
 import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js';
 import { detallar } from '../muestra/detalle.js';
-import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarMeses, semanaEn, ETAPAS, plataformaDe, objetivoPlataforma } from './base.js';
+import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarMeses, semanaEn, ETAPAS, plataformaDe, objetivoPlataforma, porHoraDelDia, diaDestacado } from './base.js';
 
 const cache = new WeakMap();
 export const detalleDe = (data) => { if (!cache.has(data)) cache.set(data, detallar(data)); return cache.get(data); };
@@ -189,7 +189,7 @@ export function leeBusquedasDetalle(data, P) {
   };
 }
 
-// ══════════ 1.4 Redes: TikTok y temas de la marca ══════════
+// ══════════ 1.4 Redes: hashtags del rubro en TikTok ══════════
 export function leeRedes(data, P) {
   const det = detalleDe(data);
   const mes = P.hasta.slice(0, 7), mesComp = P.compararHasta.slice(0, 7);
@@ -197,14 +197,7 @@ export function leeRedes(data, P) {
     const m = h.meses.find((x) => x.mes === mes), c = h.meses.find((x) => x.mes === mesComp);
     return { tag: h.tag, propia: h.propia, ...m, interaccion: razon(m.interacciones, m.vistas), interaccionPrevia: c ? razon(c.interacciones, c.vistas) : null };
   }).sort((a, b) => b.interaccion - a.interaccion);
-  const t = det.temas.find((x) => x.mes === mes), tc = det.temas.find((x) => x.mes === mesComp);
-  const tono = (x) => (x.menciones ? (x.positivas - x.negativas) / x.menciones : null);
-  const temas = data.config.temas.map((cfgT, i) => {
-    const x = t.porTema[i], y = tc?.porTema[i];
-    return { id: cfgT.id, nombre: cfgT.nombre, menciones: x.menciones, positivas: x.positivas, negativas: x.negativas, neutras: x.neutras, tono: tono(x), tonoPrevio: y ? tono(y) : null };
-  }).sort((a, b) => b.menciones - a.menciones);
-  const peor = [...temas].filter((x) => x.tono != null && x.menciones >= data.config.metodo.casosMinimos).sort((a, b) => a.tono - b.tono)[0];
-  return { mes, hashtags, temas, menciones: t.menciones, sinTema: t.sinTema, pideLectura: peor && peor.tono <= -0.25 ? peor : null };
+  return { mes, hashtags };
 }
 
 // ══════════ 1.5 Competencia: lectura del mes, sin comparación ══════════
@@ -266,21 +259,21 @@ export function leeGa4(data, P) {
   const pctVistas = mayorResto(a.vistas);
   const paginas = cfg.web.paginas.map((p, i) => ({ id: p.id, ruta: p.ruta, nombre: p.nombre, vistas: a.vistas[i], pct: pctVistas[i], desde: p.desde }))
     .filter((p) => p.vistas > 0).sort((p, q) => q.vistas - p.vistas);
-  // usuarios activos por día de la semana × hora: promedio de los días de ese tipo en el período
+  // Cuándo: usuarios activos promedio en cada hora del día, y usuarios activos al día según el día de la semana.
+  // Por día se usa el total diario de GA4: sumar las horas contaría dos veces a quien entra en dos horas distintas.
   const matriz = Array.from({ length: 7 }, () => new Array(24).fill(0)), veces = new Array(7).fill(0);
   const fechas = rango(P.desde, P.hasta);
   fechas.forEach((d) => { const x = detDia.get(d); if (!x) return; const w = diaSemana(d); veces[w]++; x.usuariosPorHora.forEach((n, h) => { matriz[w][h] += n; }); });
-  const promedio = matriz.map((fila, w) => fila.map((n) => (veces[w] ? Math.round(n / veces[w]) : null)));
-  let pico = { dia: 0, hora: 0, v: -1 };
-  promedio.forEach((fila, w) => fila.forEach((n, h) => { if (n != null && n > pico.v) pico = { dia: w, hora: h, v: n }; }));
   const usuariosDia = (d) => { const x = detDia.get(d); return x ? suma(ids, (id) => x.usuarios[id]) : null; };
+  const horas = porHoraDelDia(matriz, veces);
+  const porDiaSemana = Array.from({ length: 7 }, (_, w) => { const ds = fechas.filter((d) => diaSemana(d) === w && usuariosDia(d) != null); return ds.length ? suma(ds, usuariosDia) / ds.length : null; });
   const desfase = diasEntre(P.compararDesde, P.desde);
   return {
     sesiones: a.sesiones, usuariosPorDia: porDia(a, 'usuarios'), usuariosPorDiaPrevio: porDia(b, 'usuarios'),
     cambioUsuarios: cambioPct(porDia(a, 'usuarios'), porDia(b, 'usuarios')), cambioSesiones: cambioPct(porDia(a, 'sesiones'), porDia(b, 'sesiones')),
     conInteraccion: a.conInteraccion, tasaInteraccion: razon(a.conInteraccion, a.sesiones), tasaInteraccionPrevia: razon(b.conInteraccion, b.sesiones),
     segundosMedios: razon(a.segundos, a.conInteraccion), movil: razon(a.movil, a.sesiones),
-    vistas: totalVistas, canales, paginas, matriz: promedio, pico,
+    vistas: totalVistas, canales, paginas, porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: diaDestacado(porDiaSemana, cfg.metodo.margenParecido),
     serie: fechas.map((d) => ({ fecha: d, valor: usuariosDia(d) })),
     seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: usuariosDia(f) }; }),
   };

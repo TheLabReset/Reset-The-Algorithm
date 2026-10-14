@@ -1,7 +1,7 @@
 // Lecturas de la capa Lee. Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
 import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo, fecha } from '../sistema/formato.js';
-import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase } from './comun.js';
+import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto } from './comun.js';
 
 const P = (v) => v.periodo;
 
@@ -109,15 +109,6 @@ export function redesTiktok(v) {
   return { titulo: 'Hashtags del rubro en TikTok', lectura: `${h.tag} tiene la mayor interacción del mes: ${porcentaje(h.interaccion * 100, 1)} de las vistas, en ${numero(h.publicaciones)} publicaciones.` };
 }
 
-export function redesTemas(v) {
-  const r = v.lee.redes;
-  const t = r.pideLectura;
-  const titulo = 'Qué se dice de Fit Lab';
-  if (!t) return { titulo, lectura: `${capital(numero(r.menciones))} menciones en el mes. Ningún tema con casos suficientes tiene sentimiento claramente negativo.` };
-  const giro = t.tonoPrevio != null && t.tonoPrevio - t.tono > 0.15 ? `; en ${comparacionTexto(P(v))} el sentimiento era mejor` : '';
-  return { titulo, lectura: `«${t.nombre}» es el tema con peor sentimiento: ${numero(t.negativas)} de sus ${numero(t.menciones)} menciones son negativas${giro}.` };
-}
-
 export function competenciaLectura(v) {
   const m = v.lee.competencia.marcas;
   const propia = m.find((x) => x.propia);
@@ -156,5 +147,5 @@ export function webPaginas(v) {
 
 export function webHoras(v) {
   const w = v.lee.web;
-  return { titulo: 'Cuándo están activos', lectura: `El pico es el ${diaSemanaLargo(w.pico.dia)} a las ${w.pico.hora}:00, con ${numero(w.pico.v)} usuarios activos en promedio. De lunes a viernes, las noches también concentran visitas.` };
+  return { titulo: 'Cuándo están activos', lectura: `Hay más usuarios activos ${horasTexto(w.horasAltas)}. ${diasTexto(w.porDiaSemana, w.diaMayor, 'usuarios activos al día', (n) => numero(Math.round(n)))}` };
 }

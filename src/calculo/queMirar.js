@@ -61,8 +61,6 @@ export function queMirar(data, P, v) {
   const pc = v.analiza.pautaCrm;
   if (pc.estado === 'ok') for (const p of pc.plataformas) if (p.porCadaReportado != null && p.porCadaReportado < UMBRALES.llegaAlCrm) add({ id: 'llega-poco', nivel: 'revisar', fuente: p.nombre, sostiene: '2.2', datos: { plataforma: p.nombre, de100: Math.round(p.porCadaReportado * 100), reportados: p.reportados, enCrm: p.enCrm } });
 
-  const re = v.lee.redes;
-  if (re.estado === 'ok' && re.pideLectura) add({ id: 'tema-negativo', nivel: 'revisar', fuente: 'Escucha social', sostiene: '1.4', datos: { tema: re.pideLectura.nombre, tono: re.pideLectura.tono, tonoPrevio: re.pideLectura.tonoPrevio, menciones: re.pideLectura.menciones } });
 
   const bu = v.lee.busquedas;
   if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'oportunidad', fuente: 'Google Trends', sostiene: '1.3', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });

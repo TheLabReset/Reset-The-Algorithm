@@ -1,9 +1,9 @@
 // Capa 2 · Analiza: lo que aparece al cruzar fuentes. Lo de universos distintos se compara, nunca se suma.
 // No calcula: pinta v.analiza y los textos de src/textos/analiza.js.
 import { Bloque, Tabla } from '../sistema/Componentes.jsx';
-import { Acumulado, Columnas, Barras, DosLineas, MapaCalor } from '../sistema/graficos/Graficos.jsx';
+import { Acumulado, Columnas, Barras, DosLineas } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, variacion } from '../sistema/formato.js';
-import { MarcoCapa, SeccionDe } from './comun.jsx';
+import { MarcoCapa, SeccionDe, HorasYDias } from './comun.jsx';
 import { mesTexto } from '../textos/comun.js';
 import * as A from '../textos/analiza.js';
 
@@ -77,8 +77,8 @@ export default function Analiza({ capa, vista: v }) {
       <SeccionDe def={s24} vista={v}>
         {a.horaDia.estado !== 'ok' ? <Bloque titulo="Cuándo entra el lead" universo="crm" estado={sinDato(a.horaDia.estado)} /> : (
           <Bloque universo="crm" {...A.hora(v)}
-            pie={<span>Promedio de leads que entran al CRM en cada hora, por día de la semana. Conviene leerlo junto al primer contacto, en el capítulo CRM de Lee.</span>}>
-            <MapaCalor matriz={a.horaDia.matriz} formato={(n) => (n == null ? 'sin dato' : numero(n, 1))} etiqueta="Leads por hora y día de la semana" />
+            pie={<span>Leads que entran al CRM: por hora, promedio de los días del mes; por día, promedio de ese día de la semana. En verde, las cuatro horas con más leads. Conviene leerlo junto al primer contacto, en el capítulo CRM de Lee.</span>}>
+            <HorasYDias porHora={a.horaDia.porHora} horasAltas={a.horaDia.horasAltas} porDiaSemana={a.horaDia.porDiaSemana} diaMayor={a.horaDia.diaMayor} que="Leads" formato={(n) => (n == null ? 'sin dato' : numero(n, n < 10 ? 1 : 0))} />
           </Bloque>
         )}
       </SeccionDe>

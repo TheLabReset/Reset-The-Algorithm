@@ -74,7 +74,8 @@ cada('GA4: canales suman 100, usuarios ≤ sesiones y no hay leads en el sitio',
   assert.equal(suma(v.lee.web.canales, (f) => f.sesiones), v.lee.web.sesiones, id);
   assert.ok(v.lee.web.canales.every((c) => c.usuarios <= c.sesiones && c.tasa >= 0 && c.tasa <= 1), id);
   assert.ok(v.lee.web.movil >= 0 && v.lee.web.movil <= 1, id);
-  assert.ok(v.lee.web.matriz.flat().every((n) => n == null || n >= 0), id);
+  assert.ok([...v.lee.web.porHora, ...v.lee.web.porDiaSemana].every((n) => n == null || n >= 0), id);
+  assert.equal(v.lee.web.horasAltas.length, 4, id);
   assert.ok(!('solicitudes' in v.lee.web), 'GA4 no muestra leads');
 });
 cada('conversación: cada mes suma 100 y no hay puestos inventados', (v, id) => {
@@ -82,9 +83,14 @@ cada('conversación: cada mes suma 100 y no hay puestos inventados', (v, id) => 
   v.lee.conversacion.meses.forEach((m) => assert.equal(suma(m.marcas, (x) => x.pct), 100, `${id} ${m.mes}`));
   v.lee.conversacion.ranking.forEach((r) => r.rangos.forEach((x) => assert.ok(x >= 1, id)));
 });
-cada('hora × día: promedios no negativos', (v, id) => {
-  if (v.analiza.horaDia.estado !== 'ok') return;
-  v.analiza.horaDia.matriz.flat().forEach((x) => assert.ok(x === null || x >= 0, id));
+cada('hora y día: promedios no negativos y las horas de un día suman el día', (v, id) => {
+  const h = v.analiza.horaDia;
+  if (h.estado !== 'ok') return;
+  [...h.porHora, ...h.porDiaSemana].forEach((x) => assert.ok(x === null || x >= 0, id));
+  // el promedio de un día cualquiera (ponderado por cuántos hubo de cada tipo) es la suma de los promedios por hora
+  const dias = suma(h.veces, (x) => x);
+  const porDia = suma(h.porDiaSemana.map((x, i) => (x ?? 0) * h.veces[i]), (x) => x) / dias;
+  assert.ok(Math.abs(porDia - suma(h.porHora, (x) => x)) < 1e-6, id);
 });
 cada('ritmo: lo ejecutado se compara contra el plan de los mismos días', (v, id) => {
   if (v.analiza.ritmo.estado !== 'ok') return;
@@ -139,12 +145,6 @@ cada('el CRM por dentro cuadra: etapas, salidas, fuentes y atención', (v, id) =
   assert.equal(c.atencion.conRegistro + c.atencion.sinRegistro, c.etapas[1].entraron, id);
   assert.equal(suma(c.descarte.motivos, (m) => m.valor), c.descarte.total, id);
   c.campanas.forEach((k) => assert.ok(k.altas <= k.leads, `${id} ${k.nombre}`));
-});
-cada('los temas no superan las menciones de la marca y el tono va de −1 a 1', (v, id) => {
-  const r = v.lee.redes;
-  if (r.estado !== 'ok') return;
-  assert.equal(suma(r.temas, (t) => t.menciones) + r.sinTema, r.menciones, id);
-  r.temas.forEach((t) => assert.ok(t.tono == null || (t.tono >= -1 && t.tono <= 1), `${id} ${t.nombre}`));
 });
 cada('lo que llega al CRM no supera lo reportado salvo días sin dato de la plataforma', (v, id) => {
   const pc = v.analiza.pautaCrm;

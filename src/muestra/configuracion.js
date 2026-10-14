@@ -232,17 +232,6 @@ export const CONFIG = {
     { tag: '#limafit', publicaciones: 120, vistasPorPublicacion: 2900, interaccion: 0.061 },
     { tag: '#fitlab', publicaciones: 18, vistasPorPublicacion: 2100, interaccion: 0.074, crece: 1.4, propia: true },
   ],
-  // Conversación sobre Fit Lab por tema; tono: sentimiento neto de −1 a 1 (se muestra de 0 a 100); solo para la marca propia
-  temas: [
-    { id: 'precios', nombre: 'Precios y promociones', peso: 0.24, tono: 0.2 },
-    { id: 'clases', nombre: 'Clases grupales', peso: 0.18, tono: 0.55 },
-    { id: 'atencion', nombre: 'Atención en sede', peso: 0.13, tono: 0.05, desde: '2026-08', tonoDesde: -0.45 },
-    { id: 'maquinas', nombre: 'Máquinas y mantenimiento', peso: 0.12, tono: -0.15 },
-    { id: 'entrenadores', nombre: 'Entrenadores', peso: 0.1, tono: 0.5 },
-    { id: 'aforo', nombre: 'Horarios y aforo', peso: 0.09, tono: -0.2 },
-    { id: 'limpieza', nombre: 'Limpieza y duchas', peso: 0.08, tono: -0.1 },
-  ],
-  sinTema: 0.06,
   // Competencia en redes: publicaciones del mes, interacción por publicación y anuncios activos (biblioteca de anuncios de Meta)
   // Competencia en Facebook: lectura del mes (sin comparación: en producción la biblioteca de anuncios y las
   // publicaciones se leen al día, no hay historia de la competencia). sentimiento: reparto de los comentarios en sus

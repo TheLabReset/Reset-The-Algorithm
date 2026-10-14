@@ -1,9 +1,9 @@
 // Capa 1 · Lee: lo que dice cada fuente, por separado. No calcula: pinta la vista y las lecturas de src/textos.
 import { Bloque, Cifra, Tabla, Resumen } from '../sistema/Componentes.jsx';
 import { useState } from 'react';
-import { Linea, Bala, Barras, Etapas, Reticula, Pesas, Franja, Histograma, Dispersion, MapaCalor } from '../sistema/graficos/Graficos.jsx';
+import { Linea, Bala, Barras, Etapas, Reticula, Franja, Histograma, Dispersion } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, compacto, variacion, rangoFechas, fecha, diaSemanaLargo, mesCorto, NO_MEDIDO } from '../sistema/formato.js';
-import { MarcoCapa, SeccionDe } from './comun.jsx';
+import { MarcoCapa, SeccionDe, HorasYDias } from './comun.jsx';
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 
@@ -185,16 +185,10 @@ export default function Lee({ capa, vista: v }) {
         {/* ───── 1.4 Redes ───── */}
         <SeccionDe def={s14} vista={v}>
           {v.lee.redes.estado !== 'ok' ? <Bloque titulo="Redes" universo="conversacion" estado={sinDato(v.lee.redes.estado)} /> : <>
-            <Bloque universo="conversacion" ancho="mitad" {...L.redesTiktok(v)} pie={<span>Lectura de {mesTexto(v.lee.redes.mes)} · interacción sobre vistas.</span>}>
+            <Bloque universo="conversacion" {...L.redesTiktok(v)} pie={<span>Lectura de {mesTexto(v.lee.redes.mes)} · interacción sobre vistas.</span>}>
               <Tabla etiqueta="Hashtags de TikTok" numericas={[1, 2, 3]}
                 columnas={['Hashtag', 'Interacción', 'Vistas', 'Publicaciones']}
                 filas={v.lee.redes.hashtags.map((h) => [h.tag, porcentaje(h.interaccion * 100, 1), compacto(h.vistas), numero(h.publicaciones)])} />
-            </Bloque>
-            <Bloque universo="conversacion" ancho="mitad" {...L.redesTemas(v)}
-              ayuda={<p>Sentimiento: va de 0 (todas las menciones negativas) a 100 (todas positivas); 50 es neutro. Solo se mide para Fit Lab. El punto hueco es {comparacionTexto(v.periodo)}.</p>}>
-              <Pesas etiqueta="Sentimiento de cada tema" min={0} max={100} centro={50} rotuloA={comparacionTexto(v.periodo)} rotuloB={periodoTexto(v.periodo)}
-                formato={(n) => (n == null ? NO_MEDIDO : numero(n))}
-                filas={v.lee.redes.temas.map((t) => ({ nombre: `${t.nombre} (${numero(t.menciones)})`, a: t.tonoPrevio == null ? null : Math.round(50 + 50 * t.tonoPrevio), b: t.tono == null ? null : Math.round(50 + 50 * t.tono) }))} />
             </Bloque>
           </>}
         </SeccionDe>
@@ -243,8 +237,8 @@ export default function Lee({ capa, vista: v }) {
                 filas={w.paginas.map((p) => ({ nombre: p.ruta, valor: p.vistas, nota: `${numero(p.pct)} de 100` }))} />
             </Bloque>
             <Bloque universo="web" {...L.webHoras(v)}
-              pie={<span>Promedio de usuarios activos en cada hora, por día de la semana, en el mes.</span>}>
-              <MapaCalor matriz={w.matriz} formato={(n) => (n == null ? 'sin dato' : numero(n))} etiqueta="Usuarios activos por hora y día de la semana" />
+              pie={<span>Por hora: usuarios activos en esa hora, promedio de los días del mes. Por día: usuarios activos al día, promedio de ese día de la semana. En verde, las cuatro horas con más usuarios.</span>}>
+              <HorasYDias porHora={w.porHora} horasAltas={w.horasAltas} porDiaSemana={w.porDiaSemana} diaMayor={w.diaMayor} que="Usuarios activos" formato={(n) => (n == null ? 'sin dato' : numero(Math.round(n)))} />
             </Bloque>
           </>}
         </SeccionDe>

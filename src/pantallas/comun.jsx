@@ -1,5 +1,7 @@
 // Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
 import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo } from '../sistema/Componentes.jsx';
+import { Histograma, Barras } from '../sistema/graficos/Graficos.jsx';
+import { diaSemanaLargo } from '../sistema/formato.js';
 import { alerta, bien } from '../textos/sugiere.js';
 import { seccionPorNumero } from '../capas/estructura.js';
 import { fechaCorta, numero } from '../sistema/formato.js';
@@ -48,5 +50,24 @@ export function SeccionDe({ def, vista, conAvisos = true, children }) {
       avisos={conAvisos ? <AvisosCapitulo avisos={[...alertasDe(vista), ...buenasDe(vista)].filter((a) => a.ir === def.id)} /> : null}>
       {children}
     </Seccion>
+  );
+}
+
+// Cuándo: promedio por hora del día (las cuatro más altas resaltadas) y por día de la semana, lado a lado
+export function HorasYDias({ porHora, horasAltas, porDiaSemana, diaMayor, formato, que }) {
+  const dias = porDiaSemana.map((valor, i) => ({ nombre: diaSemanaLargo(i), valor: valor == null ? null : Math.round(valor) }));
+  return (
+    <div className="q-horas">
+      <div>
+        <h4>Por hora del día</h4>
+        <Histograma etiqueta={`${que} en promedio en cada hora del día`} formato={formato} resaltar={horasAltas}
+          barras={porHora.map((valor, h) => ({ nombre: `${h}:00`, corto: `${h} h`, valor }))} alto={200} />
+      </div>
+      <div>
+        <h4>Por día de la semana</h4>
+        <Barras etiqueta={`${que} en promedio cada día de la semana`} formato={formato} resaltar={diaMayor == null ? undefined : dias[diaMayor].nombre}
+          filas={dias} />
+      </div>
+    </div>
   );
 }

@@ -4,7 +4,6 @@
 //  · campañas de un canal = el canal, día por día (gasto, impresiones, clics, leads)
 //  · palabras clave y términos de búsqueda = los clics y leads de Google Search
 //  · leads del sitio sin pauta repartidos por fuente sin reemplazo: cada etapa ≤ la anterior en cada fuente
-//  · temas de conversación ≤ menciones de la marca en el mes
 // Nada después del corte; lo que todavía puede pasar (descartes, etapas abiertas) queda abierto.
 
 import { crearAzar } from './azar.js';
@@ -152,24 +151,6 @@ export function detallar(data) {
     }),
   }));
 
-  // ── Temas de conversación sobre la marca propia, con tono ──
-  const azM = crearAzar(semillaDe(cfg.semilla, 'temas'));
-  const propia = data.conversacion.find((x) => x.propia);
-  const temas = meses.map((m) => {
-    const sem = semanasDelMes(m);
-    const menciones = propia.semanas.filter((s) => sem.includes(s.semana)).reduce((a, s) => a + s.menciones, 0);
-    const reparto = multinomial(azM, menciones, [...cfg.temas.map((x) => x.peso), cfg.sinTema]);
-    return {
-      mes: m, menciones, completo: sem.length > 0,
-      porTema: cfg.temas.map((x, i) => {
-        const tono = x.desde && m >= x.desde ? x.tonoDesde : x.tono;
-        const [positivas, neutras, negativas] = multinomial(azM, reparto[i], [0.7 * (1 + tono) / 2, 0.3, 0.7 * (1 - tono) / 2]);
-        return { id: x.id, menciones: reparto[i], positivas, neutras, negativas };
-      }),
-      sinTema: reparto.at(-1),
-    };
-  });
-
   // ── Competencia en redes ──
   const azR = crearAzar(semillaDe(cfg.semilla, 'redes'));
   const redes = cfg.redesMarcas.map((r) => ({
@@ -223,5 +204,5 @@ export function detallar(data) {
     return { fecha: w.fecha, conInteraccion, usuarios, segundos, vistas, porHora: multinomial(azW, sesiones, cfg.perfilHoraWeb), usuariosPorHora: multinomial(azW, usuariosDia, cfg.perfilHoraWeb) };
   });
 
-  return { campanas, palabras, terminos, programatica, crm, hashtags, temas, redes, regiones, web, meses };
+  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses };
 }

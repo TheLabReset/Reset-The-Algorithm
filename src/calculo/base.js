@@ -71,6 +71,21 @@ export function ventanaCanal(data, canal, desde, hasta) {
   return { inversion, impresiones, clics, leads, medidos, dias, cobertura: medidos / dias, sinDato, leadsPorDia: razon(leads, medidos), cpl: razon(inversion, leads), ctr: razon(clics, impresiones) };
 }
 
+// ── Hora del día: promedio de cada hora sobre todos los días medidos, y las cuatro horas más altas ──
+// sumaHD[díaDeSemana][hora] = suma del período; veces[díaDeSemana] = cuántos días de ese tipo entraron
+export function porHoraDelDia(sumaHD, veces) {
+  const n = veces.reduce((s, v) => s + v, 0);
+  const porHora = Array.from({ length: 24 }, (_, h) => (n ? sumaHD.reduce((s, f) => s + f[h], 0) / n : null));
+  const altas = porHora.map((v, h) => ({ v, h })).filter((x) => x.v != null).sort((a, b) => b.v - a.v).slice(0, 4).map((x) => x.h).sort((a, b) => a - b);
+  return { porHora, altas };
+}
+
+// El día de la semana con más: solo si se separa del más bajo por más del margen; si no, los días se parecen (null)
+export function diaDestacado(porDiaSemana, margen) {
+  const xs = porDiaSemana.map((v, i) => ({ v, i })).filter((x) => x.v != null).sort((a, b) => b.v - a.v);
+  return xs.length > 1 && xs[0].v / xs.at(-1).v - 1 >= margen ? xs[0].i : null;
+}
+
 // ── Pauta: una plataforma (Google Ads junta Search y Display). Un día cuenta solo si todos sus canales lo midieron ──
 export const plataformaDe = (cfg, canal) => cfg.plataformas.find((p) => p.canales.includes(canal));
 export function ventanaPlataforma(data, pl, desde, hasta) {

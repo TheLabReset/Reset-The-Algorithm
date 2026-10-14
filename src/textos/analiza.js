@@ -1,6 +1,6 @@
 // Lecturas de la capa Analiza: lo que aparece al cruzar fuentes. Observan; no ordenan.
 import { numero, dolares, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
-import { periodoTexto, mesTexto, capital, lista } from './comun.js';
+import { periodoTexto, mesTexto, capital, lista, horasTexto, diasTexto } from './comun.js';
 
 export function veredicto(v) {
   const r = v.analiza.rendimiento;
@@ -59,7 +59,7 @@ export function demanda(v) {
 
 export function hora(v) {
   const h = v.analiza.horaDia;
-  return { titulo: 'Leads por hora y día de la semana', lectura: `El pico es el ${diaSemanaLargo(h.pico.dia)} a las ${h.pico.hora}:00, con ${numero(h.pico.v, 1)} leads en promedio en esa hora.` };
+  return { titulo: 'Cuándo entran los leads', lectura: `Entran más leads ${horasTexto(h.horasAltas)}. ${diasTexto(h.porDiaSemana, h.diaMayor, 'leads al día', (n) => numero(Math.round(n)))}` };
 }
 
 export function sedes(v) {

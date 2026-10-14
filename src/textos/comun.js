@@ -27,6 +27,16 @@ export const conSigno = (cambio, decimales = 0) => variacion(cambio, decimales);
 export const capital = (t) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
 // Lista con «y»: a, b y c
+// Las horas más altas: «entre las 18:00 y las 22:00» si son seguidas; si no, «a las 7, 12, 19 y 20 h»
+export const horasTexto = (hs) => (hs.length > 1 && hs.every((h, i) => i === 0 || h === hs[i - 1] + 1)
+  ? `entre las ${hs[0]}:00 y las ${hs.at(-1) + 1}:00` : `a las ${lista(hs.map(String))} h`);
+// Día de la semana: el que más tiene, o que los siete se parecen (con su rango)
+export const diasTexto = (porDia, mayor, unidad, formato) => {
+  const vs = porDia.filter((x) => x != null);
+  return mayor == null ? `Los siete días se parecen: entre ${formato(Math.min(...vs))} y ${formato(Math.max(...vs))} ${unidad}.`
+    : `El día con más es el ${DIAS_SEMANA[mayor]}: unos ${formato(porDia[mayor])} ${unidad}.`;
+};
+const DIAS_SEMANA = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 export const lista = (xs) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`);
 
 // Cantidades chicas en letras (al inicio de una frase o en un sujeto): «dos campañas», «tres plataformas»

@@ -45,11 +45,6 @@ const ALERTAS = {
     dato: `De cada 100 leads que reporta, ${numero(d.de100)} están en el CRM (${numero(d.enCrm)} de ${numero(d.reportados)}).`,
     mirar: `Con quien administra el CRM, la conexión del formulario de ${d.plataforma} y los leads duplicados o de prueba.`,
   }),
-  'tema-negativo': (d) => ({
-    titulo: `Suben los comentarios negativos sobre «${d.tema.toLowerCase()}»`,
-    dato: `El sentimiento del tema está en ${numero(Math.round(50 + 50 * d.tono))} de 100, en ${numero(d.menciones)} menciones${d.tonoPrevio != null ? `; un año antes, en ${numero(Math.round(50 + 50 * d.tonoPrevio))}` : ''}.`,
-    mirar: 'Compartir las menciones con Fit Lab para que las revise el equipo de sedes. Desde la pauta no se corrige.',
-  }),
   'interaccion-cae': (d) => ({
     titulo: `Las visitas desde ${d.canal.toLowerCase()} interactúan menos`,
     dato: `${de100(d.ahora)} de cada 100 sesiones tuvo interacción; en ${mesTexto(d.mesAntes)}, ${de100(d.antes)}.${d.evento ? ` Coincide con «${d.evento.texto}», del ${dia(d.evento.fecha)}.` : ''}`,

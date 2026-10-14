@@ -5,7 +5,7 @@ import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js
 import { planDelDia } from '../muestra/generador.js';
 import {
   suma, razon, cambioPct, mayorResto, correlacion, indices, dentro, ventanaPlataforma, objetivoPlataforma, ventanaPauta, leadsPautaDia,
-  ventanaCrm, ventanaWeb, sumarMeses, finDeMes, semanaEn, ETAPAS,
+  ventanaCrm, ventanaWeb, sumarMeses, finDeMes, semanaEn, ETAPAS, porHoraDelDia, diaDestacado,
 } from './base.js';
 import { calcularIndice, bandaDe } from './indice.js';
 import { escenario } from './escenario.js';
@@ -217,10 +217,10 @@ export function armarVista(data, filtros, estado = {}) {
   const sumaHD = Array.from({ length: 7 }, () => new Array(24).fill(0));
   const veces = new Array(7).fill(0);
   fechas.forEach((d) => { const h = ix.horaDia.get(d); if (!h) return; veces[diaSemana(d)]++; h.forEach((v, j) => { sumaHD[diaSemana(d)][j] += v; }); });
-  const matriz = sumaHD.map((fila, i) => fila.map((v) => (veces[i] ? v / veces[i] : null)));
-  let pico = null;
-  matriz.forEach((f, i) => f.forEach((v, j) => { if (v != null && (!pico || v > pico.v)) pico = { v, dia: i, hora: j }; }));
-  const horaDia = estadoGrupo('crm') !== 'ok' ? { estado: estadoGrupo('crm') } : { estado: 'ok', universo: 'Leads del CRM por hora de entrada', matriz, pico, veces };
+  // Los leads se suman: el total de un día es la suma de sus horas
+  const horas = porHoraDelDia(sumaHD, veces);
+  const porDiaSemana = sumaHD.map((f, i) => (veces[i] ? suma(f, (v) => v) / veces[i] : null));
+  const horaDia = estadoGrupo('crm') !== 'ok' ? { estado: estadoGrupo('crm') } : { estado: 'ok', universo: 'Leads del CRM por hora de entrada', porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: diaDestacado(porDiaSemana, cfg.metodo.margenParecido), veces };
 
   // Sedes: leads del CRM del período contra la comparación (por día), y tasa de inscripción de 3 cohortes cerradas
   const tres = [sumarMeses(cohorteDesde.slice(0, 7), -2) + '-01', cohorteHasta];
