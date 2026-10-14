@@ -1,0 +1,132 @@
+<title>Tres capas de The Algorithm</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400..700&display=swap">
+<style>
+/* Concepto: el recorrido de la venta (lee, analiza, sugiere) como tres columnas de un mismo plano;
+   cada sección empieza con una franja numerada y termina con su universo escrito. */
+:root {
+  --fondo: #0a090f; --superficie: #100e16; --banda: #1c1a23; --borde: #33313b; --borde-control: #817f88;
+  --texto-1: #f6f5f9; --texto-2: #c7c6ce; --texto-3: #a5a3ac;
+  --acento: #ab91f2; --sobre-acento: #0a090f;
+  --f-cifra: 'Bebas Neue', 'Arial Narrow', sans-serif; --f-texto: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --fondo: #f6f5f9; --superficie: #fcfbfe; --banda: #edecf1; --borde: #dedde3; --borde-control: #817f88;
+  --texto-1: #100e16; --texto-2: #4d4b56; --texto-3: #66646f; --acento: #6f42c1; --sobre-acento: #ffffff; color-scheme: light; } }
+:root[data-theme="light"] {
+  --fondo: #f6f5f9; --superficie: #fcfbfe; --banda: #edecf1; --borde: #dedde3; --borde-control: #817f88;
+  --texto-1: #100e16; --texto-2: #4d4b56; --texto-3: #66646f; --acento: #6f42c1; --sobre-acento: #ffffff; color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto-1); font: 400 15px/1.55 var(--f-texto); }
+.envoltura { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 72px; display: grid; gap: 48px; }
+h1 { font: 400 clamp(40px, 7vw, 76px)/0.92 var(--f-cifra); margin: 0; letter-spacing: 0.01em; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--acento); }
+.lead { color: var(--texto-2); max-width: 70ch; margin: 14px 0 0; text-wrap: pretty; }
+.flujo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 16px; align-items: start; }
+.capa { background: var(--superficie); border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; display: grid; }
+.capa-cab { padding: 20px 20px 16px; border-bottom: 1px solid var(--borde); display: grid; gap: 6px; }
+.capa-cab .num { font: 400 64px/0.8 var(--f-cifra); color: var(--acento); }
+.capa-cab h2 { margin: 0; font: 700 26px/1.1 var(--f-texto); }
+.capa-cab p { margin: 0; color: var(--texto-2); font-size: 14px; }
+.veredicto { margin: 0; padding: 14px 20px; font-size: 14px; color: var(--texto-1); border-bottom: 1px solid var(--borde); }
+.veredicto b { color: var(--texto-3); font-weight: 600; font-size: 12px; display: block; margin-bottom: 2px; }
+.seccion { display: grid; grid-template-columns: 52px 1fr; border-bottom: 1px solid var(--borde); }
+.seccion:last-child { border-bottom: 0; }
+.seccion .n { background: var(--banda); font: 400 24px/1 var(--f-cifra); color: var(--texto-2); padding: 14px 0 0; text-align: center; border-right: 1px solid var(--borde); }
+.seccion .cuerpo { padding: 14px 16px 16px; display: grid; gap: 6px; min-width: 0; }
+.seccion h3 { margin: 0; font: 640 15px/1.3 var(--f-texto); }
+.universo { font-size: 12px; color: var(--texto-2); border: 1px dashed var(--borde-control); border-radius: 6px; padding: 1px 7px; justify-self: start; }
+.formas { margin: 0; font-size: 13px; color: var(--texto-3); }
+.formas b { color: var(--texto-2); font-weight: 600; }
+.nuevo { font-size: 11.5px; font-weight: 600; color: var(--sobre-acento); background: var(--acento); border-radius: 6px; padding: 0 6px; margin-left: 6px; }
+section.reglas { display: grid; gap: 16px; }
+section.reglas h2 { margin: 0; font: 700 24px/1.2 var(--f-texto); }
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.tarjeta { background: var(--superficie); border: 1px solid var(--borde); border-radius: 10px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.tarjeta h3 { margin: 0; font: 640 15px/1.3 var(--f-texto); }
+.tarjeta p { margin: 0; color: var(--texto-2); font-size: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.tabla { overflow-x: auto; border: 1px solid var(--borde); border-radius: 10px; background: var(--superficie); }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+th { color: var(--texto-3); font-weight: 600; font-size: 12px; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { color: var(--texto-2); white-space: nowrap; }
+.pie { font-size: 13px; color: var(--texto-3); border-top: 1px solid var(--borde); padding-top: 18px; }
+</style>
+
+<div class="envoltura">
+  <header>
+    <h1>Lee <em>→</em> analiza <em>→</em> sugiere</h1>
+    <p class="lead">The Algorithm pasa de cuatro capas a tres, en el orden del pitch de Reset. Cada capa abre con un veredicto (una cifra con su comparación) y se divide en secciones numeradas. Cada sección declara su universo: qué se está contando y de qué fuente. Lo que viene de universos distintos nunca comparte una tarjeta.</p>
+    <p class="lead">Cliente demo: <b>Reset Fit</b>, cadena ficticia de 12 gimnasios en Lima. Las capas viven en una configuración: para un cliente se agrega una o se quita otra sin tocar los componentes.</p>
+  </header>
+
+  <div class="flujo">
+    <article class="capa">
+      <div class="capa-cab"><span class="num">1</span><h2>Lee</h2><p>Lo que dice cada fuente, por separado y sin opinar. Una sección por fuente.</p></div>
+      <p class="veredicto"><b>Veredicto</b>Las cinco fuentes al día, con su fecha de corte, y la cifra del período: leads contra el año anterior.</p>
+      <div class="seccion"><span class="n">1.1</span><div class="cuerpo"><h3>Pauta pagada</h3><span class="universo">Leads de formularios · Meta, Google, TikTok</span><p class="formas"><b>Cifra:</b> leads y costo por lead. <b>Formas:</b> línea diaria con el año anterior y eventos; pequeños múltiplos por canal.</p></div></div>
+      <div class="seccion"><span class="n">1.2</span><div class="cuerpo"><h3>CRM: del lead a la inscripción</h3><span class="universo">Cohorte de leads del mes cerrado · CRM</span><p class="formas"><b>Cifra:</b> «8 de cada 100 se inscriben». <b>Formas:</b> etapas desde una base común; retícula de 100.</p></div></div>
+      <div class="seccion"><span class="n">1.3</span><div class="cuerpo"><h3>Búsquedas</h3><span class="universo">Interés relativo de 0 a 100 · no es volumen</span><p class="formas"><b>Cifra:</b> demanda de «gimnasio» contra el año anterior. <b>Formas:</b> línea semanal de 52 semanas; pesas por término.</p></div></div>
+      <div class="seccion"><span class="n">1.4</span><div class="cuerpo"><h3>Conversación en redes</h3><span class="universo">Menciones públicas · 6 gimnasios y «Otros»</span><p class="formas"><b>Cifra:</b> participación de Reset Fit. <b>Formas:</b> pendiente de hace un año contra ahora. Competidores reales, solo menciones de muestra.</p></div></div>
+      <div class="seccion"><span class="n">1.5</span><div class="cuerpo"><h3>Sitio web <span class="nuevo">nuevo</span></h3><span class="universo">Sesiones del sitio · las de pauta ya están en 1.1</span><p class="formas"><b>Cifra:</b> sesiones y solicitudes de prueba. <b>Formas:</b> franja de fuentes de tráfico; tabla de páginas con barra.</p></div></div>
+    </article>
+
+    <article class="capa">
+      <div class="capa-cab"><span class="num">2</span><h2>Analiza</h2><p>Cruza fuentes. Cada sección dice qué cruza con qué.</p></div>
+      <p class="veredicto"><b>Veredicto</b>La lectura que solo aparece al cruzar fuentes, calculada del dato: por ejemplo, si el canal más barato por lead también es el más barato por inscripción.</p>
+      <div class="seccion"><span class="n">2.1</span><div class="cuerpo"><h3>Rendimiento por canal</h3><span class="universo">Pauta × CRM</span><p class="formas"><b>Cifra:</b> costo por inscripción. <b>Formas:</b> pesas % de inversión contra % de leads; costo por lead y costo por inscripción en dos columnas alineadas, cada una con su escala; bala contra meta.</p></div></div>
+      <div class="seccion"><span class="n">2.2</span><div class="cuerpo"><h3>Ritmo de inversión <span class="nuevo">nuevo</span></h3><span class="universo">Pauta × plan de presupuesto</span><p class="formas"><b>Cifra:</b> % del plan ejecutado al cierre. <b>Forma:</b> inversión acumulada contra la recta del plan.</p></div></div>
+      <div class="seccion"><span class="n">2.3</span><div class="cuerpo"><h3>Demanda y respuesta <span class="nuevo">nuevo</span></h3><span class="universo">Búsquedas × pauta</span><p class="formas"><b>Formas:</b> dos líneas semanales alineadas en el mismo eje de tiempo, cada una con su escala (nunca doble eje).</p></div></div>
+      <div class="seccion"><span class="n">2.4</span><div class="cuerpo"><h3>Cuándo entra el lead</h3><span class="universo">Pauta × hora del CRM</span><p class="formas"><b>Forma:</b> mapa de calor hora × día, promedio por día.</p></div></div>
+      <div class="seccion"><span class="n">2.5</span><div class="cuerpo"><h3>Dónde crece</h3><span class="universo">CRM × sedes</span><p class="formas"><b>Formas:</b> lista por zona en una escala común; tasa de inscripción por sede.</p></div></div>
+    </article>
+
+    <article class="capa">
+      <div class="capa-cab"><span class="num">3</span><h2>Sugiere</h2><p>Qué hacer y cuánto mover. Cada sugerencia apunta a la sección que la sostiene.</p></div>
+      <p class="veredicto"><b>Veredicto</b>Índice de oportunidad de 0 a 100 con su valor anterior y qué lo mueve.</p>
+      <div class="seccion"><span class="n">3.1</span><div class="cuerpo"><h3>Índice de oportunidad</h3><span class="universo">Lectura del modelo · 5 componentes</span><p class="formas"><b>Formas:</b> bala de 0 a 100 con aportes que suman el índice; línea de 12 meses.</p></div></div>
+      <div class="seccion"><span class="n">3.2</span><div class="cuerpo"><h3>Sugerencias del modelo</h3><span class="universo">Estimaciones con supuestos declarados</span><p class="formas"><b>Formas:</b> tres tarjetas, cada una con su cifra, su rango y el enlace a la sección que la sostiene (por ejemplo, «Lo sostiene: 2.1»).</p></div></div>
+      <div class="seccion"><span class="n">3.3</span><div class="cuerpo"><h3>Proyección de los próximos 3 meses <span class="nuevo">nuevo</span></h3><span class="universo">Modelo probado contra los meses pasados</span><p class="formas"><b>Forma:</b> línea con banda de incertidumbre; el ancho de la banda sale del error real del mismo método en los meses anteriores.</p></div></div>
+    </article>
+  </div>
+
+  <section class="reglas">
+    <h2>Cómo se nota, sin leer, dónde empieza y termina cada cosa</h2>
+    <div class="tarjetas">
+      <div class="tarjeta"><h3>Una franja numerada abre cada sección</h3><p>Número grande (1.1, 2.3), nombre, fuentes con su fecha de corte y el universo. Ocupa todo el ancho: es imposible no ver que empezó otra cosa.</p></div>
+      <div class="tarjeta"><h3>Un riel une lo que es de la misma sección</h3><p>Una línea vertical a la izquierda recorre todos los bloques de la sección y se corta donde termina. Lo que queda fuera del riel es de otra sección.</p></div>
+      <div class="tarjeta"><h3>El universo va escrito</h3><p>Cada sección y cada tarjeta dicen qué cuentan. Leads de pauta, solicitudes web e inscripciones del CRM son universos distintos y nunca se suman en una misma cifra.</p></div>
+      <div class="tarjeta"><h3>Un índice fijo por capa</h3><p>Arriba, la lista de secciones de la capa con la que se está leyendo resaltada. En celular, una tira con la sección actual.</p></div>
+      <div class="tarjeta"><h3>Espacio entre secciones, no adornos</h3><p>Entre secciones hay el doble de espacio que entre bloques. Sin colores por sección: el color sigue siendo dato.</p></div>
+      <div class="tarjeta"><h3>Lo que el filtro no abre, lo dice</h3><p>Una sección que no sigue el período elegido (la cohorte del CRM, la proyección) cambia de superficie y lleva su propia fecha.</p></div>
+    </div>
+  </section>
+
+  <section class="reglas">
+    <h2>De las cuatro capas a las tres</h2>
+    <div class="tabla"><table>
+      <thead><tr><th>Antes</th><th>Ahora</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Captura de señales</td><td>1 · Lee (búsquedas, conversación y web), sin los puntajes inventados de 0 a 10</td></tr>
+        <tr><td>2 · Inteligencia de mercado</td><td>El índice y las sugerencias pasan a 3 · Sugiere; audiencias y pilares quedan fuera hasta tener data que los sostenga</td></tr>
+        <tr><td>3 · Activación estratégica</td><td>Canales, ritmo, hora y sedes pasan a 2 · Analiza</td></tr>
+        <tr><td>4 · Performance y optimización</td><td>Leads y embudo pasan a 1 · Lee; la competencia queda como conversación en 1.4, sin juicios</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="reglas">
+    <h2>Decisiones tomadas</h2>
+    <div class="tarjetas">
+      <div class="tarjeta"><h3>Identidad</h3><p>Violeta de la guía de la agencia, con tema oscuro por defecto y claro a un clic. Cada color tiene su token y su uso; ninguno queda huérfano.</p></div>
+      <div class="tarjeta"><h3>Sistema de diseño propio</h3><p>Se llama Quincha: la técnica limeña de caña y barro, liviana y flexible, que resiste temblores. Un sistema que se adapta por cliente sin romperse.</p></div>
+      <div class="tarjeta"><h3>Marca del cliente demo</h3><p>Reset Fit, con logo y guía de marca propios. Sus colores viven solo en su marca y nunca se confunden con los colores de dato.</p></div>
+    </div>
+  </section>
+
+  <p class="pie">THE LAB · Reset · 14 de octubre de 2026 · rama claude/modest-tesla-a7501f · docs/rediseno/tres-capas</p>
+</div>
