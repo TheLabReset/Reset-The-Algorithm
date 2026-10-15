@@ -68,6 +68,9 @@ export function revisar(archivos) {
       if (PROP_ESPACIO.test(prop)) for (const n of valor.matchAll(/(-?\d*\.?\d+)px/g)) if (Math.abs(+n[1]) > 2) err(ruta, `${prop} con ${n[0]} literal`);
       if (prop === 'border-radius' && !/^(var\(|50%|0|2px)/.test(valor.trim())) err(ruta, `border-radius literal: ${valor.trim()}`);
       if (prop === 'box-shadow' && !/^(var\(|none)/.test(valor.trim())) err(ruta, `box-shadow literal: ${valor.trim()}`);
+      // Sin franjas de resalte: una tarjeta con una barra de color al costado (o arriba) es el resalte de
+      // plantilla que el estándar prohíbe. Lo importante se resalta con el orden, el tamaño o el peso del texto.
+      if (/^border(-(top|right|bottom|left|inline|block)(-(start|end))?)?(-width)?$/.test(prop)) for (const n of valor.matchAll(/(\d*\.?\d+)px/g)) if (+n[1] > 2) err(ruta, `${prop} de ${n[0]}: franja de resalte; se resalta con orden, tamaño o peso, no con bordes gruesos`);
       if (/^(transition|animation)(-duration)?$/.test(prop) && /(^|[\s,])\d*\.?\d+m?s\b/.test(valor)) err(ruta, `duración literal en ${prop}: ${valor.trim()}`);
     }
   }

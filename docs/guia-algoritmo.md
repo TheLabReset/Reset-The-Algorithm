@@ -53,6 +53,7 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 - **Ventana arriba a la derecha.** Con calendario si sigue el período elegido («1 al 30 de setiembre»). Con alfiler si no lo sigue: una cohorte, «últimas 52 semanas», «lectura de setiembre», «anuncios activos al 30 de setiembre».
 - **Lectura:** dos frases como máximo. Dice lo que el gráfico no dice solo, y cada comparación dice frente a qué.
 - La ayuda (?) explica cómo se calcula. Los supuestos van ahí, no en el cuerpo.
+- **Sin franjas de resalte.** Ninguna tarjeta lleva una barra de color al costado para llamar la atención. Lo importante se resalta con el orden, el tamaño o el peso del texto. Vale también para cualquier página que acompañe al algoritmo (auditorías, propuestas). [`npm run sistema`]
 
 ## 6. Gráficos y tablas
 
@@ -69,6 +70,7 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
   - El nombre puede llevar un subtítulo gris («Search · Membresías»).
   - El costo por lead va en rojo si pasa su objetivo y en verde si no.
   - Se resalta la fila propia (la marca, el hashtag propio). [`Tabla`]
+- **Artes (anuncios, piezas, paneles):** el abanico, un mazo por dueño con sus tres piezas más recientes que se abre en abanico, y una ventana con todas. La marca propia va aparte, primero. [`Abanico`, [abanico.md](abanico.md)]
 - **Horas:** barras por hora del día con las cuatro más altas resaltadas, y barras por día de la semana al lado. GA4 entrega la hora y el día por separado, así que no se usan mapas de calor de día por hora para el sitio. [`HorasYDias`]
 - El contraste se mide con `npm run sistema`. Los pares de colores que conviven en un gráfico tienen mínimos propios.
 

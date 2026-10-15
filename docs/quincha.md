@@ -42,7 +42,7 @@ Tipografía, espacios, radios, duraciones y sombras también son tokens (`--t-*`
 
 ## 2. Cómo se separa sin cortar el flujo
 
-Seis reglas, en `src/sistema/componentes.css`:
+Siete reglas, en `src/sistema/componentes.css`:
 
 1. **Tres niveles de superficie:** página, capítulo y tarjeta. La profundidad la da el valor de la superficie, no las sombras ni los bordes gruesos.
 2. Cada capítulo abre con su **número y su pregunta** dentro del mismo panel, sin franjas a todo el ancho.
@@ -50,6 +50,7 @@ Seis reglas, en `src/sistema/componentes.css`:
 4. Lo que no sigue el período **dice su propia ventana**, con alfiler en vez de calendario.
 5. Cada tarjeta dice **su universo al pie** (pauta, CRM, sitio, búsquedas, conversación, modelo). Lo de universos distintos no se suma.
 6. **Una sola cifra grande por pantalla de lectura:** la del resumen. Adentro, las cifras acompañan.
+7. **Se resalta sin franjas.** Nada de tarjetas con una barra de color al costado o arriba, ni bordes gruesos: es el resalte de plantilla que delata un diseño armado en automático. Lo importante va primero, más grande o con más peso; la gravedad de algo se dice con una palabra («grave», «para revisar»), no con un color de borde. El chequeo marca cualquier borde de más de 2 px.
 
 ## 3. Tipografía
 
@@ -77,6 +78,8 @@ Están en `src/sistema/Componentes.jsx`. No calculan: reciben cifras ya armadas 
 | `ListaAlertas` | Qué mirar: lista numerada por nivel, cada fila se abre con el detalle |
 | `SugerenciaModelo` | La propuesta del modelo, con robot y una columna por plataforma |
 | `PanelLateral`, `Monitoreo` | Qué se monitorea |
+| `Abanico`, `VentanaAnuncios`, `ArteMuestra` | Las artes agrupadas por dueño: un mazo que se abre en abanico y una ventana con todas las piezas. Detalle en [abanico.md](abanico.md) |
+| `Dialogo` | La ventana modal genérica (`<dialog>` nativo): foco atrapado, solo se desplaza su cuerpo, el foco vuelve a quien la abrió |
 | `BarraDemo` | Los estados de la demo |
 
 ## 5. Gráficos
@@ -111,7 +114,7 @@ Reglas de forma:
 `npm run sistema` revisa el código real, no una lista aparte:
 
 1. Ningún color escrito a mano fuera de `tokens.css`.
-2. Tamaños de letra, espacios, radios, sombras y duraciones salen de tokens.
+2. Tamaños de letra, espacios, radios, sombras y duraciones salen de tokens. Ningún borde pasa de 2 px (sin franjas de resalte).
 3. **Nada huérfano:** todo primitivo lo usa un semántico, todo semántico lo usa un componente, y ningún componente usa un primitivo o un token que no existe.
 4. El oscuro por preferencia del sistema y el oscuro por botón son idénticos.
 5. **Contraste medido**, en los dos temas:

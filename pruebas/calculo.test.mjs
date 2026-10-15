@@ -209,3 +209,25 @@ test('la marca y su rubro solo se escriben en src/cliente.js', async () => {
   assert.deepEqual(fugas, [], 'la marca o el rubro quedaron escritos fuera de src/cliente.js');
   assert.ok(CONFIG.busquedas.some((b) => b.id === CLIENTE.busqueda), 'la búsqueda principal del cliente no está en la configuración');
 });
+
+// Abanico de anuncios: cada marca trae tantos anuncios como sus «anuncios activos»; la propia va aparte
+cada('el abanico tiene los mismos anuncios que la competencia y la marca propia aparte', (v, id) => {
+  const a = v.lee.anuncios, c = v.lee.competencia;
+  if (a.estado !== 'ok' || c.estado !== 'ok') return;
+  for (const m of c.marcas) {
+    const g = [a.propio, ...a.grupos].filter(Boolean).find((x) => x.nombre === m.nombre);
+    assert.equal(g ? g.anuncios.length : 0, m.anuncios, `${id} ${m.nombre}`);
+  }
+  assert.ok(!a.grupos.some((g) => g.propia), id);
+  for (let i = 1; i < a.grupos.length; i++) assert.ok(a.grupos[i - 1].anuncios.length >= a.grupos[i].anuncios.length, id);
+  for (const g of a.grupos) for (let i = 1; i < g.anuncios.length; i++) assert.ok((g.anuncios[i - 1].desde || '') >= (g.anuncios[i].desde || ''), id);
+});
+test('el abanico limpia lo que deja el scraper: enlaces e imágenes solo de Meta, sin contenido no se dibuja', async () => {
+  const { anuncio, agruparAnuncios } = await import('../src/calculo/anuncios.js');
+  const malo = anuncio({ id: 1, title: 'x', ad_library_link: 'javascript:alert(1)', image_url: 'https://evil.example/x.png' });
+  assert.equal(malo.enlace, null); assert.equal(malo.imagen, null);
+  const bueno = anuncio({ id: 2, title: 'y', start_date: 1760054400, ad_library_link: 'https://www.facebook.com/ads/library/?id=2', image_url: 'https://scontent.xx.fbcdn.net/v/a.jpg', platforms: ['FACEBOOK', 'AUDIENCE_NETWORK'] });
+  assert.equal(bueno.desde, '2025-10-10'); assert.deepEqual(bueno.plataformas, ['Facebook', 'Audience Network']); assert.ok(bueno.enlace && bueno.imagen);
+  const r = agruparAnuncios([{ nombre: 'Desconocida', anuncios: [bueno] }, { nombre: 'Marca', anuncios: [anuncio({ id: 3 })] }, { nombre: 'Propia', propia: true, anuncios: [bueno] }]);
+  assert.equal(r.sinContenido, 1); assert.equal(r.propio.nombre, 'Propia'); assert.deepEqual(r.grupos.map((g) => g.nombre), ['Sin identificar']);
+});

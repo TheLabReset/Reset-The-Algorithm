@@ -1,6 +1,6 @@
 // Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
 import { useState } from 'react';
-import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo } from '../sistema/Componentes.jsx';
+import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo, VentanaAnuncios } from '../sistema/Componentes.jsx';
 import { Histograma, Barras, Dispersion } from '../sistema/graficos/Graficos.jsx';
 import { diaSemanaLargo, compacto, mesCorto } from '../sistema/formato.js';
 import { comparacionTexto, tramoFechas } from '../textos/comun.js';
@@ -104,9 +104,14 @@ export function HorasYDias({ porHora, horasAltas, porDiaSemana, diaMayor, format
 }
 
 // Competencia: dispersión de interacción y sentimiento; al elegir un punto, su ficha al lado. Arranca en la marca propia.
-export function Competencia({ marcas, numero }) {
+// `anuncios`: la lista agrupada del abanico; si la marca elegida tiene anuncios, la ficha abre la misma ventana
+export function Competencia({ marcas, numero, anuncios, t, verSus, nota }) {
   const [elegida, setElegida] = useState(() => marcas.find((m) => m.propia)?.id);
+  const [abierta, setAbierta] = useState(null);
   const m = marcas.find((x) => x.id === elegida) || marcas[0];
+  const grupos = anuncios ? [anuncios.propio, ...anuncios.grupos].filter(Boolean) : [];
+  const suyos = grupos.find((g) => g.nombre === m.nombre);
+  const abiertoGrupo = grupos.find((g) => g.nombre === abierta) ?? null;
   return (
     <div className="q-competencia">
       <div>
@@ -124,7 +129,10 @@ export function Competencia({ marcas, numero }) {
           <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b></dd></div>
           <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
         </dl>
+        {suyos && <button type="button" className="q-boton" aria-haspopup="dialog" data-ver-anuncios={m.nombre} onClick={() => setAbierta(m.nombre)}>{verSus(suyos.anuncios.length)}</button>}
       </aside>
+      {anuncios && <VentanaAnuncios grupo={abiertoGrupo} onCerrar={() => setAbierta(null)} t={t} nota={nota}
+        volver={() => document.querySelector(`[data-ver-anuncios="${window.CSS.escape(abierta ?? '')}"]`)?.focus()} />}
     </div>
   );
 }

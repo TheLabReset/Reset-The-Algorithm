@@ -4,6 +4,7 @@ import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
   Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
+  ExternalLink, Play,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
 
@@ -536,6 +537,139 @@ export function BarraDemo({ opciones, valor, onCambiar }) {
     <div className="q-barra-demo" role="group" aria-label="Estados de la demo">
       <span><Layers size={14} aria-hidden="true" />Demo</span>
       {opciones.map((o) => <button key={o.valor} type="button" aria-pressed={o.valor === valor} onClick={() => onCambiar(o.valor)}>{o.texto}</button>)}
+    </div>
+  );
+}
+
+// ── Ventana modal genérica (<dialog> nativo): atrapa el foco, Escape la cierra, solo se desplaza su cuerpo.
+// El clic en el velo cierra solo si empezó en el velo. Al cerrar, el foco vuelve a quien la abrió (o a `volver`).
+export function Dialogo({ abierto, titulo, bajada, onCerrar, volver, children }) {
+  const ref = useRef(null);
+  const previo = useRef(null);
+  const enVelo = useRef(false);
+  const tituloId = useId();
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (abierto && !d.open) {
+      previo.current = document.activeElement;
+      d.showModal();
+      document.documentElement.classList.add('q-sin-desplazar');
+      d.querySelector('.q-dialogo-cerrar')?.focus();
+    }
+    if (!abierto && d.open) d.close();
+  }, [abierto]);
+  useEffect(() => () => document.documentElement.classList.remove('q-sin-desplazar'), []);
+  const alCerrar = () => {
+    document.documentElement.classList.remove('q-sin-desplazar');
+    const v = previo.current;
+    if (v?.isConnected && v.offsetParent !== null) v.focus(); else volver?.();
+    if (abierto) onCerrar?.();
+  };
+  return (
+    <dialog ref={ref} className="q-dialogo" aria-labelledby={tituloId} onClose={alCerrar}
+      onCancel={(e) => { e.preventDefault(); ref.current?.close(); }}
+      onPointerDown={(e) => { enVelo.current = e.target === e.currentTarget; }}
+      onClick={(e) => { if (e.target === e.currentTarget && enVelo.current) ref.current?.close(); enVelo.current = false; }}>
+      <div className="q-dialogo-marco">
+        <header className="q-dialogo-cab">
+          <div><h2 id={tituloId}>{titulo}</h2>{bajada && <p>{bajada}</p>}</div>
+          <button type="button" className="q-boton q-boton-quieto q-dialogo-cerrar" onClick={() => ref.current?.close()} aria-label="Cerrar"><X size={18} aria-hidden="true" /></button>
+        </header>
+        <div className="q-dialogo-cuerpo">{abierto ? children : null}</div>
+      </div>
+    </dialog>
+  );
+}
+
+// ── Pieza de muestra: la demo no reproduce anuncios reales. Composición neutra con el tema y el formato ──
+export function ArteMuestra({ a, grande = false }) {
+  const marca = a.formato === 'Video' ? <Play size={grande ? 18 : 12} aria-hidden="true" />
+    : a.formato === 'Carrusel' ? <span aria-hidden="true"><i /><i /><i /></span> : null;
+  const tema = <span className="q-arte-tema">{a.titulo}</span>;
+  return (
+    <span className={`q-arte q-arte-${a.arte ?? 0}${grande ? ' q-arte-grande' : ''}`}>
+      {a.arte ? <>{tema}<span className="q-arte-bloque" /></> : <><span className="q-arte-bloque" />{tema}</>}
+      {marca && <span className="q-arte-marca">{marca}</span>}
+    </span>
+  );
+}
+
+// ── Un anuncio entero, en la ventana. Una imagen que no carga sale; la tarjeta sigue sin ella ──
+function TarjetaAnuncio({ a, anunciante, t }) {
+  const [rota, setRota] = useState(false);
+  const meta = t.meta(a);
+  const texto = a.texto || t.texto(a);
+  return (
+    <article className="q-anuncio" data-anuncio={a.id}>
+      {a.imagen && !rota && <div className="q-anuncio-pieza"><img src={a.imagen} alt={`Imagen del anuncio de ${anunciante}`} loading="lazy" referrerPolicy="no-referrer" onError={() => setRota(true)} /></div>}
+      {!a.imagen && a.arte != null && <div className="q-anuncio-pieza"><ArteMuestra a={a} grande /></div>}
+      <div className="q-anuncio-cuerpo">
+        {a.titulo && <h3>{a.titulo}</h3>}
+        {texto && <p className="q-anuncio-texto">{texto}</p>}
+        {meta && <p className="q-anuncio-meta">{meta}</p>}
+        {a.enlace && (
+          <a className="q-anuncio-enlace" href={a.enlace} target="_blank" rel="noopener noreferrer">
+            Ver en la biblioteca de Meta<ExternalLink size={14} aria-hidden="true" /><span className="solo-lector"> (se abre en otra pestaña)</span>
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+// ── La ventana con todos los anuncios de un anunciante. La usan el abanico y la ficha de la competencia ──
+export function VentanaAnuncios({ grupo, onCerrar, volver, t, nota }) {
+  return (
+    <Dialogo abierto={!!grupo} onCerrar={onCerrar} volver={volver} titulo={grupo ? `Anuncios de ${grupo.nombre}` : ''}
+      bajada={grupo ? [t.bajada(grupo), nota].filter(Boolean).join(' · ') : null}>
+      {grupo && (
+        <div className="q-anuncios-grilla" data-anuncios={grupo.nombre}>
+          {grupo.anuncios.map((a) => <TarjetaAnuncio key={a.id} a={a} anunciante={grupo.nombre} t={t} />)}
+        </div>
+      )}
+    </Dialogo>
+  );
+}
+
+// ── El mazo: las tres piezas más recientes apiladas; con el mouse o el foco se abren en abanico ──
+function Mazo({ g, onAbrir, propio, t }) {
+  const [rotas, setRotas] = useState(() => new Set());
+  const conImagen = g.anuncios.filter((a) => a.imagen && !rotas.has(a.id)).slice(0, 3);
+  const cartas = conImagen.length ? conImagen : g.anuncios.slice(0, 3);
+  const pila = [...cartas].reverse(); // la más reciente se dibuja última: queda encima
+  const n = g.anuncios.length;
+  return (
+    <button type="button" className="q-mazo" onClick={() => onAbrir(g.nombre)} data-anunciante={g.nombre} aria-haspopup="dialog">
+      <span className="q-mazo-pila" aria-hidden="true">
+        {pila.map((a, i) => {
+          const conImg = a.imagen && conImagen.length;
+          return (
+            <span key={a.id} className={`q-carta${!conImg && a.arte == null ? ' q-carta-texto' : ''}`} style={{ '--d': i - (pila.length - 1) / 2 }} data-previa={a.id}>
+              {conImg ? <img src={a.imagen} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setRotas((r) => new Set(r).add(a.id))} />
+                : a.arte != null ? <ArteMuestra a={a} /> : <span>{a.titulo || a.texto}</span>}
+            </span>
+          );
+        })}
+      </span>
+      <span className="q-mazo-nombre">{g.nombre}{propio && <span className="q-mazo-propio">{t.propio}</span>}</span>
+      <span className="q-mazo-dato"><b>{t.cuenta(n)}</b>{t.detalle(g) && ` · ${t.detalle(g)}`}</span>
+      <span className="q-mazo-ver">{t.ver(n)}<ArrowRight size={14} aria-hidden="true" /></span>
+    </button>
+  );
+}
+
+// ── Abanico de anuncios: un mazo por anunciante (la marca propia primero, aparte) y la ventana con todos ──
+// `abierta` vive en quien lo usa, para que otro control pueda abrir la misma ventana. Los textos llegan en `t`.
+export function Abanico({ lista, abierta, onAbrir, t, nota }) {
+  const todos = [lista.propio, ...lista.grupos].filter(Boolean);
+  const grupo = todos.find((g) => g.nombre === abierta) ?? null;
+  const volver = () => document.querySelector(`[data-anunciante="${window.CSS.escape(abierta ?? '')}"]`)?.focus();
+  return (
+    <div className="q-anuncios">
+      <div className="q-mazos">{todos.map((g) => <Mazo key={g.nombre} g={g} onAbrir={onAbrir} propio={g === lista.propio} t={t} />)}</div>
+      {t.sinContenido && <p className="q-nota-bloque" data-sin-contenido>{t.sinContenido}</p>}
+      <VentanaAnuncios grupo={grupo} onCerrar={() => onAbrir(null)} volver={volver} t={t} nota={nota} />
     </div>
   );
 }

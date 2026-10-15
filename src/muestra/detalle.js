@@ -204,5 +204,29 @@ export function detallar(data) {
     return { fecha: w.fecha, conInteraccion, usuarios, segundos, vistas, porHora: multinomial(azW, sesiones, cfg.perfilHoraWeb), usuariosPorHora: multinomial(azW, usuariosDia, cfg.perfilHoraWeb) };
   });
 
-  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses };
+  // ── Anuncios de la competencia: uno por cada anuncio activo del mes (el mismo conteo que «anuncios activos»),
+  // con el formato ya repartido. Azar propio: no mueve ninguna otra serie. Sin imagen ni enlace: es muestra.
+  const azA = crearAzar(semillaDe(cfg.semilla, 'anuncios'));
+  const elegir = (items) => { let r = azA.u() * items.reduce((t, x) => t + x.peso, 0); for (const x of items) { r -= x.peso; if (r < 0) return x; } return items.at(-1); };
+  const finDe = Object.fromEntries(meses.map((m) => [m, dias.filter((d) => mesDe(d) === m).at(-1)]));
+  const temas = cfg.temasAnuncio.map((t) => ({ t, peso: 1 }));
+  const anuncios = meses.map((m) => ({
+    mes: m,
+    marcas: redes.map((r) => {
+      const mm = r.meses.find((x) => x.mes === m);
+      const lista = [];
+      mm.formatos.forEach((cuantos, f) => {
+        for (let k = 0; k < cuantos; k++) {
+          const desde = sumarDias(finDe[m], -Math.floor(azA.u() * cfg.diasMaxAnuncio));
+          lista.push({
+            id: `${r.id}-${m}-${lista.length + 1}`, tema: elegir(temas).t, formato: cfg.formatosAnuncio[f].nombre,
+            plataformas: elegir(cfg.plataformasAnuncio).plataformas, desde: desde < cfg.desde ? cfg.desde : desde, activo: true, arte: Math.floor(azA.u() * 3),
+          });
+        }
+      });
+      return { id: r.id, nombre: r.nombre, propia: r.propia, anuncios: lista };
+    }),
+  }));
+
+  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses, anuncios };
 }

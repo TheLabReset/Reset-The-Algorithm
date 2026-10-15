@@ -134,6 +134,7 @@
   /* ── Movimiento: corto y productivo; nada se anima por adorno ── */
   --d-110: 110ms;
   --d-latido: 1200ms; /* solo el esqueleto de carga */
+  --d-240: 240ms;     /* el abanico que se abre y la ventana que entra */
   --curva-productiva: cubic-bezier(0.2, 0, 0.38, 0.9);
 }
 
@@ -228,5 +229,5 @@
 :root[data-theme="light"] { color-scheme: light; }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --d-110: 0ms; --d-latido: 0ms; }
+  :root { --d-110: 0ms; --d-latido: 0ms; --d-240: 0ms; }
 }

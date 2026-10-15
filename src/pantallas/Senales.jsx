@@ -1,17 +1,19 @@
 // Capa 1 · Captura de señales: qué pasa afuera. Búsquedas, lo que se publica en el rubro y quién entra al sitio.
 // No calcula: pinta la vista y las lecturas de src/textos.
-import { Bloque, Cifra, Tabla, Resumen } from '../sistema/Componentes.jsx';
+import { useState } from 'react';
+import { Bloque, Cifra, Tabla, Resumen, Abanico } from '../sistema/Componentes.jsx';
 import { Linea, Barras, Franja } from '../sistema/graficos/Graficos.jsx';
 import { numero, porcentaje, compacto, variacion } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, sinDato, deltaCorto, partesConResto } from './comun.jsx';
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
-import { bandaTexto } from '../textos/capas.js';
+import { bandaTexto, anunciosLectura, textosDelAbanico } from '../textos/capas.js';
 import { CLIENTE } from '../cliente.js';
 
 export default function Senales({ capa, vista: v }) {
   const [s11, s12] = capa.secciones;
-  const b = v.lee.busquedas, r = v.lee.redes, w = v.lee.web, ix = v.sugiere.indice;
+  const b = v.lee.busquedas, r = v.lee.redes, w = v.lee.web, ix = v.sugiere.indice, an = v.lee.anuncios;
+  const [anunciosDe, setAnunciosDe] = useState(null);
   const ok = (x) => x.estado === 'ok';
   return (
     <MarcoCapa capa={capa} vista={v}>
@@ -44,6 +46,13 @@ export default function Senales({ capa, vista: v }) {
               destacada={r.hashtags.findIndex((h) => h.propia)}
               columnas={['Hashtag', 'Interacción', 'Vistas', 'Publicaciones']}
               filas={r.hashtags.map((h) => [h.tag, porcentaje(h.interaccion * 100, 1), compacto(h.vistas), numero(h.publicaciones)])} />
+          </Bloque>
+        )}
+        {an.estado !== 'ok' ? <Bloque titulo="Anuncios de la competencia" universo="conversacion" estado={sinDato(an.estado)} /> : (
+          <Bloque universo="conversacion" {...anunciosLectura(an)} alcance={`anuncios activos en ${mesTexto(an.mes)}`}
+            ayuda={<p>Anuncios activos en Facebook e Instagram de cada marca que se sigue, según la biblioteca de anuncios de Meta. Pasa el mouse por un mazo para abrirlo; un clic muestra todos sus anuncios.</p>}
+            pie={<span>Piezas de muestra: la demo no reproduce anuncios reales. En producción, la imagen, el texto y el enlace de cada anuncio llegan de la biblioteca de anuncios de Meta.</span>}>
+            <Abanico lista={an} abierta={anunciosDe} onAbrir={setAnunciosDe} t={textosDelAbanico(an, an.mes.slice(0, 4))} nota={`anuncios activos en ${mesTexto(an.mes)}`} />
           </Bloque>
         )}
       </SeccionDe>

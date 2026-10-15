@@ -248,6 +248,12 @@ export const CONFIG = {
     { id: 'fitlab', publicaciones: 20, interaccion: 340, anuncios: 12, crece: 0.6, propia: true, sentimiento: { positivo: 0.6, negativo: 0.1 }, palabras: ['primera semana', 'clase de prueba', 'coach'] },
   ],
   formatosAnuncio: [{ nombre: 'Imagen', peso: 0.45 }, { nombre: 'Video', peso: 0.38 }, { nombre: 'Carrusel', peso: 0.17 }],
+  // Anuncios de la competencia (biblioteca de anuncios de Meta). En la muestra no hay piezas reales: cada anuncio
+  // trae solo su tema, su formato, sus plataformas y desde cuándo corre. La pantalla lo dibuja como pieza de muestra.
+  // Los temas son del rubro, sin precios ni promesas: la demo no le atribuye mensajes a marcas reales (asumo).
+  temasAnuncio: ['Promoción de matrícula', 'Clases grupales', 'Sede nueva', 'Entrenamiento funcional', 'Plan anual', 'Clase de prueba', 'Reservas desde la app', 'Horario extendido'],
+  plataformasAnuncio: [{ plataformas: ['FACEBOOK', 'INSTAGRAM'], peso: 0.6 }, { plataformas: ['INSTAGRAM'], peso: 0.25 }, { plataformas: ['FACEBOOK'], peso: 0.15 }],
+  diasMaxAnuncio: 90, // un anuncio activo en el mes empezó a correr, como mucho, tantos días antes del cierre
 
   // Búsquedas por región: Google informa las regiones donde más se busca cada palabra (índice relativo, la primera = 100)
   regiones: ['Lima', 'Callao', 'La Libertad', 'Lambayeque', 'Piura', 'Ica', 'Junín', 'Áncash'],

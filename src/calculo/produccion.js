@@ -4,6 +4,8 @@
 import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js';
 import { detallar } from '../muestra/detalle.js';
 import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarMeses, semanaEn, ETAPAS, plataformaDe, objetivoPlataforma, porHoraDelDia, diaDestacado } from './base.js';
+import { agruparAnuncios, anuncioDeMuestra } from './anuncios.js';
+
 
 const cache = new WeakMap();
 export const detalleDe = (data) => { if (!cache.has(data)) cache.set(data, detallar(data)); return cache.get(data); };
@@ -223,6 +225,14 @@ export function leeCompetencia(data, P) {
     };
   }).sort((a, b) => b.interacciones - a.interacciones);
   return { mes, formatos: data.config.formatosAnuncio.map((f) => f.nombre), marcas };
+}
+
+// Anuncios activos de cada marca en el mes de la lectura, agrupados (la muestra no trae piezas: solo tema y formato)
+export function leeAnuncios(data, P) {
+  const mes = P.hasta.slice(0, 7);
+  const m = detalleDe(data).anuncios.find((x) => x.mes === mes);
+  if (!m) return null;
+  return { mes, ...agruparAnuncios(m.marcas.map((x) => ({ nombre: x.nombre, propia: x.propia, anuncios: x.anuncios.map(anuncioDeMuestra) }))) };
 }
 
 // ══════════ 1.6 Sitio (GA4): tráfico, sin leads ══════════

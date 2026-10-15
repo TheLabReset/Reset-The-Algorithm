@@ -34,6 +34,12 @@ test('permite bordes finos y valores tokenizados', () => {
   assert.deepEqual(conAdemas({ 'src/a.css': '.a { padding: 2px var(--e-2); border-radius: var(--r-control); margin: -1px; transition: color var(--d-110) var(--curva-productiva); }' }).errores, []);
 });
 
+test('atrapa franjas de resalte y deja pasar bordes finos', () => {
+  assert.ok(conAdemas({ 'src/a.css': '.a { border-left: 4px solid var(--acento); }' }).errores.some((e) => e.includes('franja de resalte')));
+  assert.ok(conAdemas({ 'src/a.css': '.a { border-top-width: 3px; }' }).errores.some((e) => e.includes('franja de resalte')));
+  assert.deepEqual(conAdemas({ 'src/a.css': '.a { border-left: 2px solid var(--texto-1); border: 1px solid var(--borde); }' }).errores, []);
+});
+
 test('atrapa primitivos usados en componentes y tokens sin declarar', () => {
   assert.ok(conAdemas({ 'src/a.css': '.a { color: var(--p-violeta-700); }' }).errores.some((e) => e.includes('primitivo --p-violeta-700')));
   assert.ok(conAdemas({ 'src/a.css': '.a { color: var(--inventado); }' }).errores.some((e) => e.includes('--inventado se usa')));

@@ -8,7 +8,7 @@ import { MarcoCapa, SeccionDe, HorasYDias, Competencia, sinDato, deltaCorto } fr
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import * as A from '../textos/analiza.js';
-import { embudoFuente, acumuladoLectura } from '../textos/capas.js';
+import { embudoFuente, acumuladoLectura, textosDelAbanico, verSusAnuncios } from '../textos/capas.js';
 
 export default function Rendimiento({ capa, vista: v }) {
   const [s41, s42, s43, s44, s45] = capa.secciones;
@@ -168,7 +168,9 @@ export default function Rendimiento({ capa, vista: v }) {
           <Bloque universo="conversacion" {...L.competenciaLectura(v)} alcance="últimas publicaciones · anuncios activos"
             ayuda={<><p>Interacción: reacciones, comentarios y compartidos de las publicaciones del mes. Sentimiento: los comentarios en esas publicaciones, clasificados en positivos, neutros y negativos; el índice va de 0 (todo negativo) a 100 (todo positivo) y 50 es neutro.</p><p>No se compara con otro período: de la competencia solo se lee lo que está publicado.</p></>}
             pie={<><span>Publicaciones de {periodoTexto(v.periodo)} · anuncios activos al {fecha(v.periodo.hasta)}</span><span>Facebook y biblioteca de anuncios de Meta · marcas reales con cifras de muestra: no describen su desempeño real</span></>}>
-            <Competencia marcas={v.lee.competencia.marcas} numero={numero} />
+            <Competencia marcas={v.lee.competencia.marcas} numero={numero} anuncios={v.lee.anuncios.estado === 'ok' ? v.lee.anuncios : null}
+              t={v.lee.anuncios.estado === 'ok' ? textosDelAbanico(v.lee.anuncios, v.lee.anuncios.mes.slice(0, 4)) : null} verSus={verSusAnuncios}
+              nota={v.lee.anuncios.estado === 'ok' ? `anuncios activos en ${mesTexto(v.lee.anuncios.mes)}` : null} />
           </Bloque>
           <Bloque universo="conversacion" {...L.competenciaAnuncios(v)} alcance={`anuncios activos al ${fecha(v.periodo.hasta)}`}
             pie={<span>Anuncios activos el último día del período, por formato.</span>}>
