@@ -417,7 +417,8 @@ export function IndiceCapa({ secciones, etiqueta, conResumen = true, capaId }) {
     if (!el) return;
     const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ block: 'start', behavior: quieto ? 'auto' : 'smooth' });
-    history.replaceState(null, '', '#' + (id === 'resumen' && capaId ? capaId : id));
+    // en un marco aislado (la página publicada) cambiar la dirección puede no estar permitido: el salto ya ocurrió
+    try { history.replaceState(null, '', '#' + (id === 'resumen' && capaId ? capaId : id)); } catch { /* sin dirección, igual baja */ }
   };
   return (
     <nav className="q-indice" aria-label={etiqueta}>
