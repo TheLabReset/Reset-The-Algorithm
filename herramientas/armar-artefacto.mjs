@@ -4,6 +4,7 @@
 // La salida es el contenido del <body> con su <title>: el publicador lo envuelve en su propio documento.
 import { build } from 'vite';
 import react from '@vitejs/plugin-react';
+import { CLIENTE } from '../src/cliente.js';
 import { readFileSync, writeFileSync, readdirSync, rmSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -28,8 +29,8 @@ const js = archivos.filter((f) => f.endsWith('.js')).map((f) => readFileSync(joi
 const css = archivos.filter((f) => f.endsWith('.css')).map((f) => readFileSync(join(assets, f), 'utf8')).join('\n');
 rmSync(tmp, { recursive: true, force: true });
 
-const html = `<title>The Algorithm · Fit Lab</title>
-<meta name="description" content="The Algorithm, by The Lab: demo con data de muestra de Fit Lab.">
+const html = `<title>The Algorithm · ${CLIENTE.nombre}</title>
+<meta name="description" content="The Algorithm, by The Lab: demo con data de muestra de ${CLIENTE.nombre}.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>${css}</style>
 <div id="root"></div>

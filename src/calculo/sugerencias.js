@@ -3,6 +3,7 @@
 
 import { sumarDias } from '../muestra/calendario.js';
 import { razon, ventanaCanal } from './base.js';
+import { CLIENTE } from '../cliente.js';
 
 // leads_c(I) = L_c · (I / I_c)^β : rendimientos decrecientes al mover presupuesto (β declarado en la configuración)
 const curva = (L, I, Inuevo, beta) => (I > 0 ? L * (Inuevo / I) ** beta : 0);
@@ -63,5 +64,5 @@ export function temporada(cfg, hasta) {
   const m = +hasta.slice(5, 7);
   const proximos = [1, 2, 3].map((k) => ((m - 1 + k) % 12) + 1);
   const pico = proximos.map((x) => ({ mes: x, factor: cfg.estacionalidad[x - 1] })).filter((x) => x.factor >= 1.1).sort((a, b) => b.factor - a.factor)[0];
-  return pico ? { id: 'temporada', sostiene: ['1.1', '2.2'], tipo: 'observacion', ...pico, supuestos: ['Estacionalidad de «gimnasio» en Google Trends, promedio 2022 a 2025'] } : null;
+  return pico ? { id: 'temporada', sostiene: ['1.1', '2.2'], tipo: 'observacion', ...pico, supuestos: [`Estacionalidad de «${CLIENTE.busqueda}» en Google Trends, promedio 2022 a 2025`] } : null;
 }

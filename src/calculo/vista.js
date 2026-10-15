@@ -11,6 +11,7 @@ import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
 import { queMirar, queVaBien } from './queMirar.js';
 import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeGa4, analizaReparto, analizaPautaCrm } from './produccion.js';
+import { CLIENTE } from '../cliente.js';
 
 export function periodoDesdeFiltros(cfg, { mes, comparar = 'anio' }) {
   const desde = mes + '-01', hasta = finDeMes(mes);
@@ -115,7 +116,7 @@ export function armarVista(data, filtros, estado = {}) {
   if (estadoGrupo('busquedas') === 'no-cargo') busquedas = { estado: 'no-cargo' };
   else if (!semPer.length) busquedas = { estado: 'sin-semanas' };
   else {
-    const g = data.busquedas.find((b) => b.id === 'gimnasio');
+    const g = data.busquedas.find((b) => b.id === CLIENTE.busqueda);
     const fin52 = data.semanas.filter((s) => sumarDias(s, 3) <= hasta).slice(-52);
     busquedas = {
       estado: 'ok', universo: 'Interés relativo de 0 a 100 en Google Trends (no es volumen)', semanas: semPer.length,
@@ -141,7 +142,7 @@ export function armarVista(data, filtros, estado = {}) {
     const ranking = data.conversacion.filter((b) => b.id !== 'otros').map((b) => ({ id: b.id, nombre: b.nombre, propia: b.propia, rangos: sovMes.map((mm) => mm.marcas.filter((x) => x.id !== 'otros').sort((p, q) => q.menciones - p.menciones).findIndex((x) => x.id === b.id) + 1) }));
     const rp = ranking.find((r) => r.propia).rangos;
     conversacion = {
-      estado: 'ok', universo: 'Menciones públicas en redes de 6 gimnasios y «Otros» (data de muestra)', meses: sovMes, ranking,
+      estado: 'ok', universo: `Menciones públicas en redes de ${cfg.conversacion.filter((x) => x.id !== 'otros').length} ${CLIENTE.rubroPlural} y «Otros» (data de muestra)`, meses: sovMes, ranking,
       propia: { actual: sovMes.at(-1).marcas.find((x) => x.propia).pct, inicio: sovMes[0].marcas.find((x) => x.propia).pct, puestoActual: rp.at(-1), mejor3: Math.min(...rp.slice(-3)), peor3: Math.max(...rp.slice(-3)) },
     };
   }
@@ -153,7 +154,7 @@ export function armarVista(data, filtros, estado = {}) {
   const plataformas = estadoGrupo('pauta') === 'ok' ? { estado: 'ok', universo: 'Lo que reporta cada plataforma', ...leePlataformas(data, P) } : { estado: estadoGrupo('pauta') };
   const crmDetalle = estadoGrupo('crm') === 'ok' ? { estado: 'ok', universo: 'Leads registrados en el CRM en el período', ...leeCrmDetalle(data, P) } : { estado: estadoGrupo('crm') };
   if (busquedas.estado === 'ok') Object.assign(busquedas, leeBusquedasDetalle(data, P));
-  const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'TikTok y conversación pública sobre Fit Lab', ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
+  const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: `TikTok y conversación pública sobre ${CLIENTE.nombre}`, ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
   const competencia = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'Publicaciones y anuncios de cada marca (cifras de muestra)', ...leeCompetencia(data, P) } : { estado: estadoGrupo('conversacion') };
 
   // ══════════════ CAPA 2 · ANALIZA ══════════════
@@ -194,7 +195,7 @@ export function armarVista(data, filtros, estado = {}) {
   // Demanda y respuesta: semanas de 52 hasta el período, búsqueda contra leads semanales de pauta
   const sem52 = data.semanas.filter((s) => sumarDias(s, 3) <= hasta).slice(-52);
   const leadsSemana = (s) => { let t = 0; for (let k = 0; k < 7; k++) { const v = leadsPautaDia(data, sumarDias(s, k)); if (v == null) return null; t += v; } return t; };
-  const gim = data.busquedas.find((b) => b.id === 'gimnasio');
+  const gim = data.busquedas.find((b) => b.id === CLIENTE.busqueda);
   const bus = sem52.map((s) => ({ fecha: s, valor: gim.semanas.find((x) => x.semana === s).indice }));
   const lea = sem52.map((s) => ({ fecha: s, valor: leadsSemana(s) }));
   const demandaRespuesta = estadoGrupo('pauta') !== 'ok' || estadoGrupo('busquedas') !== 'ok' ? { estado: 'no-cargo' } : sem52.length < 12 ? { estado: 'pocas-semanas' } : {

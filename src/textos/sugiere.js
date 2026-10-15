@@ -3,6 +3,7 @@
 // Lo que depende del cliente (su equipo, sus sedes) se conversa con él; nunca se le pide más al personal.
 import { numero, dolares, porcentaje, fecha } from '../sistema/formato.js';
 import { mesTexto, lista, capital, enLetras, tramoFechas, parecidoTexto } from './comun.js';
+import { CLIENTE } from '../cliente.js';
 
 const pct = (x, d = 0) => porcentaje(x * 100, d);
 const de100 = (x) => numero(Math.round(x * 100));
@@ -23,17 +24,17 @@ const ALERTAS = {
   'palabras-sin-conversion': (d) => ({
     titulo: `${d.palabras.length === 1 ? 'Una palabra clave gasta' : `${capital(enLetras(d.palabras.length, true))} palabras clave gastan`} y casi no trae${d.palabras.length === 1 ? '' : 'n'} leads`,
     dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} en el mes, ${pct(d.pct)} de la inversión en Search.`,
-    mirar: 'Si esas búsquedas corresponden a lo que ofrece Fit Lab. Si no, se pueden pausar o agregar como negativas en Search.',
+    mirar: `Si esas búsquedas corresponden a lo que ofrece ${CLIENTE.nombre}. Si no, se pueden pausar o agregar como negativas en Search.`,
   }),
   'contacto-lento': (d) => ({
     titulo: 'Más leads esperan más de un día por su primer contacto',
     dato: `${de100(d.ahora)} de cada 100 leads recibió su primer contacto en menos de un día; en ${mesTexto(d.mesAntes)}, ${de100(d.antes)}.${d.causa ? ` El CRM registra un cambio desde el ${dia(d.causaDesde)}: ${d.causa.toLowerCase()}.` : ''}`,
-    mirar: 'Conversar con Fit Lab si conviene ajustar el volumen de pauta a lo que el equipo puede atender mientras vuelve a estar completo.',
+    mirar: `Conversar con ${CLIENTE.nombre} si conviene ajustar el volumen de pauta a lo que el equipo puede atender mientras vuelve a estar completo.`,
   }),
   'fin-de-semana': (d) => ({
     titulo: 'Los leads del fin de semana esperan más',
     dato: `${de100(d.finDeSemana)} de cada 100 leads del sábado y el domingo esperó más de un día por su primer contacto; entre semana, ${de100(d.laborable)}.`,
-    mirar: 'Ver con Fit Lab si conviene poner más inversión de lunes a jueves, cuando el equipo responde en el día.',
+    mirar: `Ver con ${CLIENTE.nombre} si conviene poner más inversión de lunes a jueves, cuando el equipo responde en el día.`,
   }),
   'plataforma-vs-crm': (d) => ({
     titulo: 'La plataforma y el CRM no coinciden en cuál rinde más',
@@ -48,7 +49,7 @@ const ALERTAS = {
   'cierra-campana': (d) => ({
     titulo: `«${d.campana}» cierra en ${numero(d.faltan)} ${d.faltan === 1 ? 'día' : 'días'}`,
     dato: `La campaña del CRM termina el ${fecha(d.hasta)} y lleva ${numero(d.leads)} leads y ${numero(d.altas)} inscripciones desde que empezó.`,
-    mirar: `Que ${d.plataformas.length ? lista(d.plataformas) : 'la pauta que la empuja'} tenga inversión hasta el cierre, y conversar con Fit Lab qué mensaje sigue después.`,
+    mirar: `Que ${d.plataformas.length ? lista(d.plataformas) : 'la pauta que la empuja'} tenga inversión hasta el cierre, y conversar con ${CLIENTE.nombre} qué mensaje sigue después.`,
   }),
   'interaccion-cae': (d) => ({
     titulo: `Las visitas desde ${d.canal.toLowerCase()} interactúan menos`,
@@ -58,7 +59,7 @@ const ALERTAS = {
   'busqueda-sube': (d) => ({
     titulo: `Sube el interés por «${d.termino}»`,
     dato: d.sinBase ? 'Hace tres meses casi no se buscaba en Google; hoy sí.' : `En Google, ${numero(d.cambio)} % más interés que hace tres meses.`,
-    mirar: 'Si Fit Lab ofrece esa clase o piensa ofrecerla, se puede probar con una campaña chica de Search. Si no, queda anotado.',
+    mirar: `Si ${CLIENTE.nombre} ofrece esa clase o piensa ofrecerla, se puede probar con una campaña chica de Search. Si no, queda anotado.`,
   }),
 };
 
@@ -85,7 +86,7 @@ const BIEN = {
     mirar: 'Las piezas funcionan. Lo que falta revisar es la página a la que llevan (ver la alerta de GA4).',
   }),
   'mejor-sentimiento': (d) => ({
-    titulo: 'Fit Lab tiene el mejor sentimiento entre las marcas comparadas',
+    titulo: `${CLIENTE.nombre} tiene el mejor sentimiento entre las marcas comparadas`,
     dato: `${numero(d.indice)} de 100 en los comentarios de sus publicaciones; ${d.segundo}, ${numero(d.segundoIndice)}.`,
     mirar: 'El tono de las publicaciones funciona. Conviene mantenerlo.',
   }),

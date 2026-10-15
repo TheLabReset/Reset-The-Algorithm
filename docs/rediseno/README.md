@@ -1,5 +1,7 @@
 # Rediseño de The Algorithm
 
+> **Registro histórico.** Esta carpeta guarda cómo se llegó al diseño actual: la auditoría, la investigación, el plan y la galería de octubre de 2026. Algunas decisiones cambiaron después (de tres capas se pasó a cuatro, por ejemplo). Lo vigente está en [`docs/guia-algoritmo.md`](../guia-algoritmo.md), [`docs/quincha.md`](../quincha.md) y [`docs/nuevo-algoritmo.md`](../nuevo-algoritmo.md).
+
 | Fase | Entregable | Estado |
 |---|---|---|
 | 0 y 1 · Reconocimiento y auditoría | `auditoria/AUDITORIA.md`, `auditoria/CATALOGO-DE-BLOQUES.md`, `auditoria/capturas/` | Cerrada |

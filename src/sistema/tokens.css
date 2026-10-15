@@ -111,7 +111,8 @@
 
   /* ── Tipografía de la marca: Bricolage Grotesque para títulos y cifras, Atkinson Hyperlegible Next para leer ── */
   --f-titulo: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
-  --f-texto: 'Cifras Fit Lab', 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', Verdana, Arial, sans-serif;
+  --f-texto: 'Cifras de la marca', 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', Verdana, Arial, sans-serif;
+  --f-tabla: var(--f-texto); /* sin marca propia: Sofia Sans Semi Condensed; Fit Lab usa la de texto */
   --t-12: 0.75rem;  --t-13: 0.8125rem; --t-15: 0.9375rem; --t-17: 1.0625rem; --t-20: 1.25rem; --t-24: 1.5rem; --t-32: 2rem;
   --c-22: 1.375rem; --c-28: 1.75rem;
   --peso-lectura: 400; --peso-rotulo: 600; --peso-cifra: 600; --peso-titulo: 700;

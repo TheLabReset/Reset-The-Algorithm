@@ -190,3 +190,22 @@ test('el último mes de la muestra trae una propuesta de reparto', () => {
   assert.ok(s, 'el escenario de la demo dejó de producir una propuesta');
   assert.ok(s.desde.cpl > s.desde.metaCpl && !s.desde.cohorte.pocosCasos);
 });
+
+// Duplicar el repo para otro cliente: la marca y las palabras del rubro viven solo en src/cliente.js
+// (y la data de muestra en src/muestra/configuracion.js). Si aparecen escritas en otro archivo, al
+// cambiar de cliente quedarían textos con el nombre equivocado.
+test('la marca y su rubro solo se escriben en src/cliente.js', async () => {
+  const { CLIENTE } = await import('../src/cliente.js');
+  const { readdirSync, readFileSync, statSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  // tokens.css es la paleta del cliente: se reescribe entera con cada marca, así que puede nombrarla
+  const permitidos = new Set(['src/cliente.js', 'src/muestra/configuracion.js', 'src/sistema/tokens.css']);
+  const archivos = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? archivos(p) : /\.(jsx?|css)$/.test(n) ? [p] : []; });
+  const palabras = [CLIENTE.nombre, `«${CLIENTE.busqueda}»`, `'${CLIENTE.busqueda}'`, CLIENTE.clientes, CLIENTE.rubroPlural];
+  const fugas = archivos('src').filter((p) => !permitidos.has(p)).flatMap((p) => {
+    const texto = readFileSync(p, 'utf8');
+    return palabras.filter((w) => new RegExp(`(?<![\\w-])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(texto)).map((w) => `${p}: ${w}`);
+  });
+  assert.deepEqual(fugas, [], 'la marca o el rubro quedaron escritos fuera de src/cliente.js');
+  assert.ok(CONFIG.busquedas.some((b) => b.id === CLIENTE.busqueda), 'la búsqueda principal del cliente no está en la configuración');
+});

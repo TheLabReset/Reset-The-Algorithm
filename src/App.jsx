@@ -1,4 +1,4 @@
-// The Algorithm · demo con data de muestra de Fit Lab. Arma la vista una sola vez por filtro y la reparte a las capas.
+// The Algorithm · demo con data de muestra del cliente (src/cliente.js). Arma la vista una sola vez por filtro y la reparte a las capas.
 import { useEffect, useMemo, useState } from 'react';
 import { Moon, Sun, Presentation } from 'lucide-react';
 import { CONFIG } from './muestra/configuracion.js';
@@ -8,11 +8,12 @@ import { CAPAS } from './capas/estructura.js';
 import { fecha } from './sistema/formato.js';
 import { mesTexto } from './textos/comun.js';
 import { NavegacionCapas, Selector, Grupo, SelloMuestra, BarraDemo, CargandoContexto } from './sistema/Componentes.jsx';
-import logoCliente from '../public/marca/fit-lab-horizontal-negativo.svg?raw';
+import logoCliente from '../public/marca/logo-barra.svg?raw'; // logo del cliente en negativo, sobre la barra oscura
 import Senales from './pantallas/Senales.jsx';
 import Inteligencia from './pantallas/Inteligencia.jsx';
 import Activacion from './pantallas/Activacion.jsx';
 import Rendimiento from './pantallas/Rendimiento.jsx';
+import { CLIENTE } from './cliente.js';
 
 const PANTALLAS = { senales: Senales, inteligencia: Inteligencia, activacion: Activacion, rendimiento: Rendimiento };
 const INICIO = CAPAS[0].id;
@@ -83,7 +84,7 @@ export default function App() {
     <div className="q-pagina">
       <header className="q-barra">
         <div className="q-envoltura q-barra-fila">
-          <a className="q-marca" href={'#' + INICIO} onClick={(e) => { e.preventDefault(); irACapa(INICIO); }} aria-label="The Algorithm para Fit Lab, ir al inicio">
+          <a className="q-marca" href={'#' + INICIO} onClick={(e) => { e.preventDefault(); irACapa(INICIO); }} aria-label={`The Algorithm para ${CLIENTE.nombre}, ir al inicio`}>
             <span className="q-marca-cliente" aria-hidden="true" dangerouslySetInnerHTML={{ __html: logoCliente }} />
             <span className="q-marca-producto"><b>The Algorithm</b><span>By The Lab</span></span>
           </a>
@@ -122,7 +123,7 @@ export default function App() {
       ]} />
 
       <footer className="q-envoltura q-pie">
-        <p>Toda cifra sale de un generador con semilla fija y de una capa de cálculo única; ningún número está escrito en un componente. Fit Lab es una marca ficticia. Los competidores son marcas reales con cifras de muestra: no describen su desempeño.</p>
+        <p>Toda cifra sale de un generador con semilla fija y de una capa de cálculo única; ningún número está escrito en un componente. {CLIENTE.nombre} es una marca ficticia. Los competidores son marcas reales con cifras de muestra: no describen su desempeño.</p>
         <p>The Algorithm · By The Lab · sistema de diseño Quincha</p>
       </footer>
     </div>

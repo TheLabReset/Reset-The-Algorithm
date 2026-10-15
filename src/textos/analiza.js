@@ -1,6 +1,7 @@
 // Lecturas de los cruces entre fuentes (Inteligencia, Activación y Rendimiento). Observan; no ordenan.
 import { numero, dolares, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
 import { periodoTexto, mesTexto, capital, lista, horasTexto, diasTexto, parecidoTexto } from './comun.js';
+import { CLIENTE } from '../cliente.js';
 
 export function veredicto(v) {
   const r = v.analiza.rendimiento;
@@ -52,7 +53,7 @@ export function demanda(v) {
   const d = v.analiza.demandaRespuesta;
   const r = d.r;
   const fuerza = r == null ? null : Math.abs(r) >= 0.7 ? 'se mueven muy juntos' : Math.abs(r) >= 0.4 ? 'se mueven bastante juntos' : 'se mueven poco juntos';
-  return { titulo: 'Interés de búsqueda y leads, semana a semana', lectura: r == null ? 'Faltan semanas completas para medir cuánto se mueven juntos.' : `En ${numero(d.semanas)} semanas, el interés por «gimnasio» y los leads de pauta ${fuerza} (correlación de ${numero(r, 2)}). Que se muevan juntos no prueba que uno cause el otro: los dos siguen la temporada.` };
+  return { titulo: 'Interés de búsqueda y leads, semana a semana', lectura: r == null ? 'Faltan semanas completas para medir cuánto se mueven juntos.' : `En ${numero(d.semanas)} semanas, el interés por «${CLIENTE.busqueda}» y los leads de pauta ${fuerza} (correlación de ${numero(r, 2)}). Que se muevan juntos no prueba que uno cause el otro: los dos siguen la temporada.` };
 }
 
 export function hora(v) {

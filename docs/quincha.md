@@ -53,10 +53,10 @@ Seis reglas, en `src/sistema/componentes.css`:
 
 ## 3. Tipografía
 
-Dos papeles: **títulos y cifras** (`--f-titulo`) y **texto** (`--f-texto`).
+Tres papeles: **títulos y cifras** (`--f-titulo`), **texto** (`--f-texto`) y **tablas** (`--f-tabla`).
 
 - Si el cliente tiene tipografías de marca que se pueden usar, van esas. Fit Lab usa Bricolage Grotesque y Atkinson Hyperlegible Next.
-- Si no, van las del algoritmo de referencia: Sofia Sans, Sofia Sans Condensed y Sofia Sans Semi Condensed.
+- Si no, van las del algoritmo de referencia: Sofia Sans Condensed en títulos, Sofia Sans en texto y Sofia Sans Semi Condensed en tablas. No vienen instaladas: el paso está en [nuevo-algoritmo.md](nuevo-algoritmo.md).
 
 Las cifras van en números tabulares. Si la tipografía de texto tiene el cero cruzado, se reemplazan solo los dígitos.
 

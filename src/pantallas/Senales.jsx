@@ -7,6 +7,7 @@ import { MarcoCapa, SeccionDe, sinDato, deltaCorto, partesConResto } from './com
 import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import { bandaTexto } from '../textos/capas.js';
+import { CLIENTE } from '../cliente.js';
 
 export default function Senales({ capa, vista: v }) {
   const [s11, s12] = capa.secciones;
@@ -18,7 +19,7 @@ export default function Senales({ capa, vista: v }) {
         pie={<span>Cada variación compara {periodoTexto(v.periodo)} con {comparacionTexto(v.periodo)}. Búsquedas, redes y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
         items={[
           { rotulo: 'Índice de oportunidad', universo: 'modelo', ir: 's-2-1', irTexto: 'Lo que lee el modelo', valor: ix.valor == null ? null : `${numero(Math.round(ix.valor))}`, nota: ix.valor == null ? null : `de 100 · ${bandaTexto(ix.banda).toLowerCase()}` },
-          { rotulo: 'Interés por «gimnasio»', universo: 'busquedas', ir: s11.id, irTexto: 'Búsquedas', valor: ok(b) ? numero(Math.round(b.demanda)) : null, delta: ok(b) ? deltaCorto(b.cambio, 'sube', v) : null },
+          { rotulo: `Interés por «${CLIENTE.busqueda}»`, universo: 'busquedas', ir: s11.id, irTexto: 'Búsquedas', valor: ok(b) ? numero(Math.round(b.demanda)) : null, delta: ok(b) ? deltaCorto(b.cambio, 'sube', v) : null },
           { rotulo: 'Usuarios activos al día', universo: 'web', ir: s12.id, irTexto: 'Sitio web', valor: ok(w) ? numero(Math.round(w.usuariosPorDia)) : null, delta: ok(w) ? deltaCorto(w.cambioUsuarios, 'sube', v) : null },
           { rotulo: 'Sesiones con interacción', universo: 'web', ir: s12.id, irTexto: 'Sitio web', valor: ok(w) ? porcentaje(w.tasaInteraccion * 100) : null, nota: ok(w) && w.tasaInteraccionPrevia ? `${porcentaje(w.tasaInteraccionPrevia * 100)} en ${comparacionTexto(v.periodo)}` : null },
         ]} />
@@ -28,7 +29,7 @@ export default function Senales({ capa, vista: v }) {
         {!ok(b) ? <Bloque titulo="Búsquedas" universo="busquedas" estado={sinDato(b.estado)} /> : <>
           <Bloque universo="busquedas" {...L.busquedasLectura(v)} ventana="últimas 52 semanas"
             ayuda={<p>Google Trends da un índice relativo de 0 a 100 (100 es la semana con más búsquedas del conjunto), no cantidad de búsquedas. Una semana pertenece al mes de su jueves.</p>}>
-            <Linea serie={b.serie} previa={b.seriePrevia} rotuloX="semana" etiqueta="Interés semanal por «gimnasio», con el año anterior en gris" />
+            <Linea serie={b.serie} previa={b.seriePrevia} rotuloX="semana" etiqueta={`Interés semanal por «${CLIENTE.busqueda}», con el año anterior en gris`} />
           </Bloque>
           <Bloque universo="busquedas" {...L.palabrasBusqueda(v)} alcance="últimos tres meses" pie={<span>Google informa solo las regiones donde más se busca cada palabra; la primera vale 100.</span>}>
             <Tabla etiqueta="Palabras que se siguen" numericas={[1, 2]} barra={{ columna: 1, valores: b.palabras.map((p) => p.actual) }}

@@ -3,14 +3,15 @@
 
 import { sumarDias, mes } from '../muestra/calendario.js';
 import { suma, razon, indices, ventanaPauta, ventanaCanal } from './base.js';
+import { CLIENTE } from '../cliente.js';
 
 const acotar = (v) => Math.max(0, Math.min(100, v));
 const posicion = (v, min, max) => (max > min ? acotar(((v - min) / (max - min)) * 100) : 50);
 
 export const COMPONENTES = [
-  { id: 'demanda', nombre: 'Demanda de búsqueda', peso: 0.25, fuente: '1.1', mide: 'Interés de «gimnasio» en las últimas 4 semanas, dentro de su rango de 52 semanas' },
+  { id: 'demanda', nombre: 'Demanda de búsqueda', peso: 0.25, fuente: '1.1', mide: `Interés de «${CLIENTE.busqueda}» en las últimas 4 semanas, dentro de su rango de 52 semanas` },
   { id: 'eficiencia', nombre: 'Costo por lead contra meta', peso: 0.25, fuente: '3.1', mide: 'CPL de 28 días contra la meta combinada: 100 si está 30 % bajo la meta, 50 en la meta, 0 si está 30 % sobre' },
-  { id: 'conversion', nombre: 'Conversión a socio', peso: 0.2, fuente: '4.3', mide: 'Tasa de inscripción de la última cohorte cerrada de 28 días, dentro del rango de las 12 anteriores' },
+  { id: 'conversion', nombre: `Conversión a ${CLIENTE.cliente}`, peso: 0.2, fuente: '4.3', mide: 'Tasa de inscripción de la última cohorte cerrada de 28 días, dentro del rango de las 12 anteriores' },
   { id: 'conversacion', nombre: 'Conversación propia', peso: 0.15, fuente: '1.1', mide: 'Participación de la marca en 4 semanas, dentro de su rango de 52 semanas' },
   { id: 'temporada', nombre: 'Temporada del mes siguiente', peso: 0.15, fuente: '1.1', mide: 'Estacionalidad del mes siguiente dentro del rango del año' },
 ];
@@ -18,7 +19,7 @@ export const COMPONENTES = [
 export function calcularIndice(data, fecha) {
   const cfg = data.config;
   // demanda
-  const g = data.busquedas.find((b) => b.id === 'gimnasio').semanas.filter((s) => sumarDias(s.semana, 6) <= fecha);
+  const g = data.busquedas.find((b) => b.id === CLIENTE.busqueda).semanas.filter((s) => sumarDias(s.semana, 6) <= fecha);
   const ult4 = g.slice(-4), ult52 = g.slice(-52);
   const demanda = ult52.length < 52 ? null : posicion(suma(ult4, (s) => s.indice) / ult4.length, Math.min(...ult52.map((s) => s.indice)), Math.max(...ult52.map((s) => s.indice)));
   // eficiencia: meta combinada = Σinv / Σ(inv / meta)

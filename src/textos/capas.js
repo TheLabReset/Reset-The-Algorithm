@@ -2,6 +2,7 @@
 // el índice y los resúmenes. Observan, no ordenan; dos frases como máximo; las comparaciones dicen frente a qué.
 import { numero, dolares } from '../sistema/formato.js';
 import { comparacionTexto, enLetras, capital } from './comun.js';
+import { CLIENTE } from '../cliente.js';
 
 // Ficha de una plataforma en Activación
 export function plataformaLectura(p) {
@@ -33,10 +34,10 @@ export function indiceLectura(ix) {
   const titulo = 'Índice de oportunidad';
   if (ix.valor == null) return { titulo, lectura: 'Falta algún componente para calcularlo este mes.' };
   const mov = ix.cambio == null ? '' : Math.round(ix.cambio) === 0 ? ' Igual que al cierre del mes anterior.' : ` ${Math.round(ix.cambio) > 0 ? 'Sube' : 'Baja'} ${numero(Math.abs(Math.round(ix.cambio)))} ${Math.abs(Math.round(ix.cambio)) === 1 ? 'punto' : 'puntos'} frente al cierre del mes anterior.`;
-  return { titulo, lectura: `Qué tan favorable está el mercado para captar socios, de 0 a 100.${mov}` };
+  return { titulo, lectura: `Qué tan favorable está el mercado para captar ${CLIENTE.clientes}, de 0 a 100.${mov}` };
 }
 
-export const bandaTexto = (banda) => (banda ? `${capital(banda.nombre)} para captar socios` : '');
+export const bandaTexto = (banda) => (banda ? `${capital(banda.nombre)} para captar ${CLIENTE.clientes}` : '');
 
 // Una frase por plataforma para el resumen: cuánto pagó por lead y qué tan lejos quedó de su objetivo.
 // La distancia lleva el color (rojo si pasa el objetivo, verde si queda debajo); las cifras, negrita.

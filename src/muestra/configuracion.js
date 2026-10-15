@@ -2,11 +2,13 @@
 // «confirmé» = tiene fuente (docs/rediseno/investigacion/06-data-verosimil.md); «asumo» = sin fuente primaria.
 // Para adaptar la demo a otro cliente se cambia este archivo, no los componentes.
 
+import { CLIENTE } from '../cliente.js';
+
 export const CONFIG = {
   semilla: 20260930,
   desde: '2025-01-01',
   corte: '2026-09-30', // fecha fija de la muestra: nunca Date.now()
-  marca: { id: 'fitlab', nombre: 'Fit Lab', rubro: 'cadena de gimnasios', ciudad: 'Lima' },
+  marca: CLIENTE, // quién es el cliente: src/cliente.js
   moneda: '$', // todo monto en dólares, como facturan las plataformas
 
   // Índice mensual de «gimnasio» en Perú, Google Trends 2022-2025, media anual = 1 (confirmé, informe 06 §4.4)

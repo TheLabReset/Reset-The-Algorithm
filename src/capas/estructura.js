@@ -1,3 +1,4 @@
+import { CLIENTE } from '../cliente.js';
 // Las cuatro capas de The Algorithm y sus capítulos, en el orden en que trabaja la agencia: escuchar el mercado,
 // leer lo que dice el modelo, activar la pauta y medir el resultado. Es el estándar de la guía general
 // (docs/guia-algoritmo.md): para otro cliente se agrega o se quita un capítulo aquí, sin tocar los componentes.
@@ -14,7 +15,7 @@ export const CAPAS = [
   },
   {
     id: 'inteligencia', numero: '2', nombre: 'Inteligencia de mercado', descripcion: 'Si conviene invertir ahora y qué mirar',
-    titulo: 'Inteligencia de mercado', bajada: 'Si conviene invertir ahora para captar socios, qué mirar y qué viene.',
+    titulo: 'Inteligencia de mercado', bajada: `Si conviene invertir ahora para captar ${CLIENTE.clientes}, qué mirar y qué viene.`,
     secciones: [
       { id: 's-2-1', numero: '2.1', titulo: 'Lo que lee el modelo', pregunta: '¿Cómo está el mercado y qué conviene mirar este mes?', universos: ['modelo'], fuentes: [] },
       { id: 's-2-2', numero: '2.2', titulo: 'Temporada y escenario', pregunta: '¿Los leads siguen a la demanda y cuántos habría si nada cambia?', universos: ['busquedas', 'pauta', 'modelo'], fuentes: ['busquedas', 'google', 'meta', 'tiktok'] },
@@ -37,7 +38,7 @@ export const CAPAS = [
       { id: 's-4-2', numero: '4.2', titulo: 'De la pauta al CRM', pregunta: 'Si lo que reportan las plataformas llega al CRM y cuál inscribe más barato.', universos: ['pauta', 'crm'], fuentes: ['google', 'meta', 'tiktok', 'crm'] },
       { id: 's-4-3', numero: '4.3', titulo: 'Dentro del CRM', pregunta: 'De dónde llegan los leads, dónde están hoy y cómo se los atendió.', universos: ['crm'], fuentes: ['crm'] },
       { id: 's-4-4', numero: '4.4', titulo: 'Cuándo y dónde', pregunta: 'A qué hora entran los leads y qué sedes inscriben mejor.', universos: ['crm'], fuentes: ['crm'] },
-      { id: 's-4-5', numero: '4.5', titulo: 'La competencia', pregunta: 'Dónde está Fit Lab frente a otros gimnasios.', universos: ['conversacion'], fuentes: ['conversacion'] },
+      { id: 's-4-5', numero: '4.5', titulo: 'La competencia', pregunta: `Dónde está ${CLIENTE.nombre} frente a otros ${CLIENTE.rubroPlural}.`, universos: ['conversacion'], fuentes: ['conversacion'] },
     ],
   },
 ];

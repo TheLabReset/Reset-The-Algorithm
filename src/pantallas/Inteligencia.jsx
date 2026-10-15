@@ -8,6 +8,7 @@ import { periodoTexto, mesTexto } from '../textos/comun.js';
 import { escenarioTexto } from '../textos/sugiere.js';
 import { indiceLectura, bandaTexto } from '../textos/capas.js';
 import * as A from '../textos/analiza.js';
+import { CLIENTE } from '../cliente.js';
 
 const GRUPOS = [
   { nivel: 'atencion', titulo: 'Piden atención' },
@@ -65,7 +66,7 @@ export default function Inteligencia({ capa, vista: v }) {
             ayuda={<p>Cada línea tiene su propia escala. La correlación mide si suben y bajan juntas; no dice qué causa qué.</p>}
             pie={<span>Semanas de lunes a domingo. {d.semanasIncompletas.length === 1 ? 'Una semana con un día sin dato no entra en la correlación.' : d.semanasIncompletas.length > 1 ? `${numero(d.semanasIncompletas.length)} semanas con días sin dato no entran en la correlación.` : ''}</span>}>
             <DosLineas etiqueta="Interés de búsqueda y leads de pauta por semana"
-              a={{ nombre: 'Interés por «gimnasio», de 0 a 100', serie: d.busqueda, formato: (n) => numero(n) }}
+              a={{ nombre: `Interés por «${CLIENTE.busqueda}», de 0 a 100`, serie: d.busqueda, formato: (n) => numero(n) }}
               b={{ nombre: 'Leads de pauta por semana', serie: d.leads, formato: (n) => numero(n) }} />
           </Bloque>
         )}

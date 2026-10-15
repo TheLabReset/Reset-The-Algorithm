@@ -2,7 +2,7 @@
 
 Así se diseña un algoritmo de The Lab para cualquier cliente. Sale del algoritmo que ya está en producción y de lo que se aprendió armando la demo de Fit Lab. Cada regla está implementada en este repositorio; la ruta entre corchetes dice dónde.
 
-El sistema de diseño con el que se construye (colores, componentes, gráficos y el chequeo) es [Quincha](quincha.md).
+El sistema de diseño con el que se construye (colores, componentes, gráficos y el chequeo) es [Quincha](quincha.md). Para llevar todo esto a otra marca, el paso a paso está en [nuevo-algoritmo.md](nuevo-algoritmo.md).
 
 Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder entregar con la data real?** Una vista nueva sirve si sale de fuentes que de verdad tenemos. Si no, no entra, aunque se vea bien.
 
@@ -24,11 +24,11 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 - **Por defecto**, la del algoritmo de referencia:
   - **Sofia Sans** para texto e interfaz;
   - **Sofia Sans Condensed** para el título de la capa y las cifras grandes;
-  - **Sofia Sans Semi Condensed** para las tablas.
+  - **Sofia Sans Semi Condensed** para las tablas (`--f-tabla`).
 
-  Son paquetes `@fontsource-variable/sofia-sans`, `-condensed` y `-semi-condensed`, con licencia OFL, y se cargan desde el propio build, no desde Google Fonts.
+  Son paquetes `@fontsource-variable/sofia-sans`, `-condensed` y `-semi-condensed`, con licencia OFL, y se cargan desde el propio build, no desde Google Fonts. No vienen instalados en este repo porque Fit Lab tiene tipografías propias.
 - **Si el cliente tiene tipografías de marca que podemos usar, van esas.** Fit Lab usa Bricolage Grotesque en títulos y cifras, y Atkinson Hyperlegible Next en el texto. [`src/sistema/tokens.css`, `--f-titulo` y `--f-texto`]
-- Las cifras van en números tabulares. Si la tipografía de texto tiene el cero cruzado, se reemplazan solo los dígitos con un `@font-face` de rango `U+0030-0039`. [`src/sistema/base.css`, «Cifras Fit Lab»]
+- Las cifras van en números tabulares. Si la tipografía de texto tiene el cero cruzado, se reemplazan solo los dígitos con un `@font-face` de rango `U+0030-0039`. [`src/sistema/base.css`, «Cifras de la marca»]
 
 ## 3. Navegación
 
@@ -99,4 +99,5 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 - `npm run sistema`: tokens, contraste y espacios.
 - Captura de cada capa a 1440 y a 390 de ancho, en claro y en oscuro, revisada a ojo.
 - Ninguna cifra ni nombre de clientes reales en el repositorio.
+- El nombre de la marca solo en `src/cliente.js` (lo revisa `npm run prueba`).
 - `npm run artefacto -- <salida.html>` para publicar la página autocontenida.

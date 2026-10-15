@@ -2,6 +2,7 @@
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
 import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo, fecha } from '../sistema/formato.js';
 import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto } from './comun.js';
+import { CLIENTE } from '../cliente.js';
 
 const P = (v) => v.periodo;
 
@@ -53,8 +54,8 @@ export function terminosLectura(v) {
   const t = v.lee.plataformas.terminos;
   const comp = t.filter((x) => /smart fit|b2|bio ritmo|mega force/i.test(x.texto));
   const titulo = 'Términos que activaron anuncios';
-  if (!comp.length) return { titulo, lectura: 'Lo que el público escribió en Google antes de ver un anuncio de Fit Lab.' };
-  return { titulo, lectura: `Aparece ${lista(comp.map((x) => `«${x.texto}»`))}: quien buscaba otra marca vio el anuncio de Fit Lab, y esas búsquedas traen pocos leads.` };
+  if (!comp.length) return { titulo, lectura: `Lo que el público escribió en Google antes de ver un anuncio de ${CLIENTE.nombre}.` };
+  return { titulo, lectura: `Aparece ${lista(comp.map((x) => `«${x.texto}»`))}: quien buscaba otra marca vio el anuncio de ${CLIENTE.nombre}, y esas búsquedas traen pocos leads.` };
 }
 
 export function crmPorDia(v) {
@@ -95,7 +96,7 @@ export function crmDescarte(v) {
 
 export function busquedasLectura(v) {
   const b = v.lee.busquedas;
-  const base = `El interés por «gimnasio» promedia ${numero(b.demanda)} de 100 en las semanas de ${periodoTexto(P(v))}.`;
+  const base = `El interés por «${CLIENTE.busqueda}» promedia ${numero(b.demanda)} de 100 en las semanas de ${periodoTexto(P(v))}.`;
   return { titulo: 'Interés de búsqueda en el último año', lectura: b.cambio == null ? base : `${base} Es ${frente(b.cambio, P(v))}.` };
 }
 
@@ -115,13 +116,13 @@ export function competenciaLectura(v) {
   const puesto = m.indexOf(propia) + 1;
   const mejor = [...m].sort((a, b) => b.sentimiento.indice - a.sentimiento.indice)[0];
   const extra = mejor.id === propia.id ? ', el más alto de las marcas comparadas' : '';
-  return { titulo: 'Interacción y sentimiento en Facebook', lectura: `${m[0].nombre} junta la mayor interacción del mes y Fit Lab queda en el puesto ${numero(puesto)} de ${numero(m.length)}. En los comentarios de sus publicaciones, Fit Lab tiene un sentimiento de ${numero(propia.sentimiento.indice)} de 100${extra}.` };
+  return { titulo: 'Interacción y sentimiento en Facebook', lectura: `${m[0].nombre} junta la mayor interacción del mes y ${CLIENTE.nombre} queda en el puesto ${numero(puesto)} de ${numero(m.length)}. En los comentarios de sus publicaciones, ${CLIENTE.nombre} tiene un sentimiento de ${numero(propia.sentimiento.indice)} de 100${extra}.` };
 }
 
 export function competenciaAnuncios(v) {
   const m = [...v.lee.competencia.marcas].sort((a, b) => b.anuncios - a.anuncios);
   const propia = m.find((x) => x.propia);
-  return { titulo: 'Publicaciones y anuncios activos', lectura: `${m[0].nombre} tiene más anuncios activos (${numero(m[0].anuncios)}). Fit Lab tiene ${numero(propia.anuncios)} y publicó ${numero(propia.publicaciones)} veces en el mes.` };
+  return { titulo: 'Publicaciones y anuncios activos', lectura: `${m[0].nombre} tiene más anuncios activos (${numero(m[0].anuncios)}). ${CLIENTE.nombre} tiene ${numero(propia.anuncios)} y publicó ${numero(propia.publicaciones)} veces en el mes.` };
 }
 
 // Sitio (GA4): tráfico. Nunca leads: GA4 no mide ventas y los leads del sitio están en el CRM
