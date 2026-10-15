@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { generar } from '../src/muestra/generador.js';
 import { CONFIG } from '../src/muestra/configuracion.js';
 import { armarVista, mesesDisponibles } from '../src/calculo/vista.js';
+import { CAPAS } from '../src/capas/estructura.js';
 
 const data = generar(CONFIG);
 if (process.env.SEMBRAR === '1') data.pauta.meta.find((p) => p.fecha === '2026-07-14').sinDato = false; // defecto: el día caído vuelve como dato vacío
@@ -110,7 +111,8 @@ test('escenario: no mira el futuro (lo mismo con o sin los meses posteriores al 
 });
 
 // ── Detalle de producción ──
-const SECCIONES = ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '2.1', '2.2', '2.3', '2.4', '2.5', '3.1', '3.2', '3.3', '3.4', '3.5'];
+// los capítulos válidos salen de la estructura de capas: una alerta que apunta a un capítulo que no existe falla
+const SECCIONES = CAPAS.flatMap((c) => c.secciones.map((x) => x.numero));
 cada('las campañas suman su plataforma y las plataformas suman 100 % de la inversión', (v, id) => {
   const pl = v.lee.plataformas;
   if (pl.estado !== 'ok') return;

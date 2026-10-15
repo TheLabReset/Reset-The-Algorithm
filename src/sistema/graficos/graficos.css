@@ -25,12 +25,13 @@
 .q-svg .q-atencion { fill: var(--atencion); }
 
 /* Líneas: 2 px, sin suavizar */
-.q-svg .q-linea { fill: none; stroke: var(--s1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.q-svg .q-area { fill: var(--resalte-suave); stroke: none; }
+.q-svg .q-linea { fill: none; stroke: var(--serie-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .q-svg .q-linea-2 { fill: none; stroke: var(--s2); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .q-svg .q-linea-previa { fill: none; stroke: var(--previa); stroke-width: 1.5; }
 .q-svg .q-linea-plan { fill: none; stroke: var(--previa); stroke-width: 1.5; stroke-dasharray: 5 4; }
 .q-svg .q-punto-oculto { fill: transparent; }
-.q-svg .q-punto-final { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
+.q-svg .q-punto-final { fill: var(--serie-1); stroke: var(--superficie); stroke-width: 2; }
 .q-svg .q-hueco { fill: var(--superficie-capitulo); }
 .q-svg .q-evento line { stroke: var(--borde-control); stroke-dasharray: 2 3; }
 .q-svg .q-evento text { fill: var(--texto-3); }
@@ -43,7 +44,8 @@
 .q-svg .q-pendiente-propia { stroke: var(--s1); stroke-width: 3; }
 
 /* Barras: gris neutro; la que se lee primero, en la serie propia */
-.q-svg .q-barra { fill: var(--borde-control); }
+.q-svg .q-barra { fill: var(--serie-1); }
+.q-svg .q-barra-resto { fill: var(--serie-resto); }
 .q-svg .q-barra-valor { fill: var(--s1); }
 /* la barra resaltada: la menta de la marca, una por gráfico */
 .q-svg .q-barra-acento { fill: var(--resalte); }
@@ -56,7 +58,7 @@
 
 /* Proyección: lo real es barra, lo proyectado es punto con su rango; la zona futura cambia de superficie */
 .q-svg .q-zona-proyeccion { fill: var(--superficie-capitulo); }
-.q-svg .q-barra-real { fill: var(--borde-control); }
+.q-svg .q-barra-real { fill: var(--serie-1); }
 .q-svg .q-banda-proy { stroke: var(--s1); stroke-width: 6; stroke-linecap: round; stroke-opacity: 0.45; }
 .q-svg .q-punto-proy { fill: var(--s1); stroke: var(--superficie-capitulo); stroke-width: 2; }
 

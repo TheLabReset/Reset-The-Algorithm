@@ -1,38 +1,43 @@
-// Las tres capas de The Algorithm y sus secciones. Para otro cliente se agrega o se quita una sección aquí,
-// sin tocar los componentes. Cada sección declara sus universos (qué cuenta) y las fuentes que la alimentan.
+// Las cuatro capas de The Algorithm y sus capítulos, en el orden en que trabaja la agencia: escuchar el mercado,
+// leer lo que dice el modelo, activar la pauta y medir el resultado. Es el estándar de la guía general
+// (docs/guia-algoritmo.md): para otro cliente se agrega o se quita un capítulo aquí, sin tocar los componentes.
+// Cada capítulo declara sus universos (qué cuenta) y las fuentes que lo alimentan.
 
 export const CAPAS = [
   {
-    id: 'lee', numero: '1', nombre: 'Lee', descripcion: 'Lo que dice cada fuente, por separado',
-    titulo: 'Lo que dice cada fuente', bajada: 'Cada fuente por separado, sin cruzarlas. Un capítulo por fuente, con el detalle de cada plataforma.',
+    id: 'senales', numero: '1', nombre: 'Captura de señales', descripcion: 'Qué se busca, qué se publica y quién entra al sitio',
+    titulo: 'Captura de señales', bajada: 'Qué se busca, qué se publica en el rubro y quién entra al sitio.',
     secciones: [
-      { id: 's-1-1', numero: '1.1', titulo: 'Pauta pagada', pregunta: '¿Cuánto se invirtió y qué reportan las plataformas?', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
-      { id: 's-1-2', numero: '1.2', titulo: 'CRM', pregunta: '¿Cuántos leads llegaron, de dónde y qué pasó con ellos?', universos: ['crm'], fuentes: ['crm'] },
-      { id: 's-1-3', numero: '1.3', titulo: 'Búsquedas en Google', pregunta: '¿Cuánto interés hay y en qué palabras?', universos: ['busquedas'], fuentes: ['busquedas'] },
-      { id: 's-1-4', numero: '1.4', titulo: 'Redes', pregunta: '¿Qué se publica del rubro en TikTok y qué interacción tiene?', universos: ['conversacion'], fuentes: ['conversacion'] },
-      { id: 's-1-5', numero: '1.5', titulo: 'Competencia', pregunta: '¿Qué tan activos están los otros gimnasios?', universos: ['conversacion'], fuentes: ['conversacion'] },
-      { id: 's-1-6', numero: '1.6', titulo: 'Sitio web (GA4)', pregunta: '¿Cuántos usuarios entran, desde dónde, qué miran y a qué hora?', universos: ['web'], fuentes: ['web'] },
+      { id: 's-1-1', numero: '1.1', titulo: 'Qué se busca y qué se publica', pregunta: '¿Cuánto interés hay en Google y qué se publica del rubro en TikTok?', universos: ['busquedas', 'conversacion'], fuentes: ['busquedas', 'conversacion'] },
+      { id: 's-1-2', numero: '1.2', titulo: 'Quién entra al sitio', pregunta: '¿Cuántos usuarios entran, desde dónde y qué páginas miran?', universos: ['web'], fuentes: ['web'] },
     ],
   },
   {
-    id: 'analiza', numero: '2', nombre: 'Analiza', descripcion: 'Lo que aparece al cruzar fuentes',
-    titulo: 'Lo que aparece al cruzar fuentes', bajada: 'Cada capítulo dice qué fuentes cruza. Lo que viene de fuentes distintas se compara, nunca se suma.',
+    id: 'inteligencia', numero: '2', nombre: 'Inteligencia de mercado', descripcion: 'Si conviene invertir ahora y qué mirar',
+    titulo: 'Inteligencia de mercado', bajada: 'Si conviene invertir ahora para captar socios, qué mirar y qué viene.',
     secciones: [
-      { id: 's-2-1', numero: '2.1', titulo: 'Reparto de la inversión', pregunta: '¿Cómo se reparte la inversión entre plataformas y productos?', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
-      { id: 's-2-2', numero: '2.2', titulo: 'De la pauta al CRM', pregunta: '¿Lo que reportan las plataformas llega al CRM y qué plataforma inscribe más barato?', universos: ['pauta', 'crm'], fuentes: ['google', 'meta', 'tiktok', 'crm'] },
-      { id: 's-2-3', numero: '2.3', titulo: 'Demanda y respuesta', pregunta: '¿Los leads siguen al interés de búsqueda?', universos: ['busquedas', 'pauta'], fuentes: ['busquedas', 'google', 'meta', 'tiktok'] },
-      { id: 's-2-4', numero: '2.4', titulo: 'Cuándo entra el lead', pregunta: '¿A qué hora y qué día llegan los leads?', universos: ['crm'], fuentes: ['crm'] },
-      { id: 's-2-5', numero: '2.5', titulo: 'Dónde crece', pregunta: '¿Qué sedes reciben más leads y cuáles inscriben mejor?', universos: ['crm'], fuentes: ['crm'] },
+      { id: 's-2-1', numero: '2.1', titulo: 'Lo que lee el modelo', pregunta: '¿Cómo está el mercado y qué conviene mirar este mes?', universos: ['modelo'], fuentes: [] },
+      { id: 's-2-2', numero: '2.2', titulo: 'Temporada y escenario', pregunta: '¿Los leads siguen a la demanda y cuántos habría si nada cambia?', universos: ['busquedas', 'pauta', 'modelo'], fuentes: ['busquedas', 'google', 'meta', 'tiktok'] },
     ],
   },
   {
-    id: 'sugiere', numero: '3', nombre: 'Sugiere', descripcion: 'Qué mirar y qué mover',
-    titulo: 'Qué mirar y qué mover', bajada: 'Lo que se salió de lo esperado, lo que va bien y qué mover cuando el dato lo sostiene. Cada estimación va con su rango y sus supuestos.',
+    id: 'activacion', numero: '3', nombre: 'Activación estratégica', descripcion: 'Dónde está la inversión y a qué costo',
+    titulo: 'Activación estratégica', bajada: 'Dónde está puesta la inversión y a qué costo.',
     secciones: [
-      { id: 's-3-1', numero: '3.1', titulo: 'Qué mirar', pregunta: '¿Qué se salió de lo esperado este mes y qué va bien?', universos: ['modelo'], fuentes: [] },
-      { id: 's-3-2', numero: '3.2', titulo: 'Qué mover', pregunta: '¿Qué cambio en la pauta sostiene el dato y cuánto podría dar?', universos: ['modelo'], fuentes: [] },
-      { id: 's-3-3', numero: '3.3', titulo: 'Escenario si nada cambia', pregunta: '¿Cuántos leads habría si la inversión diaria se mantiene?', universos: ['modelo'], fuentes: ['google', 'meta', 'tiktok'] },
-      { id: 's-3-4', numero: '3.4', titulo: 'Índice de oportunidad', pregunta: '¿Qué tan favorable está el mercado para captar socios?', universos: ['modelo'], fuentes: [] },
+      { id: 's-3-1', numero: '3.1', titulo: 'Dónde está la inversión', pregunta: 'Cómo se reparte entre plataformas y productos, y qué propone el modelo.', universos: ['pauta', 'modelo'], fuentes: ['google', 'meta', 'tiktok'] },
+      { id: 's-3-2', numero: '3.2', titulo: 'Cada plataforma', pregunta: 'Campañas, palabras y resultados de Google Ads, Meta Ads y TikTok Ads.', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
+      { id: 's-3-3', numero: '3.3', titulo: 'Cuándo se visita el sitio', pregunta: 'Las horas y los días con más usuarios activos.', universos: ['web'], fuentes: ['web'] },
+    ],
+  },
+  {
+    id: 'rendimiento', numero: '4', nombre: 'Rendimiento y optimización', descripcion: 'Qué dio resultado en el período',
+    titulo: 'Rendimiento y optimización', bajada: 'Qué dio resultado en el período.',
+    secciones: [
+      { id: 's-4-1', numero: '4.1', titulo: 'Cómo viene el período', pregunta: 'Leads, inversión y resultados, día por día.', universos: ['crm', 'pauta'], fuentes: ['crm', 'google', 'meta', 'tiktok'] },
+      { id: 's-4-2', numero: '4.2', titulo: 'De la pauta al CRM', pregunta: 'Si lo que reportan las plataformas llega al CRM y cuál inscribe más barato.', universos: ['pauta', 'crm'], fuentes: ['google', 'meta', 'tiktok', 'crm'] },
+      { id: 's-4-3', numero: '4.3', titulo: 'Dentro del CRM', pregunta: 'De dónde llegan los leads, dónde están hoy y cómo se los atendió.', universos: ['crm'], fuentes: ['crm'] },
+      { id: 's-4-4', numero: '4.4', titulo: 'Cuándo y dónde', pregunta: 'A qué hora entran los leads y qué sedes inscriben mejor.', universos: ['crm'], fuentes: ['crm'] },
+      { id: 's-4-5', numero: '4.5', titulo: 'La competencia', pregunta: 'Dónde está Fit Lab frente a otros gimnasios.', universos: ['conversacion'], fuentes: ['conversacion'] },
     ],
   },
 ];

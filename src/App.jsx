@@ -9,24 +9,28 @@ import { fecha } from './sistema/formato.js';
 import { mesTexto } from './textos/comun.js';
 import { NavegacionCapas, Selector, Grupo, SelloMuestra } from './sistema/Componentes.jsx';
 import logoCliente from '../public/marca/fit-lab-horizontal-negativo.svg?raw';
-import Lee from './pantallas/Lee.jsx';
-import Analiza from './pantallas/Analiza.jsx';
-import Sugiere from './pantallas/Sugiere.jsx';
+import Senales from './pantallas/Senales.jsx';
+import Inteligencia from './pantallas/Inteligencia.jsx';
+import Activacion from './pantallas/Activacion.jsx';
+import Rendimiento from './pantallas/Rendimiento.jsx';
 
-const PANTALLAS = { lee: Lee, analiza: Analiza, sugiere: Sugiere };
+const PANTALLAS = { senales: Senales, inteligencia: Inteligencia, activacion: Activacion, rendimiento: Rendimiento };
+const INICIO = CAPAS[0].id;
 
 // Preferencias del visitante: si el navegador no deja guardar, la página funciona igual
 const leerPref = (k, porDefecto) => { try { return localStorage.getItem('algoritmo:' + k) || porDefecto; } catch { return porDefecto; } };
 const guardarPref = (k, v) => { try { localStorage.setItem('algoritmo:' + k, v); } catch { /* sin almacenamiento */ } };
-// El ancla dice la capa: «lee», «s-1-3» (capítulo de Lee), «a-cpl-objetivo» (una alerta, en Sugiere)
+// El ancla dice la capa: «senales», «s-3-2» (un capítulo), «a-cpl-objetivo» (una alerta, en Inteligencia),
+// «p-google» (la tarjeta de una plataforma, en Activación)
 const capaDeAncla = (h) => {
   if (CAPAS.some((c) => c.id === h)) return h;
   const capitulo = h.match(/^s-(\d)-/);
   if (capitulo) return CAPAS.find((c) => c.numero === capitulo[1])?.id || null;
-  return /^(a|b)-/.test(h) ? 'sugiere' : null;
+  if (/^p-/.test(h)) return 'activacion';
+  return /^(a|b)-/.test(h) ? 'inteligencia' : null;
 };
 const ancla = () => (typeof location !== 'undefined' ? location.hash.slice(1) : '');
-const capaDeLaUrl = () => capaDeAncla(ancla()) || 'lee';
+const capaDeLaUrl = () => capaDeAncla(ancla()) || INICIO;
 
 export default function App() {
   const data = useMemo(() => generar(CONFIG), []);
@@ -61,7 +65,7 @@ export default function App() {
     <div className="q-pagina">
       <header className="q-barra">
         <div className="q-envoltura q-barra-fila">
-          <a className="q-marca" href="#lee" onClick={(e) => { e.preventDefault(); irACapa('lee'); }} aria-label="The Algorithm para Fit Lab, ir al inicio">
+          <a className="q-marca" href={'#' + INICIO} onClick={(e) => { e.preventDefault(); irACapa(INICIO); }} aria-label="The Algorithm para Fit Lab, ir al inicio">
             <span className="q-marca-cliente" aria-hidden="true" dangerouslySetInnerHTML={{ __html: logoCliente }} />
             <span className="q-marca-producto"><b>The Algorithm</b><span>By The Lab</span></span>
           </a>

@@ -31,15 +31,15 @@ export function queMirar(data, P, v) {
       let inv = 0, leads = 0;
       ult7.forEach((d) => { const f = p.porDia.find((x) => x.fecha === d); if (f?.inversion != null) { inv += f.inversion; leads += f.leads; } });
       const cpl = razon(inv, leads);
-      if (cpl != null && p.objetivo != null && cpl > p.objetivo) add({ id: 'cpl-objetivo', nivel: 'atencion', fuente: p.nombre, sostiene: '1.1', datos: { plataforma: p.nombre, cpl, objetivo: p.objetivo, leads, desde: ult7[0], hasta: P.hasta } });
+      if (cpl != null && p.objetivo != null && cpl > p.objetivo) add({ id: 'cpl-objetivo', nivel: 'atencion', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl, objetivo: p.objetivo, leads, desde: ult7[0], hasta: P.hasta } });
       // días fuera de rango: sin dato o con menos de la mitad de la inversión mediana
       const med = cuantil(p.porDia.filter((x) => x.inversion != null).map((x) => x.inversion), 0.5);
       const raros = p.porDia.filter((x) => x.inversion == null || x.inversion < UMBRALES.diaBajo * med);
-      if (raros.length) add({ id: 'dia-fuera', nivel: 'atencion', fuente: p.nombre, sostiene: '1.1', datos: { plataforma: p.nombre, dias: raros.map((x) => ({ fecha: x.fecha, sinDato: x.inversion == null, inversion: x.inversion })), mediana: med } });
+      if (raros.length) add({ id: 'dia-fuera', nivel: 'atencion', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, dias: raros.map((x) => ({ fecha: x.fecha, sinDato: x.inversion == null, inversion: x.inversion })), mediana: med } });
     }
     const k = pl.palabras;
     const pct = razon(k.gastoSinConversion, k.inversionSearch);
-    if (pct >= UMBRALES.sinConversion) add({ id: 'palabras-sin-conversion', nivel: 'revisar', fuente: 'Google Ads', sostiene: '1.1', datos: { palabras: k.sinConversion.map((x) => x.texto), monto: k.gastoSinConversion, pct } });
+    if (pct >= UMBRALES.sinConversion) add({ id: 'palabras-sin-conversion', nivel: 'revisar', fuente: 'Google Ads', sostiene: '3.2', datos: { palabras: k.sinConversion.map((x) => x.texto), monto: k.gastoSinConversion, pct } });
   }
 
   const cd = v.lee.crmDetalle;
@@ -49,21 +49,21 @@ export function queMirar(data, P, v) {
     if (mesAnt + '-01' >= cfg.desde) {
       const ant = leeCrmDetalle(data, { ...P, desde: mesAnt + '-01', hasta: finDeMes(mesAnt), compararDesde: P.compararDesde, compararHasta: P.compararHasta });
       const caida = (ant.atencion.enElDia - cd.atencion.enElDia) * 100;
-      if (caida >= UMBRALES.caidaContactoEnElDia) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '1.2', datos: { ahora: cd.atencion.enElDia, antes: ant.atencion.enElDia, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null, causaDesde: cd.atencion.cambioDesde?.desde || null } });
+      if (caida >= UMBRALES.caidaContactoEnElDia) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '4.3', datos: { ahora: cd.atencion.enElDia, antes: ant.atencion.enElDia, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null, causaDesde: cd.atencion.cambioDesde?.desde || null } });
     }
-    if (cd.atencion.masDeUnDiaFinDeSemana > UMBRALES.finDeSemanaEspera) add({ id: 'fin-de-semana', nivel: 'revisar', fuente: 'CRM', sostiene: '1.2', datos: { finDeSemana: cd.atencion.masDeUnDiaFinDeSemana, laborable: cd.atencion.masDeUnDiaLaborable } });
+    if (cd.atencion.masDeUnDiaFinDeSemana > UMBRALES.finDeSemanaEspera) add({ id: 'fin-de-semana', nivel: 'revisar', fuente: 'CRM', sostiene: '4.3', datos: { finDeSemana: cd.atencion.masDeUnDiaFinDeSemana, laborable: cd.atencion.masDeUnDiaLaborable } });
   }
 
   const r = v.analiza.rendimiento;
   if (r.estado === 'ok' && !r.cpaParecido && r.masBaratoPorLead && r.masBaratoPorInscripcion && r.masBaratoPorLead.id !== r.masBaratoPorInscripcion.id) {
-    add({ id: 'plataforma-vs-crm', nivel: 'revisar', fuente: 'CRM', sostiene: '2.2', datos: { porLead: r.masBaratoPorLead.nombre, porInscripcion: r.masBaratoPorInscripcion.nombre } });
+    add({ id: 'plataforma-vs-crm', nivel: 'revisar', fuente: 'CRM', sostiene: '4.2', datos: { porLead: r.masBaratoPorLead.nombre, porInscripcion: r.masBaratoPorInscripcion.nombre } });
   }
   const pc = v.analiza.pautaCrm;
-  if (pc.estado === 'ok') for (const p of pc.plataformas) if (p.porCadaReportado != null && p.porCadaReportado < UMBRALES.llegaAlCrm) add({ id: 'llega-poco', nivel: 'revisar', fuente: p.nombre, sostiene: '2.2', datos: { plataforma: p.nombre, de100: Math.round(p.porCadaReportado * 100), reportados: p.reportados, enCrm: p.enCrm } });
+  if (pc.estado === 'ok') for (const p of pc.plataformas) if (p.porCadaReportado != null && p.porCadaReportado < UMBRALES.llegaAlCrm) add({ id: 'llega-poco', nivel: 'revisar', fuente: p.nombre, sostiene: '4.2', datos: { plataforma: p.nombre, de100: Math.round(p.porCadaReportado * 100), reportados: p.reportados, enCrm: p.enCrm } });
 
 
   const bu = v.lee.busquedas;
-  if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'oportunidad', fuente: 'Google Trends', sostiene: '1.3', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });
+  if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'oportunidad', fuente: 'Google Trends', sostiene: '1.1', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });
 
   // GA4: un canal pagado cuyas sesiones interactúan bastante menos que el mes anterior (el clic se paga igual).
   // Si en el período hay un evento anotado en una plataforma de ese canal, se cita como coincidencia, no como causa.
@@ -75,7 +75,7 @@ export function queMirar(data, P, v) {
       const caida = ((antes.tasa - ahora.tasa) / antes.tasa) * 100;
       if (caida < UMBRALES.caidaInteraccion) continue;
       const evento = cfg.eventos.find((e) => e.fecha >= P.desde && e.fecha <= P.hasta && f.deClics.includes(e.canal));
-      add({ id: 'interaccion-cae', nivel: 'atencion', fuente: 'GA4', sostiene: '1.6', datos: { canal: f.nombre, ahora: ahora.tasa, antes: antes.tasa, mesAntes: mesAnt, sesiones: ahora.sesiones, evento } });
+      add({ id: 'interaccion-cae', nivel: 'atencion', fuente: 'GA4', sostiene: '1.2', datos: { canal: f.nombre, ahora: ahora.tasa, antes: antes.tasa, mesAntes: mesAnt, sesiones: ahora.sesiones, evento } });
     }
   }
 
@@ -97,15 +97,15 @@ export function queVaBien(data, P, v) {
     if (p.cpl == null || p.objetivo == null) continue;
     const margen = (p.objetivo - p.cpl) / p.objetivo;
     const anual = p.cplPrevio ? (p.cplPrevio - p.cpl) / p.cplPrevio : null;
-    if (margen >= UMBRALES_BIEN.bajoObjetivo) bien.push({ id: 'bajo-objetivo', fuente: p.nombre, sostiene: '1.1', datos: { plataforma: p.nombre, cpl: p.cpl, objetivo: p.objetivo, margen, anual } });
-    else if (anual != null && anual >= UMBRALES_BIEN.mejoraAnual) bien.push({ id: 'mejora-anual', fuente: p.nombre, sostiene: '1.1', datos: { plataforma: p.nombre, cpl: p.cpl, previo: p.cplPrevio, anual } });
+    if (margen >= UMBRALES_BIEN.bajoObjetivo) bien.push({ id: 'bajo-objetivo', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl: p.cpl, objetivo: p.objetivo, margen, anual } });
+    else if (anual != null && anual >= UMBRALES_BIEN.mejoraAnual) bien.push({ id: 'mejora-anual', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl: p.cpl, previo: p.cplPrevio, anual } });
   }
   const renovar = v.sugiere.sugerencias.find((s) => s.id === 'renovar');
-  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '1.1', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
+  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '3.2', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
   const co = v.lee.competencia;
   if (co.estado === 'ok') {
     const orden = [...co.marcas].sort((a, b) => b.sentimiento.indice - a.sentimiento.indice);
-    if (orden[0].propia) bien.push({ id: 'mejor-sentimiento', fuente: 'Escucha social', sostiene: '1.5', datos: { indice: orden[0].sentimiento.indice, segundo: orden[1].nombre, segundoIndice: orden[1].sentimiento.indice } });
+    if (orden[0].propia) bien.push({ id: 'mejor-sentimiento', fuente: 'Escucha social', sostiene: '4.5', datos: { indice: orden[0].sentimiento.indice, segundo: orden[1].nombre, segundoIndice: orden[1].sentimiento.indice } });
   }
   return bien;
 }

@@ -15,6 +15,15 @@ export function marcas(max, n = 4, min = 0) {
 }
 
 // Trazo de una serie: un valor nulo corta la línea (no se inventa el día que falta)
+// Área bajo una serie, hasta la línea base; un hueco corta el área igual que corta la línea
+export function area(serie, x, y, base) {
+  let d = '', tramo = [];
+  const cerrar = () => { if (tramo.length > 1) d += `M${x(tramo[0]).toFixed(1)},${base.toFixed(1)}` + tramo.map((i) => `L${x(i).toFixed(1)},${y(serie[i].valor).toFixed(1)}`).join('') + `L${x(tramo.at(-1)).toFixed(1)},${base.toFixed(1)}Z`; tramo = []; };
+  serie.forEach((p, i) => { if (p.valor == null) cerrar(); else tramo.push(i); });
+  cerrar();
+  return d;
+}
+
 export function camino(serie, x, y) {
   let d = '', abierto = false;
   serie.forEach((p, i) => {

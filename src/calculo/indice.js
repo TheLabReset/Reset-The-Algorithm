@@ -8,11 +8,11 @@ const acotar = (v) => Math.max(0, Math.min(100, v));
 const posicion = (v, min, max) => (max > min ? acotar(((v - min) / (max - min)) * 100) : 50);
 
 export const COMPONENTES = [
-  { id: 'demanda', nombre: 'Demanda de búsqueda', peso: 0.25, fuente: '1.3', mide: 'Interés de «gimnasio» en las últimas 4 semanas, dentro de su rango de 52 semanas' },
-  { id: 'eficiencia', nombre: 'Costo por lead contra meta', peso: 0.25, fuente: '2.1', mide: 'CPL de 28 días contra la meta combinada: 100 si está 30 % bajo la meta, 50 en la meta, 0 si está 30 % sobre' },
-  { id: 'conversion', nombre: 'Conversión a socio', peso: 0.2, fuente: '1.2', mide: 'Tasa de inscripción de la última cohorte cerrada de 28 días, dentro del rango de las 12 anteriores' },
-  { id: 'conversacion', nombre: 'Conversación propia', peso: 0.15, fuente: '1.4', mide: 'Participación de la marca en 4 semanas, dentro de su rango de 52 semanas' },
-  { id: 'temporada', nombre: 'Temporada del mes siguiente', peso: 0.15, fuente: '1.3', mide: 'Estacionalidad del mes siguiente dentro del rango del año' },
+  { id: 'demanda', nombre: 'Demanda de búsqueda', peso: 0.25, fuente: '1.1', mide: 'Interés de «gimnasio» en las últimas 4 semanas, dentro de su rango de 52 semanas' },
+  { id: 'eficiencia', nombre: 'Costo por lead contra meta', peso: 0.25, fuente: '3.1', mide: 'CPL de 28 días contra la meta combinada: 100 si está 30 % bajo la meta, 50 en la meta, 0 si está 30 % sobre' },
+  { id: 'conversion', nombre: 'Conversión a socio', peso: 0.2, fuente: '4.3', mide: 'Tasa de inscripción de la última cohorte cerrada de 28 días, dentro del rango de las 12 anteriores' },
+  { id: 'conversacion', nombre: 'Conversación propia', peso: 0.15, fuente: '1.1', mide: 'Participación de la marca en 4 semanas, dentro de su rango de 52 semanas' },
+  { id: 'temporada', nombre: 'Temporada del mes siguiente', peso: 0.15, fuente: '1.1', mide: 'Estacionalidad del mes siguiente dentro del rango del año' },
 ];
 
 export function calcularIndice(data, fecha) {

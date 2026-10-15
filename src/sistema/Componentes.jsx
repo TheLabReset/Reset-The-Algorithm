@@ -1,9 +1,9 @@
 // Componentes de Quincha. No calculan: reciben cifras ya armadas por src/calculo y textos por src/textos.
-import { useEffect, useId, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
-  Eye, TrendingUp, Bot, ArrowUpRight as Ir,
+  Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ArrowUpRight as Ir,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
 
@@ -115,16 +115,28 @@ export function Estado({ tipo, titulo, children }) {
 
 // ── Bloque: una tarjeta, una lectura, un universo ──
 // Misma estructura siempre (cabecera, cuerpo, pie con la fuente) para que las tarjetas vecinas se alineen fila por fila.
-export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance, estado, ayuda, pie, children, id }) {
+// Cada tarjeta dice su ventana arriba a la derecha: con calendario si sigue el período elegido, con alfiler si no
+// (una cohorte, la última lectura, los meses que vienen). El período de la capa llega por contexto.
+export const VentanaContexto = createContext(null);
+export function Ventana({ texto, fija }) {
+  const Icono = fija ? Pin : Calendar;
+  return <span className={`q-ventana${fija ? ' q-ventana-fija' : ''}`} title={fija ? 'No sigue el período elegido' : 'Sigue el período elegido'}><Icono size={12} aria-hidden="true" />{texto}</span>;
+}
+
+export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance, ventana, estado, ayuda, pie, children, id }) {
   const u = UNIVERSOS[universo];
+  const periodo = useContext(VentanaContexto);
+  const texto = alcance || (ventana === false ? null : ventana || periodo);
   return (
-    <article className={`q-bloque q-${ancho}${alcance ? ' q-bloque-alcance' : ''}`} id={id} data-estado={estado?.tipo || 'ok'}>
+    <article className={`q-bloque q-${ancho}`} id={id} data-estado={estado?.tipo || 'ok'}>
       <header className="q-bloque-cab">
         <div className="q-bloque-titulo">
           <h3>{titulo}</h3>
-          {ayuda && <Ayuda>{ayuda}</Ayuda>}
+          <div className="q-bloque-marcas">
+            {texto && <Ventana texto={texto} fija={!!alcance} />}
+            {ayuda && <Ayuda>{ayuda}</Ayuda>}
+          </div>
         </div>
-        {alcance && <span className="q-alcance"><Hourglass size={13} aria-hidden="true" />{alcance}</span>}
         {lectura && !estado?.reemplaza && <p className="q-bloque-lectura">{lectura}</p>}
       </header>
       <div className="q-bloque-cuerpo">
@@ -136,6 +148,32 @@ export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance,
         {pie}
       </footer>
     </article>
+  );
+}
+
+// ── Flujo: una fila por plataforma y una columna por paso (inversión, reportado, en el CRM, inscritos).
+// Cada paso dice su cifra y debajo su costo o su razón; la flecha marca que un paso sale del anterior ──
+export function Flujo({ etiqueta, columnas, filas, nota }) {
+  return (
+    <div className="q-flujo" role="table" aria-label={etiqueta}>
+      <div className="q-flujo-fila q-flujo-cab" role="row">
+        <span role="columnheader" />
+        {columnas.map((c) => <span key={c} role="columnheader">{c}</span>)}
+      </div>
+      {filas.map((f, i) => (
+        <div key={f.nombre} className="q-flujo-fila" role="row">
+          <span className="q-flujo-nombre" role="rowheader"><span className={`q-muestra q-p${i}`} aria-hidden="true" />{f.nombre}</span>
+          {f.pasos.map((p, j) => (
+            <span key={j} className="q-flujo-paso" role="cell">
+              {j > 0 && <ArrowRight className="q-flujo-flecha" size={14} aria-hidden="true" />}
+              <i className="q-flujo-rotulo" aria-hidden="true">{columnas[j]}</i>
+              <b>{p.valor}</b>{p.nota && <span>{p.nota}</span>}
+            </span>
+          ))}
+        </div>
+      ))}
+      {nota && <p className="q-nota-bloque">{nota}</p>}
+    </div>
   );
 }
 
@@ -216,7 +254,53 @@ export function Alerta({ id, nivel, titulo, dato, mirar, fuente, ir, irTexto }) 
   );
 }
 
-// Avisos de un capítulo: una línea por alerta, que lleva a su detalle en Sugiere
+// Qué mirar, compacto: una lista numerada por nivel. Cada fila dice el dato en el título y la acción debajo;
+// al abrirla, el detalle y el enlace a la tarjeta que lo sostiene. Un ancla #a-… abre su fila.
+export function ListaAlertas({ grupos }) {
+  useEffect(() => {
+    const abrir = () => { const el = document.getElementById(location.hash.slice(1)); if (el?.tagName === 'DETAILS') el.open = true; };
+    abrir();
+    window.addEventListener('hashchange', abrir);
+    return () => window.removeEventListener('hashchange', abrir);
+  }, []);
+  let n = 0;
+  return (
+    <div className="q-lista-alertas">
+      {grupos.filter((g) => g.items.length).map((g) => (
+        <section key={g.nivel} className={`q-lista-grupo q-alerta-${g.nivel}`} aria-label={g.titulo}>
+          <h3>{g.titulo} <span>{g.items.length}</span></h3>
+          <ol>
+            {g.items.map((a) => {
+              n += 1;
+              const nv = NIVELES[a.nivel];
+              return (
+                <li key={a.id}>
+                  <details id={a.id} className="q-fila-alerta">
+                    <summary>
+                      <span className="q-fila-num">{n}</span>
+                      <span className="q-fila-cuerpo">
+                        <span className="q-fila-titulo"><span className="q-nivel" title={nv.nombre}><nv.icono size={14} aria-hidden="true" strokeWidth={2.4} /><span className="solo-lector">{nv.nombre}: </span></span>{a.titulo}</span>
+                        {a.mirar && <span className="q-fila-mirar"><CornerDownRight size={14} aria-hidden="true" />{a.mirar}</span>}
+                      </span>
+                      <span className="q-fila-fuente">{a.fuente}</span>
+                      <ChevronDown className="q-fila-abrir" size={16} aria-hidden="true" />
+                    </summary>
+                    <div className="q-fila-detalle">
+                      <p>{a.dato}</p>
+                      {a.ir && <a className="q-alerta-ir" href={'#' + a.ir}>Ver el dato en {a.irTexto}<Ir size={14} aria-hidden="true" /></a>}
+                    </div>
+                  </details>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+// Avisos de un capítulo: una línea por alerta, que lleva a su fila en Qué mirar
 export function AvisosCapitulo({ avisos }) {
   if (!avisos.length) return null;
   return (
@@ -233,6 +317,18 @@ export function AvisosCapitulo({ avisos }) {
   );
 }
 
+// Cifra contra su objetivo, debajo de la cifra: barra hasta el valor, raya en el objetivo y cuánto se aleja.
+// valor y meta en la misma unidad; sobre: true si pasar el objetivo es malo (un costo)
+function ContraObjetivo({ valor, meta, textoMeta, textoDiferencia, sobre }) {
+  const max = Math.max(valor, meta) * 1.25;
+  return (
+    <span className={`q-contra-objetivo${sobre ? ' q-contra-objetivo-sobre' : ''}`}>
+      <span className="q-contra-objetivo-barra" aria-hidden="true"><i style={{ width: `${(valor / max) * 100}%` }} /><b style={{ left: `${(meta / max) * 100}%` }} /></span>
+      <span className="q-contra-objetivo-texto">{textoMeta} <span>{textoDiferencia}</span></span>
+    </span>
+  );
+}
+
 // ── Resumen de la capa: pocas cifras, cada una lleva a su capítulo ──
 export function Resumen({ titulo, items, pie }) {
   return (
@@ -246,6 +342,7 @@ export function Resumen({ titulo, items, pie }) {
               <span className="q-resumen-rotulo">{i.rotulo}</span>
               <span className={`q-cifra-valor${i.valor == null ? ' q-cifra-sin-dato' : ''}`} data-clave={i.dataClave}>{i.valor ?? NO_MEDIDO}</span>
               {i.delta ? <Delta {...i.delta} /> : i.nota ? <span className="q-delta">{i.nota}</span> : null}
+              {i.objetivo && <ContraObjetivo {...i.objetivo} />}
               {i.ir && <a className="q-resumen-ir" href={'#' + i.ir}>{u && <u.icono size={13} aria-hidden="true" />}{i.irTexto}</a>}
             </li>
           );
@@ -335,14 +432,30 @@ export function Selector({ etiqueta, opciones, valor, onCambiar }) {
 }
 
 // ── Tabla: números a la derecha, primera columna como encabezado de fila ──
-export function Tabla({ etiqueta, columnas, filas, numericas = [] }) {
+// barra: { columna, valores } pone una barra delgada junto a la cifra de esa columna (magnitud de un vistazo).
+// Una celda puede ser texto o { texto, sub, tono }: sub va debajo en gris; tono 'empeora' o 'mejora' colorea la cifra.
+// destacada: índice de la fila que se resalta (la propia marca, la página nueva).
+const celda = (v) => (v && typeof v === 'object' && !Array.isArray(v) && 'texto' in v ? v : { texto: v });
+export function Tabla({ etiqueta, columnas, filas, numericas = [], barra, destacada, apagadas = [] }) {
+  const positivos = barra ? barra.valores.filter((x) => x != null && x > 0) : [];
+  const max = positivos.length ? Math.max(...positivos) : 1;
   return (
     <div className="q-tabla-marco" role="region" aria-label={etiqueta} tabIndex={0}>
       <table className="q-tabla">
         <thead><tr>{columnas.map((c, j) => <th key={c} scope="col" className={numericas.includes(j) ? 'q-num' : undefined}>{c}</th>)}</tr></thead>
         <tbody>
           {filas.map((f, i) => (
-            <tr key={i}>{f.map((v, j) => (j === 0 ? <th key={j} scope="row">{v}</th> : <td key={j} className={numericas.includes(j) ? 'q-num' : undefined}>{v}</td>))}</tr>
+            <tr key={i} className={i === destacada ? 'q-fila-destacada' : apagadas.includes(i) ? 'q-fila-apagada' : undefined}>{f.map((v, j) => {
+              const c = celda(v);
+              const contenido = <>{c.texto}{c.sub && <span className="q-tabla-sub">{c.sub}</span>}</>;
+              if (j === 0) return <th key={j} scope="row">{contenido}</th>;
+              const clase = [numericas.includes(j) && 'q-num', c.tono && 'q-tono-' + c.tono].filter(Boolean).join(' ') || undefined;
+              if (barra && j === barra.columna) {
+                const valor = barra.valores[i];
+                return <td key={j} className={clase}><span className="q-celda-barra"><i aria-hidden="true" style={{ width: valor == null ? 0 : `${(valor / max) * 100}%` }} /><span>{contenido}</span></span></td>;
+              }
+              return <td key={j} className={clase}>{contenido}</td>;
+            })}</tr>
           ))}
         </tbody>
       </table>

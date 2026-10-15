@@ -1,4 +1,4 @@
-// Textos de la capa Sugiere, como en producción: cada alerta es un título con su dato y una sola línea de qué mirar.
+// Textos del modelo (Inteligencia y Activación), como en producción: cada alerta es un título con su dato y una sola línea de qué mirar.
 // Lo que se propone queda dentro de lo que maneja la agencia (pauta, piezas, páginas, palabras clave).
 // Lo que depende del cliente (su equipo, sus sedes) se conversa con él; nunca se le pide más al personal.
 import { numero, dolares, porcentaje, fecha } from '../sistema/formato.js';
@@ -38,7 +38,7 @@ const ALERTAS = {
   'plataforma-vs-crm': (d) => ({
     titulo: 'La plataforma y el CRM no coinciden en cuál rinde más',
     dato: `${d.porLead} trae el lead más barato; ${d.porInscripcion}, la inscripción más barata.`,
-    mirar: 'El costo por inscripción, en Analiza, antes de mover inversión entre estas dos plataformas.',
+    mirar: 'El costo por inscripción, en Rendimiento, antes de mover inversión entre estas dos plataformas.',
   }),
   'llega-poco': (d) => ({
     titulo: `De ${d.plataforma} llegan al CRM menos leads de los que reporta`,
@@ -100,7 +100,7 @@ export function sugerencia(s) {
     dato: `${d.nombre} cuesta ${dolares(d.cpl, 2)} por lead y ${dolares(d.cohorte.cpa)} por inscripción; ${h.nombre}, ${dolares(h.cpl, 2)} y ${dolares(h.cohorte.cpa)}.`,
     estimacion: `Podría sumar entre ${r(s.leads.baja)} y ${r(s.leads.alta)} leads al mes y unas ${r(s.inscripciones.central)} inscripciones. Es una estimación con rango, no una promesa.`,
     sostiene: `La plataforma y el CRM coinciden en que ${d.nombre} es la más cara.${d.cohorte.pocosCasos ? ` Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción puede cambiar mucho de un mes a otro.` : ''}`,
-    supuestos: s.supuestos, ir: 's-2-2', irTexto: 'De la pauta al CRM',
+    supuestos: s.supuestos, ir: 's-4-2', irTexto: 'De la pauta al CRM',
   };
 }
 

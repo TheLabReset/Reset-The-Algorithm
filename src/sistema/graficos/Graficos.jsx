@@ -2,14 +2,15 @@
 // lo dibujado contra la capa de cálculo. Todo color sale de los tokens (clases en graficos.css).
 // Ninguno calcula datos: reciben valores ya armados por src/calculo.
 import { useId, useState } from 'react';
-import { lineal, marcas, camino, ultimoConValor, margenRotulos, recortar, separar, useAncho, escalon } from './util.js';
+import { lineal, marcas, camino, area, ultimoConValor, margenRotulos, recortar, separar, useAncho, escalon } from './util.js';
 import { numero, fecha, fechaSinAnio, fechaCorta, mesCorto, mesAnio, porcentaje } from '../formato.js';
 
 const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
 // Envoltura: mide el ancho, pone una tabla para lectores de pantalla y la pista flotante.
 // Toda marca o zona con data-pista muestra su texto al pasar el puntero o al enfocarla.
-export function Grafico({ etiqueta, tabla, children, className = '' }) {
+// verTabla={false} cuando la tarjeta ya muestra una tabla con lo mismo, justo debajo
+export function Grafico({ etiqueta, tabla, children, className = '', verTabla = true }) {
   const [ref, ancho] = useAncho();
   const [pista, setPista] = useState(null);
   const mover = (e) => {
@@ -25,6 +26,17 @@ export function Grafico({ etiqueta, tabla, children, className = '' }) {
         <div className="q-pista" role="presentation" style={{ left: Math.min(Math.max(pista.x, 90), pista.ancho - 90), top: pista.y }}>
           {pista.texto.split('\n').map((l, i) => <span key={i}>{l}</span>)}
         </div>
+      )}
+      {tabla && verTabla && (
+        <details className="q-ver-tabla">
+          <summary>Ver como tabla</summary>
+          <div className="q-tabla-marco" aria-hidden="true">
+            <table className="q-tabla">
+              <thead><tr>{tabla.columnas.map((c, j) => <th key={c + j} scope="col" className={j ? 'q-num' : undefined}>{c}</th>)}</tr></thead>
+              <tbody>{tabla.filas.map((f, i) => <tr key={i}>{f.map((v, j) => (j ? <td key={j} className="q-num">{v}</td> : <th key={j} scope="row">{v}</th>))}</tr>)}</tbody>
+            </table>
+          </div>
+        </details>
       )}
       {tabla && (
         <div className="solo-lector">{/* una tabla no recorta su contenido: el contenedor sí */}
@@ -60,7 +72,7 @@ const Zona = ({ x, y, w, h, pista }) => <rect className="q-zona" x={x} y={y} wid
 
 // ─────────────── Línea con período de comparación en gris y eventos al pie ───────────────
 export function Linea({ serie, previa, eventos = [], formato = numero, alto: altoPedido, etiqueta, rotuloX = 'dia' }) {
-  const tabla = { columnas: ['Fecha', 'Valor', ...(previa ? ['Comparación'] : [])], filas: serie.map((p, i) => [p.fecha, formato(p.valor), ...(previa ? [formato(previa[i]?.valor)] : [])]) };
+  const tabla = { columnas: ['Fecha', 'Valor', ...(previa ? ['Comparación'] : [])], filas: serie.map((p, i) => [fechaCorta(p.fecha), formato(p.valor), ...(previa ? [formato(previa[i]?.valor)] : [])]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
@@ -83,7 +95,8 @@ export function Linea({ serie, previa, eventos = [], formato = numero, alto: alt
             })}
             {serie.map((p, i) => <Zona key={'z' + p.fecha} x={x(i) - (x(1) - x(0)) / 2} y={m.t} w={x(1) - x(0)} h={alto - m.b - m.t} pista={`${fecha(p.fecha)}\n${formato(p.valor)}${previa ? `\ncomparación: ${formato(previa[i]?.valor)}` : ''}`} />)}
             {eventos.map((e) => { const i = serie.findIndex((p) => p.fecha === e.fecha); return i < 0 ? null : <g key={e.fecha} className="q-evento"><line x1={x(i)} x2={x(i)} y1={m.t} y2={alto - m.b} /><text x={x(i) + 4} y={m.t + 10}>{e.texto}</text></g>; })}
-            {serie.map((p, i) => (p.valor == null && i > 0 && i < serie.length - 1 ? <rect key={'h' + p.fecha} className="q-hueco" x={x(i) - 3} y={m.t} width={6} height={alto - m.b - m.t} /> : null))}
+            {serie.map((p, i) => (p.valor == null && serie.slice(0, i).some((q) => q.valor != null) && serie.slice(i + 1).some((q) => q.valor != null) ? <rect key={'h' + p.fecha} className="q-hueco" x={x(i) - 3} y={m.t} width={6} height={alto - m.b - m.t} /> : null))}
+            <path className="q-area" d={area(serie, x, y, y(0))} />
             {previa && <path className="q-linea-previa" d={camino(previa, x, y)} />}
             <path className="q-linea" d={camino(serie, x, y)} />
             {serie.map((p, i) => (p.valor != null ? <circle key={p.fecha} className="q-punto-oculto" cx={x(i)} cy={y(p.valor)} r="3" data-fecha={p.fecha} data-valor={p.valor} /> : null))}
@@ -234,12 +247,15 @@ export function Bala({ filas, max, formato = numero, formatoEje, etiqueta }) {
 
 // ─────────────── Barras ordenadas, con el valor de comparación como raya ───────────────
 export function Barras({ filas, formato = numero, max: maxComun, margen, margenDer, resaltar, rotuloPrevio, etiqueta }) {
-  const tabla = { columnas: ['', 'Valor', 'Comparación'], filas: filas.map((f) => [f.nombre, formato(f.valor), f.previo == null ? 'sin dato' : formato(f.previo)]) };
+  const hayPrevio = filas.some((f) => f.previo != null);
+  const tabla = { columnas: ['', 'Valor', ...(hayPrevio ? ['Comparación'] : [])], filas: filas.map((f) => [f.nombre, formato(f.valor), ...(hayPrevio ? [f.previo == null ? 'sin dato' : formato(f.previo)] : [])]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
         const conPrevio = rotuloPrevio && filas.some((f) => f.previo != null);
-        const fila = 30, m = { t: conPrevio ? 26 : 4, r: margenDer ?? (filas.some((f) => f.nota) ? 156 : 72), b: 4, l: margen ?? margenRotulos(filas.map((f) => f.nombre), ancho) };
+        // en pantallas angostas la nota de cada fila se queda en la pista y en la tabla: la barra necesita el espacio
+        const angosto = ancho < 480, conNota = !angosto && filas.some((f) => f.nota);
+        const fila = 30, m = { t: conPrevio ? 26 : 4, r: margenDer ?? (conNota ? 156 : 72), b: 4, l: margen ?? Math.min(margenRotulos(filas.map((f) => f.nombre), ancho), Math.round(ancho * (angosto ? 0.38 : 0.5))) };
         const alto = m.t + filas.length * fila + m.b;
         const max = maxComun ?? Math.max(1, ...filas.flatMap((f) => [f.valor ?? 0, f.previo ?? 0]));
         const x = lineal(0, max, m.l, ancho - m.r);
@@ -251,12 +267,12 @@ export function Barras({ filas, formato = numero, max: maxComun, margen, margenD
               const r = resaltar && resaltar === f.nombre;
               return (
                 <g key={f.nombre}>
-                  <Zona x={0} y={cy} w={ancho} h={fila} pista={`${f.nombre}\n${f.valor == null ? f.nota || 'sin dato' : formato(f.valor)}${f.previo != null ? `\ncomparación: ${formato(f.previo)}` : ''}`} />
+                  <Zona x={0} y={cy} w={ancho} h={fila} pista={`${f.nombre}\n${f.valor == null ? f.nota || 'sin dato' : formato(f.valor) + (f.nota ? ` · ${f.nota}` : '')}${f.previo != null ? `\ncomparación: ${formato(f.previo)}` : ''}`} />
                   <text className={`q-rotulo-fila${r ? ' q-fuerte' : ''}`} x={m.l - 10} y={cy + fila / 2 + 4} textAnchor="end">{recortar(f.nombre, m.l)}</text>
                   {f.valor == null ? <text className="q-nota" x={m.l} y={cy + fila / 2 + 4}>{f.nota || 'sin dato'}</text> : <>
-                    {f.valor > 0 && <rect className={r ? 'q-barra-acento' : 'q-barra'} x={x(0)} y={cy + 7} width={Math.max(1, x(f.valor) - x(0))} height={fila - 14} rx="2" data-valor={f.valor} />}
+                    {f.valor > 0 && <rect className={r ? 'q-barra-acento' : resaltar ? 'q-barra-resto' : 'q-barra'} x={x(0)} y={cy + 7} width={Math.max(1, x(f.valor) - x(0))} height={fila - 14} rx="2" data-valor={f.valor} />}
                     {f.previo != null && <line className="q-raya-previa" x1={x(f.previo)} x2={x(f.previo)} y1={cy + 3} y2={cy + fila - 3} data-valor={f.previo} />}
-                    <text className="q-rotulo-valor" x={x(Math.max(f.valor, f.previo ?? 0)) + 8} y={cy + fila / 2 + 4}>{formato(f.valor)}{f.nota && <tspan className="q-nota"> · {f.nota}</tspan>}</text>
+                    <text className="q-rotulo-valor" x={x(Math.max(f.valor, f.previo ?? 0)) + 8} y={cy + fila / 2 + 4}>{formato(f.valor)}{conNota && f.nota && <tspan className="q-nota"> · {f.nota}</tspan>}</text>
                   </>}
                 </g>
               );
@@ -269,10 +285,10 @@ export function Barras({ filas, formato = numero, max: maxComun, margen, margenD
 }
 
 // ─────────────── Franja: partes de un todo, rótulo y leyenda con el mismo reparto ───────────────
-export function Franja({ partes, leyenda = true, etiqueta, formato = (p) => porcentaje(p) }) {
+export function Franja({ partes, leyenda = true, etiqueta, formato = (p) => porcentaje(p), verTabla = true }) {
   const tabla = { columnas: ['Parte', 'Valor', '%'], filas: partes.map((p) => [p.nombre, numero(p.valor), p.pct == null ? '' : formato(p.pct)]) };
   return (
-    <Grafico etiqueta={etiqueta} tabla={tabla}>
+    <Grafico etiqueta={etiqueta} tabla={tabla} verTabla={verTabla}>
       {(ancho) => {
         const total = partes.reduce((s, p) => s + p.valor, 0) || 1;
         let x0 = 0;
@@ -307,7 +323,7 @@ export function Etapas({ filas, etiqueta }) {
                 <g key={f.nombre}>
                   <Zona x={0} y={cy} w={ancho} h={fila} pista={`${f.nombre}\n${numero(f.valor)}${tasa != null ? `\n${porcentaje(tasa * 100, 1)} de la anterior` : ''}`} />
                   <text className="q-rotulo-fila" x={m.l - 10} y={cy + fila / 2 + 4} textAnchor="end">{recortar(f.nombre, m.l)}</text>
-                  <rect className={i === filas.length - 1 ? 'q-barra-acento' : 'q-barra'} x={x(0)} y={cy + 9} width={Math.max(1, x(f.valor) - x(0))} height={fila - 18} rx="2" data-valor={f.valor} />
+                  <rect className={i === filas.length - 1 ? 'q-barra-acento' : 'q-barra-resto'} x={x(0)} y={cy + 9} width={Math.max(1, x(f.valor) - x(0))} height={fila - 18} rx="2" data-valor={f.valor} />
                   <text className="q-rotulo-valor" x={x(f.valor) + 8} y={cy + fila / 2 + 4}>{numero(f.valor)}{tasa != null && <tspan className="q-nota"> · {porcentaje(tasa * 100, tasa < 0.1 ? 1 : 0)} de la anterior</tspan>}</text>
                 </g>
               );
@@ -371,6 +387,7 @@ export function MapaCalor({ matriz, formato = numero, etiqueta }) {
 // ─────────────── Dos columnas alineadas, cada una con su escala (nunca doble eje) ───────────────
 export function Columnas({ filas, tituloA, tituloB, formatoA = numero, formatoB = numero, etiqueta }) {
   const tabla = { columnas: ['', tituloA, tituloB], filas: filas.map((f) => [f.nombre, formatoA(f.a), f.b == null ? 'sin dato' : formatoB(f.b)]) };
+  const hayA = filas.some((f) => f.resaltarA), hayB = filas.some((f) => f.resaltarB);
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
@@ -388,10 +405,10 @@ export function Columnas({ filas, tituloA, tituloB, formatoA = numero, formatoB 
                 <g key={f.nombre}>
                   <Zona x={0} y={cy} w={ancho} h={fila} pista={`${f.nombre}\n${tituloA}: ${formatoA(f.a)}${f.metaA != null ? ` (meta ${formatoA(f.metaA)})` : ''}\n${tituloB}: ${f.b == null ? 'sin dato' : formatoB(f.b)}${f.notaB ? ` ${f.notaB}` : ''}`} />
                   <text className={`q-rotulo-fila${f.resaltar ? ' q-fuerte' : ''}`} x={l - 10} y={cy + fila / 2 + 4} textAnchor="end">{recortar(f.nombre, l)}</text>
-                  {f.a != null && <rect className={f.resaltarA ? 'q-barra-acento' : 'q-barra'} x={xa(0)} y={cy + 8} width={Math.max(1, xa(f.a) - xa(0))} height={fila - 16} rx="2" data-valor={f.a} />}
+                  {f.a != null && <rect className={f.resaltarA ? 'q-barra-acento' : hayA ? 'q-barra-resto' : 'q-barra'} x={xa(0)} y={cy + 8} width={Math.max(1, xa(f.a) - xa(0))} height={fila - 16} rx="2" data-valor={f.a} />}
                   {f.metaA != null && <line className="q-marca" x1={xa(f.metaA)} x2={xa(f.metaA)} y1={cy + 4} y2={cy + fila - 4} data-valor={f.metaA} />}
                   <text className={`q-rotulo-valor${f.tonoA ? ' q-' + f.tonoA : ''}`} x={xa(Math.max(f.a ?? 0, f.metaA ?? 0)) + 6} y={cy + fila / 2 + 4}>{formatoA(f.a)}{f.notaA ? ` ${f.notaA}` : ''}</text>
-                  {f.b != null && <rect className={f.pocosB ? 'q-barra-rayada' : f.resaltarB ? 'q-barra-acento' : 'q-barra'} x={xb(0)} y={cy + 8} width={Math.max(1, xb(f.b) - xb(0))} height={fila - 16} rx="2" data-valor={f.b} />}
+                  {f.b != null && <rect className={f.pocosB ? 'q-barra-rayada' : f.resaltarB ? 'q-barra-acento' : hayB ? 'q-barra-resto' : 'q-barra'} x={xb(0)} y={cy + 8} width={Math.max(1, xb(f.b) - xb(0))} height={fila - 16} rx="2" data-valor={f.b} />}
                   <text className="q-rotulo-valor" x={(f.b != null ? xb(f.b) : xb(0)) + 6} y={cy + fila / 2 + 4}>{f.b == null ? 'sin dato' : formatoB(f.b)}{f.notaB && <tspan className="q-nota"> {f.notaB}</tspan>}</text>
                 </g>
               );
@@ -403,28 +420,30 @@ export function Columnas({ filas, tituloA, tituloB, formatoA = numero, formatoB 
   );
 }
 
-// ─────────────── Acumulado contra plan (ritmo de inversión) ───────────────
-export function Acumulado({ serie, formato = numero, etiqueta }) {
-  const tabla = { columnas: ['Fecha', 'Real acumulado', 'Plan acumulado'], filas: serie.map((p) => [p.fecha, formato(p.real), formato(p.plan)]) };
+// ─────────────── Acumulado del período contra una referencia (el mismo tramo de la comparación) ───────────────
+export function Acumulado({ serie, formato = numero, etiqueta, rotuloReal = 'este período', rotuloRef = 'comparación' }) {
+  const tabla = { columnas: ['Fecha', rotuloReal, rotuloRef], filas: serie.map((p) => [fechaCorta(p.fecha), formato(p.real), formato(p.plan)]) };
   return (
     <Grafico etiqueta={etiqueta} tabla={tabla}>
       {(ancho) => {
         const alto = Math.round(Math.min(240, Math.max(180, ancho * 0.36))), m = { t: 16, r: 92, b: 26, l: 64 };
-        const ys = marcas(Math.max(...serie.map((p) => Math.max(p.real ?? 0, p.plan))));
+        const ys = marcas(Math.max(1, ...serie.map((p) => Math.max(p.real ?? 0, p.plan ?? 0))));
         const x = lineal(0, serie.length - 1, m.l, ancho - m.r), y = lineal(0, ys.at(-1), alto - m.b, m.t);
         const plan = serie.map((p) => ({ valor: p.plan })), real = serie.map((p) => ({ valor: p.real }));
-        const iu = ultimoConValor(real), n = serie.length - 1;
-        const [yr, yp] = separar([y(serie[iu]?.real ?? 0) + 4, y(serie[n].plan) + 4]);
+        const iu = ultimoConValor(real);
+        const ip = ultimoConValor(plan);
+        const [yr, yp] = separar([y(serie[iu]?.real ?? 0) + 4, y(serie[ip]?.plan ?? 0) + 4]);
         return (
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
             {ys.map((v) => <g key={v}><line className="q-rejilla" x1={m.l} x2={ancho - m.r} y1={y(v)} y2={y(v)} /><text className="q-eje" x={m.l - 8} y={y(v) + 4} textAnchor="end">{formato(v)}</text></g>)}
             {serie.map((p, i) => (i % 7 === 0 ? <text key={p.fecha} className="q-eje" x={x(i)} y={alto - 8} textAnchor="middle">{fechaCorta(p.fecha)}</text> : null))}
-            {serie.map((p, i) => <Zona key={'z' + i} x={x(i) - (x(1) - x(0)) / 2} y={m.t} w={x(1) - x(0)} h={alto - m.b - m.t} pista={`${fecha(p.fecha)}\nreal: ${formato(p.real)}\nplan: ${formato(p.plan)}`} />)}
-            <path className="q-linea-plan" d={camino(plan, x, y)} />
+            {serie.map((p, i) => <Zona key={'z' + i} x={x(i) - (x(1) - x(0)) / 2} y={m.t} w={x(1) - x(0)} h={alto - m.b - m.t} pista={`${fecha(p.fecha)}\n${rotuloReal}: ${formato(p.real)}\n${rotuloRef}: ${formato(p.plan)}`} />)}
+            <path className="q-area" d={area(real, x, y, y(0))} />
+            <path className="q-linea-previa" d={camino(plan, x, y)} />
             <path className="q-linea" d={camino(real, x, y)} />
             {real.map((p, i) => (p.valor != null ? <circle key={i} className="q-punto-oculto" cx={x(i)} cy={y(p.valor)} r="3" data-valor={p.valor} /> : null))}
             {iu >= 0 && <><circle className="q-punto-final" cx={x(iu)} cy={y(serie[iu].real)} r="4" /><text className="q-rotulo-final" x={x(iu) + 8} y={yr}>{formato(serie[iu].real)}</text></>}
-            <text className="q-rotulo-previo" x={x(n) + 8} y={yp}>plan {formato(serie[n].plan)}</text>
+            {ip >= 0 && <text className="q-rotulo-previo" x={x(ip) + 8} y={yp}>{formato(serie[ip].plan)}</text>}
           </Svg>
         );
       }}
@@ -512,7 +531,7 @@ export function Histograma({ barras, formato = numero, rotulo, resaltar = [], et
               return (
                 <g key={b.nombre}>
                   <Zona x={m.l + i * paso} y={m.t} w={paso} h={alto - m.b - m.t} pista={`${b.nombre}\n${formato(b.valor)}`} />
-                  {b.valor > 0 && <rect className={r ? 'q-barra-acento' : 'q-barra'} x={x} y={y(b.valor)} width={w} height={y(0) - y(b.valor)} rx="2" data-valor={b.valor} />}
+                  {b.valor > 0 && <rect className={r ? 'q-barra-acento' : resaltar.length ? 'q-barra-resto' : 'q-barra'} x={x} y={y(b.valor)} width={w} height={y(0) - y(b.valor)} rx="2" data-valor={b.valor} />}
                   {/* rótulos a intervalo fijo; una barra resaltada fuera del intervalo se rotula solo si cabe */}
                   {(i % cada === 0 || (r && cada === 1)) && <text className={`q-eje${r ? ' q-fuerte' : ''}`} x={x + w / 2} y={alto - 8} textAnchor="middle">{b.corto ?? b.nombre}</text>}
                   {(rotulo || i === tope) && <text className="q-rotulo-valor" x={x + w / 2} y={y(b.valor ?? 0) - 6} textAnchor="middle">{rotulo ? rotulo(b) : formato(b.valor)}</text>}

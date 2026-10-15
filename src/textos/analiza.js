@@ -1,4 +1,4 @@
-// Lecturas de la capa Analiza: lo que aparece al cruzar fuentes. Observan; no ordenan.
+// Lecturas de los cruces entre fuentes (Inteligencia, Activación y Rendimiento). Observan; no ordenan.
 import { numero, dolares, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
 import { periodoTexto, mesTexto, capital, lista, horasTexto, diasTexto } from './comun.js';
 

@@ -39,6 +39,7 @@ export function leePlataformas(data, P) {
       cplPrevio: medidosPrevio ? razon(invPrevio, leadsPrevio) : null,
       cambioCpl: medidosPrevio && P.compararDesde >= cfg.desde ? cambioPct(razon(inversion, leads), razon(invPrevio, leadsPrevio)) : null,
       objetivo: objetivoPlataforma(cfg, pl, invCanal),
+      difObjetivo: razon(inversion, leads) != null ? razon(inversion, leads) - objetivoPlataforma(cfg, pl, invCanal) : null, // + paga más que su objetivo
       diasSinDato: Math.max(...actual.map((a) => a.sinDato)), medidos,
       campanas,
       porDia: fechas.map((d) => {
@@ -306,6 +307,7 @@ export function analizaPautaCrm(data, P, plataformas) {
     return {
       id: p.id, nombre: p.nombre, inversion: p.inversion, reportados: p.leads, enCrm: crm.leads, inscritosHastaHoy: crm.altas,
       porCadaReportado: razon(crm.leads, p.leads), costoCrm: razon(p.inversion, crm.leads),
+      cplReportado: razon(p.inversion, p.leads), costoInscrito: razon(p.inversion, crm.altas),
     };
   });
 }

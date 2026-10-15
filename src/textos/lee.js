@@ -1,4 +1,4 @@
-// Lecturas de la capa Lee. Cada función recibe la vista y devuelve frases que observan, no ordenan.
+// Lecturas de cada fuente por separado (Captura, Activación y Rendimiento). Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
 import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo, fecha } from '../sistema/formato.js';
 import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto } from './comun.js';

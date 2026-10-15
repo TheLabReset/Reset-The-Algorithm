@@ -101,7 +101,7 @@ export function armarVista(data, filtros, estado = {}) {
       porOrigen: [...cfg.plataformas, { ...cfg.organico, canales: [cfg.organico.id] }].map((c) => {
         const o = { leads: 0, contactos: 0, citas: 0, asisten: 0, altas: 0 };
         for (const id of c.canales) for (const e of ETAPAS) o[e] += co.porOrigen[id]?.[e] || 0;
-        return { id: c.id, nombre: c.nombre, ...o, tasaAlta: razon(o.altas, o.leads), destinos: { alta: o.altas, asistio: o.asisten - o.altas, cita: o.citas - o.asisten, contacto: o.contactos - o.citas, sin: o.leads - o.contactos } };
+        return { id: c.id, nombre: c.nombre, ...o, tasaAlta: razon(o.altas, o.leads), pocosCasos: o.altas < cfg.metodo.casosMinimos, destinos: { alta: o.altas, asistio: o.asisten - o.altas, cita: o.citas - o.asisten, contacto: o.contactos - o.citas, sin: o.leads - o.contactos } };
       }),
       periodo: { leads: enPeriodo.leads, dePauta: enPeriodo.leads - deSitio, deSitio },
     };
@@ -174,13 +174,16 @@ export function armarVista(data, filtros, estado = {}) {
       cohorte: o ? { leads: o.leads, altas: o.altas, tasaAlta: razon(o.altas, o.leads), cpa: razon(invCoh.inversion, o.altas), pocosCasos: o.altas < cfg.metodo.casosMinimos, cobertura: invCoh.cobertura } : null,
     };
   });
+  // Costo por inscripción de toda la pauta: inversión de la cohorte entre sus inscripciones de pauta
+  const totalCohorte = coCanal ? { inversion: suma(cfg.plataformas, (pl) => ventanaPlataforma(data, pl, cohorteDesde, cohorteHasta).inversion), altas: suma(canales, (c) => c.cohorte?.altas || 0) } : null;
+  if (totalCohorte) totalCohorte.cpa = razon(totalCohorte.inversion, totalCohorte.altas);
   const porCpl = [...canales].filter((c) => c.cpl != null).sort((a, b) => a.cpl - b.cpl);
   const porCpa = [...canales].filter((c) => c.cohorte?.cpa != null && !c.cohorte.pocosCasos).sort((a, b) => a.cohorte.cpa - b.cohorte.cpa);
   const rendimiento = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : {
     estado: 'ok', universo: 'Pauta × CRM: inversión de cada plataforma, inscripciones del CRM',
     // si el costo por inscripción de todas cae dentro de un margen chico, no hay «más barata»: se dice que cuestan parecido
     cpaParecido: porCpa.length > 1 && porCpa.at(-1).cohorte.cpa / porCpa[0].cohorte.cpa - 1 < cfg.metodo.margenParecido ? { min: porCpa[0].cohorte.cpa, max: porCpa.at(-1).cohorte.cpa } : null,
-    canales, masBaratoPorLead: porCpl[0] || null, masBaratoPorInscripcion: porCpa[0] || null,
+    canales, totalCohorte, masBaratoPorLead: porCpl[0] || null, masBaratoPorInscripcion: porCpa[0] || null,
     sobreMeta: canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl), cohorteDesde, cohorteHasta, cohorteCerrada: !!coCanal,
   };
 

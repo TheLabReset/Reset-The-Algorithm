@@ -25,7 +25,7 @@ export function reasignacion(cfg, canales) {
     central: (curva(destino.leads, destino.inversion, destino.inversion + monto, central) - destino.leads) * destino.cohorte.tasaAlta + (curva(sobre.leads, sobre.inversion, sobre.inversion - monto, central) - sobre.leads) * sobre.cohorte.tasaAlta,
   };
   return {
-    id: 'reasignar', sostiene: ['2.1'], tipo: 'estimacion',
+    id: 'reasignar', sostiene: ['3.1'], tipo: 'estimacion',
     desde: sobre, hacia: destino, monto, leads, inscripciones,
     acuerdo: 'La plataforma y el CRM coinciden en que es la más cara; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada plataforma se mantiene'],
   };
@@ -39,7 +39,7 @@ export function agendamiento(cfg, embudo) {
   const tasaCita = razon(Ci, C);
   const mejora = cfg.metodo.mejoraAgendamiento;
   const nuevasAltas = Al * ((tasaCita + mejora) / tasaCita) - Al; // las etapas siguientes conservan su tasa
-  return { id: 'agendar', sostiene: ['1.2'], tipo: 'escenario', tasaCita, mejora, nuevasAltas, sinCita: mayor, leads: L, supuestos: [`La tasa de cita sube ${Math.round(mejora * 100)} puntos`, 'Asistencia e inscripción mantienen su tasa'] };
+  return { id: 'agendar', sostiene: ['4.3'], tipo: 'escenario', tasaCita, mejora, nuevasAltas, sinCita: mayor, leads: L, supuestos: [`La tasa de cita sube ${Math.round(mejora * 100)} puntos`, 'Asistencia e inscripción mantienen su tasa'] };
 }
 
 export function fatigaCreativa(data, hasta) {
@@ -53,12 +53,12 @@ export function fatigaCreativa(data, hasta) {
   const caida = (antes.ctr - previo.ctr) / previo.ctr, recuperacion = (despues.ctr - antes.ctr) / antes.ctr;
   if (!(caida <= -0.1 && recuperacion >= 0.1)) return null;
   const canal = data.config.canales.find((c) => c.id === ev.canal);
-  return { id: 'renovar', sostiene: ['1.1'], tipo: 'observacion', canal, evento: ev, ctrPrevio: previo.ctr, ctrAntes: antes.ctr, ctrDespues: despues.ctr, caida, recuperacion, diasDespues: despues.dias, supuestos: ['Compara 3 semanas antes del cambio de piezas con las 3 semanas de 6 a 9 semanas antes, y con lo que va desde el cambio'] };
+  return { id: 'renovar', sostiene: ['3.2'], tipo: 'observacion', canal, evento: ev, ctrPrevio: previo.ctr, ctrAntes: antes.ctr, ctrDespues: despues.ctr, caida, recuperacion, diasDespues: despues.dias, supuestos: ['Compara 3 semanas antes del cambio de piezas con las 3 semanas de 6 a 9 semanas antes, y con lo que va desde el cambio'] };
 }
 
 export function temporada(cfg, hasta) {
   const m = +hasta.slice(5, 7);
   const proximos = [1, 2, 3].map((k) => ((m - 1 + k) % 12) + 1);
   const pico = proximos.map((x) => ({ mes: x, factor: cfg.estacionalidad[x - 1] })).filter((x) => x.factor >= 1.1).sort((a, b) => b.factor - a.factor)[0];
-  return pico ? { id: 'temporada', sostiene: ['1.3', '3.3'], tipo: 'observacion', ...pico, supuestos: ['Estacionalidad de «gimnasio» en Google Trends, promedio 2022 a 2025'] } : null;
+  return pico ? { id: 'temporada', sostiene: ['1.1', '2.2'], tipo: 'observacion', ...pico, supuestos: ['Estacionalidad de «gimnasio» en Google Trends, promedio 2022 a 2025'] } : null;
 }

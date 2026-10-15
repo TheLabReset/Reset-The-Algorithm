@@ -1,7 +1,9 @@
 // Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
-import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo } from '../sistema/Componentes.jsx';
-import { Histograma, Barras } from '../sistema/graficos/Graficos.jsx';
-import { diaSemanaLargo } from '../sistema/formato.js';
+import { useState } from 'react';
+import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto } from '../sistema/Componentes.jsx';
+import { Histograma, Barras, Dispersion } from '../sistema/graficos/Graficos.jsx';
+import { diaSemanaLargo, compacto, mesCorto } from '../sistema/formato.js';
+import { comparacionTexto, tramoFechas } from '../textos/comun.js';
 import { alerta, bien } from '../textos/sugiere.js';
 import { seccionPorNumero } from '../capas/estructura.js';
 import { fechaCorta, numero } from '../sistema/formato.js';
@@ -25,10 +27,30 @@ export function buenasDe(vista) {
   return (vista.sugiere.queVaBien || []).map((b) => { const t = bien(b); return t && { ...t, nivel: 'bien', id: `b-${b.id}-${slug(b.fuente)}`, ...destino(b.sostiene) }; }).filter(Boolean);
 }
 
-// Marco de una capa: índice fijo al costado y, al centro, cabecera, resumen y capítulos
+// Estado de una tarjeta cuando su fuente no trae el dato
+export const sinDato = (estado) => ({ tipo: estado === 'no-cargo' ? 'no-cargo' : estado === 'fuera' ? 'fuera' : 'sin-datos', reemplaza: true });
+export const delta = (cambio, mejorSi, v) => ({ cambio, mejorSi, referencia: `contra ${comparacionTexto(v.periodo)}`, motivo: 'sin comparación' });
+// En el resumen la referencia va corta para que cada cifra quede en una línea: «contra set 2025»
+export const deltaCorto = (cambio, mejorSi, v) => ({ ...delta(cambio, mejorSi, v), referencia: `contra ${mesCorto(+v.periodo.compararDesde.slice(5, 7))} ${v.periodo.compararDesde.slice(0, 4)}` });
+
+// Partes de un todo: tres con color (orden validado para daltonismo) y el resto juntas en un solo gris.
+// La tabla de al lado lista todas; la franja no repite grises que no se distinguen.
+export const partesConResto = (partes, nombreResto) => {
+  const resto = partes.slice(3);
+  const pctResto = resto.every((p) => p.pct != null) ? resto.reduce((t, p) => t + p.pct, 0) : null;
+  return [
+    ...partes.slice(0, 3).map((p, i) => ({ ...p, clase: `q-p${i}` })),
+    ...(resto.length ? [{ nombre: nombreResto, valor: resto.reduce((t, p) => t + p.valor, 0), pct: pctResto, clase: 'q-p5', nota: resto.map((p) => p.nombre.toLowerCase()).join(', ') }] : []),
+  ];
+};
+
+// Marco de una capa: índice fijo al costado y, al centro, cabecera, resumen y capítulos.
+// Da a cada tarjeta la ventana del período («1 al 30 de setiembre»), que la tarjeta muestra arriba a la derecha.
 export function MarcoCapa({ capa, vista, bajada, conResumen = true, children }) {
   const ids = [...new Set(capa.secciones.flatMap((s) => s.fuentes))];
+  const ventana = tramoFechas(vista.periodo.desde, vista.periodo.hasta).replace(/^del /, '');
   return (
+    <VentanaContexto.Provider value={ventana}>
     <div className="q-envoltura q-capa-marco">
       <IndiceCapa secciones={capa.secciones} etiqueta={`Capítulos de ${capa.nombre}`} conResumen={conResumen} />
       <div className="q-capa">
@@ -40,6 +62,7 @@ export function MarcoCapa({ capa, vista, bajada, conResumen = true, children }) 
         {children}
       </div>
     </div>
+    </VentanaContexto.Provider>
   );
 }
 
@@ -68,6 +91,32 @@ export function HorasYDias({ porHora, horasAltas, porDiaSemana, diaMayor, format
         <Barras etiqueta={`${que} en promedio cada día de la semana`} formato={formato} resaltar={diaMayor == null ? undefined : dias[diaMayor].nombre}
           filas={dias} />
       </div>
+    </div>
+  );
+}
+
+// Competencia: dispersión de interacción y sentimiento; al elegir un punto, su ficha al lado. Arranca en la marca propia.
+export function Competencia({ marcas, numero }) {
+  const [elegida, setElegida] = useState(() => marcas.find((m) => m.propia)?.id);
+  const m = marcas.find((x) => x.id === elegida) || marcas[0];
+  return (
+    <div className="q-competencia">
+      <div>
+        <Dispersion etiqueta="Interacción y sentimiento de cada marca" rotuloX="Interacción en el mes" rotuloY="Sentimiento, de 0 a 100"
+          formatoX={compacto} notas={{ neutro: 'neutro', arriba: 'positivo', abajo: 'negativo' }}
+          puntos={marcas.map((x) => ({ id: x.id, nombre: x.nombre, propia: x.propia, x: x.interacciones, y: x.sentimiento.indice }))}
+          elegido={m.id} onElegir={setElegida} />
+        <p className="q-nota-bloque">Elige un punto para ver el detalle de cada marca.</p>
+      </div>
+      <aside className="q-ficha" aria-live="polite" aria-label={`Detalle de ${m.nombre}`}>
+        <h4>{m.nombre}</h4>
+        <dl>
+          <div><dt>Interacción</dt><dd><b>{compacto(m.interacciones)}</b> en {numero(m.publicaciones)} {m.publicaciones === 1 ? 'publicación' : 'publicaciones'}</dd></div>
+          <div><dt>Sentimiento de los comentarios</dt><dd><b>{numero(m.sentimiento.indice)}</b></dd></div>
+          <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b></dd></div>
+          <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
+        </dl>
+      </aside>
     </div>
   );
 }

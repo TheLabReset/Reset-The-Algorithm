@@ -24,43 +24,14 @@ Identifica microcomportamientos, emociones e intenciones en el ecosistema digita
 
 ---
 
-## Las 4 Capas del Algorithm
+## Las 4 capas del Algorithm
 
-### 1. **Capa de Datos (Data Layer)**
-Monitoreo en tiempo real del ecosistema digital:
-- **Google Trends**: Búsquedas relevantes en zonas objetivo
-- **TikTok**: Hashtags y contenido viral del sector
-- **Meta Platforms**: Insights de Facebook e Instagram
-- **YouTube**: Contenido de video y engagement
-- **GA4**: Métricas web del cliente
+En el orden en que trabaja la agencia: escuchar el mercado, leer lo que dice el modelo, activar la pauta y medir el resultado. El detalle de cómo se diseña cada una está en [`docs/guia-algoritmo.md`](docs/guia-algoritmo.md).
 
-**Métricas**: Búsqueda, Tendencia, Intención, Engagement
-
-### 2. **Capa de Decisión (Decision Layer)**
-Inteligencia de mercado y estrategia automática:
-- **Opportunity Score**: Índice de oportunidad 0-100
-- **Audiencias objetivo**: Segmentos configurables por cliente
-- **Mensajes clave**: Recomendaciones de messaging por canal
-- **Recomendaciones automáticas** basadas en signals de mercado
-
-**Output**: Qué mensaje activar, en qué momento y en qué plataforma
-
-### 3. **Capa de Ejecución (Execution Layer)**
-Distribución inteligente de presupuesto y contenidos:
-- **Budget Allocation**: Distribución optimizada por canal (Meta, Google, YouTube, Display)
-- **Timing Óptimo**: Horarios y días de mayor rendimiento
-- **KPIs por canal**: Conversiones, CPL, Alcance, Engagement
-
-**Output**: Implementación en tiempo real de campañas optimizadas
-
-### 4. **Capa de Optimización (Optimization Layer)**
-Performance y ajustes automáticos:
-- **KPIs principales**: Conversiones, Alcance total, Interacciones
-- **Funnel de conversión**: Alcance → Visitas → Formularios → Conversiones
-- **Análisis de competencia**: Share of voice y sentiment vs competidores
-- **Sistema de alertas**: Notificaciones cuando CPL supera límites
-
-**Output**: Evaluación continua y redistribución de inversión
+1. **Captura de señales:** qué se busca (Google Trends), qué se publica en el rubro (TikTok) y quién entra al sitio (GA4).
+2. **Inteligencia de mercado:** índice de oportunidad con su historia, qué mirar (alertas y lo que va bien), temporada y escenario si nada cambia.
+3. **Activación estratégica:** reparto de la inversión por plataforma y producto, sugerencia del modelo, cada plataforma (Google Ads, Meta Ads, TikTok Ads) con sus campañas, y las horas del sitio.
+4. **Rendimiento y optimización:** leads y acumulado del mes, de la pauta al CRM, el CRM por dentro, cuándo y dónde entran los leads, y la competencia.
 
 ---
 
