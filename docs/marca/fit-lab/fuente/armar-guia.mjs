@@ -374,7 +374,30 @@ const poses = `<div class="poses">${geo.poses.map((p) => `<figure class="pose-ca
 
 // ── Página ──
 const fuentes = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap';
-const indice = [['estrategia', 'Estrategia'], ['voz', 'Voz'], ['logo', 'Logo'], ['color', 'Color'], ['tipografia', 'Tipografía'], ['pesa', 'La pesa y sus poses'], ['movimiento', 'Movimiento'], ['fotografia', 'Fotografía'], ['aplicaciones', 'Aplicaciones'], ['accesibilidad', 'Accesibilidad'], ['gestion', 'Archivos']];
+// ── Colores del panel: se leen de src/sistema/tokens.css (no se copian) para medir su contraste sobre la tarjeta de cada tema ──
+const TOKENS = readFileSync(new URL(process.env.TOKENS || '../../../../src/sistema/tokens.css', import.meta.url), 'utf8');
+const prim = (n) => { const m = TOKENS.match(new RegExp(`--p-${n}:\\s*(#[0-9a-f]{6})`, 'i')); if (!m) throw new Error(`falta --p-${n} en tokens.css`); return m[1].toLowerCase(); };
+for (const [n, h] of [['tinta', C.tinta], ['cal', C.cal], ['rojo', C.rojo], ['rojo-texto', C.rojoTexto], ['menta', C.menta]]) if (prim(n) !== h) throw new Error(`--p-${n} del panel (${prim(n)}) no es el color de la marca (${h})`);
+const P = { tarjetaOscura: prim('o-800'), mentaDatos: prim('cat-menta'), mentaOscura: prim('menta-oscura'), rojoClaro: prim('rojo-claro'), gris: prim('n-200'), grisO: prim('o-600'), previa: prim('n-400'), previaO: prim('o-400'), naranja: prim('cat-naranja'), azul: prim('cat-azul'), mentaO: prim('cat-menta-o'), naranjaO: prim('cat-naranja-o'), azulO: prim('cat-azul-o') };
+// [papel, colores en claro, colores en oscuro, mínimo sobre la tarjeta]. El gris del resto se mide contra el color de
+// los datos, no contra la tarjeta: tiene que quedar atrás, pero distinguirse (los mínimos son los de docs/quincha.md).
+const filasPanel = [
+  ['Identidad en texto: capa activa y número de capítulo', [C.rojoTexto], [P.rojoClaro], 4.5],
+  ['Datos: barras, líneas y lo que se resalta', [P.mentaDatos], [C.menta], 3],
+  ['Mejora: variación favorable, con flecha y signo', [P.mentaOscura], [C.menta], 4.5],
+  ['Empeora: variación desfavorable, con flecha y signo', [C.rojoTexto], [P.rojoClaro], 4.5],
+  ['Lo que no se resalta (frente a los datos)', [P.gris], [P.grisO], 2, [P.mentaDatos, C.menta]],
+  ['Período de comparación', [P.previa], [P.previaO], 3],
+  ['Partes de un todo: azul, naranja y menta', [P.azul, P.naranja, P.mentaDatos], [P.azulO, P.naranjaO, P.mentaO], 3],
+];
+const muestras = (hs) => hs.map((h) => `<span class="par" style="background:${h};width:34px" title="${h.toUpperCase()}"></span>`).join(' ');
+const minimoDe = (hs, fondo) => Math.min(...hs.map((h) => contraste(h, fondo)));
+const medida = (n, hs, fondo, min) => { const c = minimoDe(hs, fondo); if (c < min) throw new Error(`${n}: ${coma(c, 2)}:1, por debajo de ${coma(min)}:1`); return coma(c, 1) + ':1'; };
+const tablaPanel = `<table class="tabla"><thead><tr><th scope="col">Papel</th><th scope="col">Tema claro</th><th scope="col" class="num">Contraste</th><th scope="col">Tema oscuro</th><th scope="col" class="num">Contraste</th><th scope="col" class="num">Mínimo</th></tr></thead><tbody>
+${filasPanel.map(([n, cl, os, min, frente]) => `<tr><th scope="row">${n}</th><td>${muestras(cl)}<br><small>${cl.map((h) => h.toUpperCase()).join(' · ')}</small></td><td class="num">${medida(n, cl, frente ? frente[0] : C.blanco, min)}</td><td>${muestras(os)}<br><small>${os.map((h) => h.toUpperCase()).join(' · ')}</small></td><td class="num">${medida(n, os, frente ? frente[1] : P.tarjetaOscura, min)}</td><td class="num">${num(min)}:1</td></tr>`).join('')}
+</tbody></table>`;
+
+const indice = [['estrategia', 'Estrategia'], ['voz', 'Voz'], ['logo', 'Logo'], ['color', 'Color'], ['tipografia', 'Tipografía'], ['pesa', 'La pesa y sus poses'], ['movimiento', 'Movimiento'], ['fotografia', 'Fotografía'], ['aplicaciones', 'Aplicaciones'], ['accesibilidad', 'Accesibilidad'], ['algoritmo', 'En The Algorithm'], ['gestion', 'Archivos']];
 
 const html = `<title>Fit Lab: guía de marca</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -519,7 +542,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
   <div>
     <div class="marca">${leer('fit-lab-horizontal-negativo.svg')}</div>
     <h1>Prueba, ajusta, <em>vuelve.</em></h1>
-    <p>Guía de marca de Fit Lab, una cadena de 12 gimnasios en Lima. El nombre viene del laboratorio: un lugar para probar, medir y ajustar. Acá lo que se prueba es la rutina, no a la persona. Es una marca ficticia: la usamos como cliente de demostración de The Algorithm. Todo lo que dice esta guía sale de estudios citados al final de cada parte.</p>
+    <p>Guía de marca de Fit Lab, una cadena de 12 gimnasios en Lima. El nombre viene del laboratorio: un lugar para probar, medir y ajustar. Acá lo que se prueba es la rutina, no a la persona. Es una marca ficticia: la usamos como cliente de demostración de The Algorithm. La estrategia, la voz, el color y la fotografía se apoyan en estudios que se citan en cada parte; el resto son decisiones de diseño, y cada una dice por qué.</p>
   </div>
   <div class="pose-grande">${pose('celebra', 360, { cara: C.tinta, acento: C.menta })}</div>
 </div></header>
@@ -532,7 +555,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 <div class="rejilla">
   <div class="carta"><span class="dato">43,7 %</span><p>de quienes entrenan en seis ciudades de Latinoamérica, Lima incluida, lo hace por salud; 41,8 % por bienestar mental. Bajar de peso: 20,9 %.</p><small>HFA, 2024, n = 2 984 (Lima n = 230). Panel en línea.</small></div>
   <div class="carta"><span class="dato">63 %</span><p>de los socios de un gimnasio de Río de Janeiro abandonó antes del tercer mes; menos de 4 % pasó los 12 meses.</p><small>Sperandei y otros, 2016, n = 5 240. La permanencia se midió por pago.</small></div>
-  <div class="carta"><span class="dato">48 %</span><p>de peruanos que quiere moverse más dice que la falta de tiempo es su barrera principal.</p><small>Ipsos Perú, 2021, unas 500 personas en línea, perfil urbano.</small></div>
+  <div class="carta"><span class="dato">48 %</span><p>de peruanos nombra la falta de tiempo como barrera para hacer más deporte. Es la más citada; en el promedio global, 37 %.</p><small>Ipsos Perú, 2021, unas 500 personas en línea, perfil urbano.</small></div>
   <div class="carta"><span class="dato">El ánimo</span><p>durante el ejercicio moderado predice si la persona vuelve; el de después, no.</p><small>Rhodes y Kates, 2015, revisión de 24 estudios.</small></div>
 </div>
 <div class="rejilla">
@@ -565,7 +588,7 @@ figcaption { font-size: 14px; color: var(--texto-2); }
   <figure><div class="lienzo claro logotipo">${leer('fit-lab-logotipo.svg')}</div><figcaption>Solo logotipo: bordados en la espalda, cantos de tomatodo y lugares donde el símbolo ya aparece cerca.</figcaption></figure>
   <figure><div class="lienzo oscuro logotipo">${leer('fit-lab-logotipo-negativo.svg')}</div><figcaption>Solo logotipo sobre tinta.</figcaption></figure>
   <figure><div class="lienzo claro iconos">${[96, 48, 32].map((t) => `<div><div style="width:${t}px;border-radius:${f(t * 0.225)}px;overflow:hidden">${leer('fit-lab-icono.svg')}</div><small>${t} px</small></div>`).join('')}<div><div style="width:16px">${leer('fit-lab-favicon.svg')}</div><small>16 px</small></div></div><figcaption>Ícono de app y favicon: la versión mínima, sin sonrisa y con brazos más gruesos (sin brazos se leía como un candado). El favicon de 16 px va sin el cuadrado rojo: dentro del cuadrado la pesa mediría 11 px; sola ocupa 15.</figcaption></figure>
-  <figure><div class="lienzo claro" style="color:var(--fl-tinta)">${leer('fit-lab-horizontal-monocromo.svg')}</div><figcaption>Monocromo: una tinta, para sellos, grabados y para The Algorithm, donde el color es dato.</figcaption></figure>
+  <figure><div class="lienzo claro" style="color:var(--fl-tinta)">${leer('fit-lab-horizontal-monocromo.svg')}</div><figcaption>Monocromo: una tinta, para sellos, grabados y piezas de un solo color.</figcaption></figure>
 </div>
 <div class="rejilla">
   <div class="lienzo">${construccion}</div>
@@ -580,20 +603,20 @@ figcaption { font-size: 14px; color: var(--texto-2); }
 <p class="lead">El rojo se eligió lejos del naranja de b2 y de los tonos arena de Bio Ritmo. La mitad fría del círculo cromático está libre en Lima: ahí entra la menta.</p></header>
 <div class="paleta">${[
   ['Rojo Lab', C.rojo, 'La pesa, fondos de marca, titulares grandes.'], ['Menta', C.menta, 'El guiño: objetos de las poses, destacados sobre tinta.'], ['Tinta', C.tinta, 'Texto y fondos oscuros.'],
-  ['Cal', C.cal, 'Fondo claro. En pantallas, blanco puro.'], ['Rojo texto', C.rojoTexto, 'Rojo para texto chico sobre cal.'], ['Pizarra', C.pizarra, 'Texto secundario sobre cal.'],
+  ['Cal', C.cal, 'Fondo claro, en papel y en pantalla. En pantalla, las tarjetas van en blanco.'], ['Rojo texto', C.rojoTexto, 'Rojo para texto chico sobre cal.'], ['Pizarra', C.pizarra, 'Texto secundario sobre cal.'],
   ['Niebla', C.niebla, 'Texto secundario sobre tinta e íconos inactivos.'],
 ].map(([n, h, u]) => `<div class="color"><div class="m" style="background:${h}"></div><div class="t"><b>${n}</b><span>${h.toUpperCase()}</span><span>${u}</span></div></div>`).join('')}</div>
 <div class="proporcion" role="img" aria-label="Proporción de uso: 60 % cal o tinta, 30 % rojo, 10 % menta"><span style="flex:60;background:${C.cal}"></span><span style="flex:30;background:${C.rojo}"></span><span class="sep" style="background:${C.tinta}"></span><span style="flex:10;background:${C.menta}"></span></div>
 <ul class="leyenda" aria-hidden="true"><li><i style="background:linear-gradient(135deg, ${C.cal} 50%, ${C.tinta} 50%)"></i>60 % cal o tinta</li><li><i style="background:${C.rojo}"></i>30 % rojo</li><li><i style="background:${C.menta}"></i>10 % menta</li><li>Entre rojo y menta, siempre tinta.</li></ul>
 <div class="tabla-marco">${tablaColor}</div>
-<p class="fuente">Contrastes medidos al armar esta guía (WCAG 2.x). La columna de deuteranopía usa la simulación de Machado y otros, 2009. El color nunca es la única señal: «clase llena» lleva palabra e ícono.</p>
+<p class="fuente">Contrastes medidos al armar esta guía (WCAG 2.x). La columna de deuteranopía usa la simulación de Machado y otros, 2009. El color nunca es la única señal: «clase llena» lleva palabra e ícono. En The Algorithm el reparto es otro: el rojo solo marca identidad y la menta es el color de los datos (parte 11).</p>
 </section>
 
 <section class="parte" id="tipografia"><header><span class="num">5 · Tipografía</span><h2>Bricolage para hablar, Atkinson para que se lea.</h2>
 <p class="lead">Dos familias libres (licencia OFL) que la competencia no usa. Bricolage Grotesque tiene rasgos irregulares que le dan gracia sin volverla infantil. Atkinson Hyperlegible Next fue diseñada para máxima legibilidad: va en señalética, horarios y letra chica.</p></header>
 <div class="rejilla">
   <div class="carta"><span class="tipo-muestra">¿Ñandú? ¡Al&nbsp;toque!</span><small>Bricolage Grotesque 800 · titulares y logotipo</small></div>
-  <div class="carta"><p style="font-size:22px">Lunes a viernes de 5:00 a 23:00. Señalética, cañón, pingüino: 0123456789.</p><small>Atkinson Hyperlegible Next 400 y 700 · texto, horarios y sala, con números tabulares. Su cero lleva barra para no confundirse con la O, y la versión que sirve Google Fonts no trae un cero sin barra: en texto corrido se acepta. Las cifras grandes (precios, datos destacados, rachas) van en Bricolage.</small></div>
+  <div class="carta"><p style="font-size:22px">Lunes a viernes de 5:00 a 23:00. Señalética, cañón, pingüino: 0123456789.</p><small>Atkinson Hyperlegible Next 400 y 700 · texto, horarios y sala, con números tabulares. Su cero lleva barra para no confundirse con la O, y la versión publicada no trae un cero sin barra: en texto corrido se acepta. Donde hay cifras en cada línea, como en The Algorithm, los dígitos del texto se toman de Bricolage. Las cifras grandes (precios, datos destacados, rachas) van en Bricolage.</small></div>
 </div>
 <div class="escala">${[['Titular', 'clamp(48px, 8vw, 96px)', 'Ya es costumbre.'], ['Título', '40px', 'Tu primera semana'], ['Subtítulo', '24px', 'Un coach arma tu rutina contigo'], ['Texto', '17px', 'Llega diez minutos antes y te mostramos la sala.'], ['Letra chica', '14px', 'Precio final con IGV. Condiciones en la web.']].map(([n, t, e], i) => `<div><span>${n} · ${t.startsWith('clamp') ? '48 a 96 px' : t.replace(/(\d)px/, '$1 px')}</span><p style="font:${i < 3 ? '800' : '400'} ${t}/1.15 ${i < 3 ? 'var(--f-titulo)' : 'var(--f-texto)'}">${e}</p></div>`).join('')}</div>
 <p class="fuente">Se evitan DM Sans, Montserrat, Roboto Condensed y Work Sans porque ya las usan gimnasios de Lima (medido en el CSS de sus sitios).</p>
@@ -656,17 +679,31 @@ ${poses}
 </div>
 </section>
 
-<section class="parte" id="gestion"><header><span class="num">11 · Archivos</span><h2>Dónde está cada cosa.</h2></header>
+<section class="parte" id="algoritmo"><header><span class="num">11 · En The Algorithm</span><h2>En el panel, el rojo dice quién es y la menta dice qué pasó.</h2>
+<p class="lead">The Algorithm es el panel de marketing de Fit Lab. Lo leen el equipo de Fit Lab y la agencia, no el socio, así que la marca entra con reglas propias. El detalle técnico está en docs/quincha.md y docs/guia-algoritmo.md del repositorio.</p></header>
+<div class="tabla-marco">${tablaPanel}</div>
+<div class="rejilla dos">
+  <div class="carta entera"><h3>Color</h3><ul class="reglas"><li>El rojo es identidad: el Rojo Lab en la pesa del logo y en la marca de la capa activa; el rojo texto en el nombre de esa capa y en el número de capítulo. Nunca es dato.</li><li>El rojo texto sí marca lo que empeora, siempre con flecha y signo.</li><li>La menta de la marca queda a ${coma(contraste(C.menta, C.blanco))}:1 sobre blanco: en el tema claro, los datos van en una menta más oscura.</li><li>Naranja y azul existen solo para partes de un todo, en orden azul, naranja y menta. No son colores de la marca: no van en el logo ni en piezas de comunicación.</li><li>Rojo y menta conviven como texto de una variación, con su flecha. Nunca como superficies que se tocan.</li></ul></div>
+</div>
+<div class="rejilla">
+  <div class="carta"><h3>Logo y pesa</h3><ul class="reglas"><li>La horizontal en negativo va sobre la barra de tinta; la versión mínima, como favicon.</li><li>La pesa aparece solo en el logo. En el panel no hay poses ni humor: se leen datos.</li><li>Lo que está cargando se muestra con un esqueleto gris, no con la pesa que piensa.</li></ul></div>
+  <div class="carta"><h3>Tipografía</h3><ul class="reglas"><li>Bricolage en títulos (700) y en cifras (600); Atkinson en el texto, con los dígitos de Bricolage.</li><li>Pesos más bajos que en la publicidad: el panel se lee de corrido.</li></ul></div>
+  <div class="carta"><h3>Voz</h3><ul class="reglas"><li>Le habla al equipo: sin tuteo y sin chistes.</li><li>Observa, no ordena. Dos frases como máximo por lectura, y cada comparación dice frente a qué.</li><li>Un dato que falta dice «sin dato», nunca cero.</li></ul></div>
+</div>
+<p class="fuente">Contrastes medidos al armar esta guía con los colores de src/sistema/tokens.css, sobre la tarjeta de cada tema: blanco en el claro y ${P.tarjetaOscura.toUpperCase()} en el oscuro. Lo que no se resalta se mide frente al color de los datos. Si un color baja de su mínimo, la guía no se arma; en el panel, npm run sistema los vuelve a medir en cada cambio.</p>
+</section>
+
+<section class="parte" id="gestion"><header><span class="num">12 · Archivos</span><h2>Dónde está cada cosa.</h2></header>
 <div class="tabla-marco"><table class="tabla"><tbody>
 <tr><th scope="row">Logos y poses</th><td>docs/marca/fit-lab/svg/ (con el logotipo a trazos; no dependen de fuentes instaladas)</td></tr>
 <tr><th scope="row">Geometría</th><td>docs/marca/fit-lab/fuente/logo.mjs: el logo se dibuja con código, no a mano</td></tr>
 <tr><th scope="row">Esta guía</th><td>docs/marca/fit-lab/fuente/armar-guia.mjs: los contrastes se miden al armarla</td></tr>
 <tr><th scope="row">Investigación</th><td>docs/marca/fit-lab/investigacion/: motivos y barreras, lenguaje y normas, color y forma</td></tr>
-<tr><th scope="row">Dentro de The Algorithm</th><td>public/marca/: solo la versión monocroma, porque ahí el color es dato</td></tr>
+<tr><th scope="row">Dentro de The Algorithm</th><td>public/marca/: favicon.svg (la versión mínima) y logo-barra.svg (la horizontal en negativo). La paleta del panel está en src/sistema/tokens.css</td></tr>
 </tbody></table></div>
 </section>
 
-<footer class="pie">Fit Lab es una marca ficticia para demostrar The Algorithm. Precios, sedes, personas y horarios son de ejemplo. Versión 3 · 14 de octubre de 2026. By The Lab.</footer>
+<footer class="pie">Fit Lab es una marca ficticia para demostrar The Algorithm. Precios, sedes, personas y horarios son de ejemplo. Versión 4 · 15 de octubre de 2026. By The Lab.</footer>
 </main>`;
 
 if (/\{\{|undefined|NaN/.test(html)) throw new Error('quedó un marcador, un undefined o un NaN');

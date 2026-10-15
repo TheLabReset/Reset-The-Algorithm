@@ -88,6 +88,7 @@ Todo sale de Quincha ([quincha.md](quincha.md), sección «Un cliente nuevo»):
 3. **Logo.** Se reemplazan los dos archivos de `public/marca/` y se mantienen sus nombres: `favicon.svg` y `logo-barra.svg` (en negativo, porque va sobre la barra oscura).
 4. Correr `npm run sistema`. Dice qué par de colores no alcanza su contraste, en claro y en oscuro. Se ajusta el primitivo hasta que pase; la regla no se ajusta.
 5. Mirar las cuatro capas en claro y en oscuro.
+6. Escribir cómo entra la marca al panel: qué es identidad y qué es dato, qué versión del logo va en la barra y qué partes de la marca no entran (personajes, humor). El modelo es la parte 11 de la guía de Fit Lab (`docs/marca/fit-lab/guia.html`).
 
 Se presenta la paleta propuesta con sus contrastes medidos y se espera la aprobación.
 

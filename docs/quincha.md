@@ -33,7 +33,7 @@ Los semánticos se agrupan por función:
   - `--serie-1`: barras y líneas, en el color de datos de la marca;
   - `--serie-resto`: el resto, cuando hay un resalte;
   - `--previa`: el período de comparación, siempre en gris;
-  - `--s2`, `--s3` y `--s4`: partes de un todo (menta, naranja y azul);
+  - `--s2`, `--s3` y `--s4` (menta, naranja y azul): partes de un todo, que en un gráfico van en orden azul, naranja y menta;
   - `--q0` a `--q6`: la rampa para magnitud.
 
 **Claro por defecto.** Se proyecta en reuniones y se lee de día. El oscuro no invierte el claro: tiene sus propios niveles, y lo más claro es lo más cercano al lector.
