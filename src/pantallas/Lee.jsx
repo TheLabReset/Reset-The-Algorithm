@@ -24,18 +24,6 @@ const partesConResto = (partes, nombreResto) => {
 };
 
 // Competencia: dispersión de interacción y sentimiento; al elegir un punto, su ficha al lado. Arranca en la marca propia.
-// Reparto del sentimiento: positivo en menta, neutro en un gris, negativo en rojo (dos polos y un centro gris)
-function Sentimiento({ s }) {
-  const partes = [['positivo', s.pctPos, 'q-sent-pos'], ['neutro', s.pctNeu, 'q-sent-neu'], ['negativo', s.pctNeg, 'q-sent-neg']];
-  return (
-    <span className="q-sentimiento">
-      <span className="q-sentimiento-barra" aria-hidden="true">{partes.map(([n, p, c]) => <i key={n} className={c} style={{ flexGrow: p }} />)}</span>
-      <span className="q-sentimiento-leyenda">{partes.map(([n, p, c]) => <span key={n}><i className={c} aria-hidden="true" />{numero(p)} % {n}</span>)}</span>
-      <span className="q-sentimiento-base">{numero(s.total)} comentarios</span>
-    </span>
-  );
-}
-
 function Competencia({ marcas }) {
   const [elegida, setElegida] = useState(() => marcas.find((m) => m.propia)?.id);
   const m = marcas.find((x) => x.id === elegida) || marcas[0];
@@ -52,9 +40,8 @@ function Competencia({ marcas }) {
         <h4>{m.nombre}</h4>
         <dl>
           <div><dt>Interacción</dt><dd><b>{compacto(m.interacciones)}</b> en {numero(m.publicaciones)} {m.publicaciones === 1 ? 'publicación' : 'publicaciones'}</dd></div>
-          <div><dt>Sentimiento de los comentarios</dt><dd><b>{numero(m.sentimiento.indice)}</b> de 100 · 50 es neutro
-            <Sentimiento s={m.sentimiento} /></dd></div>
-          <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b> {m.anuncios ? `· ${m.formatos.map((n, i) => `${numero(n)} ${['en imagen', 'en video', 'en carrusel'][i]}`).filter((t) => !t.startsWith('0 ')).join(', ')}` : ''}</dd></div>
+          <div><dt>Sentimiento de los comentarios</dt><dd><b>{numero(m.sentimiento.indice)}</b></dd></div>
+          <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b></dd></div>
           <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
         </dl>
       </aside>

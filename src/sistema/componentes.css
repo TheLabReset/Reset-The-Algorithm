@@ -205,16 +205,6 @@
 .q-palabras li { font-size: var(--t-12); color: var(--texto-1); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); border: 1px solid var(--borde); }
 
 /* Sentimiento: dos polos y un centro gris, cada parte con su número escrito */
-.q-sentimiento { display: grid; gap: var(--e-2); margin-top: var(--e-2); }
-.q-sentimiento-barra { display: flex; gap: 2px; height: 10px; }
-.q-sentimiento-barra i { display: block; min-width: 2px; border-radius: 2px; }
-.q-sentimiento-leyenda { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-3); font-size: var(--t-12); color: var(--texto-2); }
-.q-sentimiento-leyenda span { display: inline-flex; align-items: center; gap: var(--e-1); }
-.q-sentimiento-leyenda i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-.q-sentimiento-base { font-size: var(--t-12); color: var(--texto-3); }
-.q-sent-pos { background: var(--mejora); }
-.q-sent-neu { background: var(--borde-control); }
-.q-sent-neg { background: var(--empeora); }
 
 
 /* ── Alertas: el nivel lo dicen el icono y la palabra, en su color; la tarjeta es igual a las demás ── */
