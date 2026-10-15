@@ -389,26 +389,43 @@ export function NavegacionCapas({ capas, activa, onCambiar }) {
 }
 
 // ── Índice de la capa: al costado, fijo, marca el capítulo que se está leyendo ──
-export function IndiceCapa({ secciones, etiqueta, conResumen = true }) {
-  const [activa, setActiva] = useState(conResumen ? 'resumen' : secciones[0]?.id);
+// Activo = el último capítulo cuyo inicio ya pasó bajo la barra fija; arriba de todo, el primero (Resumen);
+// al llegar al final de la página, el último. Se mide en cada scroll, no con umbrales que dejan huecos.
+// Un clic baja al capítulo sin cambiar de capa; «Resumen» apunta a su capa, así un ancla compartida no se pierde.
+export function IndiceCapa({ secciones, etiqueta, conResumen = true, capaId }) {
   const ids = [...(conResumen ? ['resumen'] : []), ...secciones.map((s) => s.id)];
+  const [activa, setActiva] = useState(ids[0]);
   useEffect(() => {
-    const visibles = new Map();
-    const io = new IntersectionObserver((entradas) => {
-      entradas.forEach((e) => visibles.set(e.target.id, e.isIntersecting ? e.boundingClientRect.top : null));
-      const primera = [...visibles.entries()].filter(([, t]) => t != null).sort((a, b) => a[1] - b[1])[0];
-      if (primera) setActiva(primera[0]);
-    }, { rootMargin: '-120px 0px -60% 0px' });
-    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
-    return () => io.disconnect();
+    let cuadro = 0;
+    const medir = () => {
+      cuadro = 0;
+      const tope = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--alto-capas')) || 0;
+      let actual = ids[0];
+      for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top <= tope + 32) actual = id; }
+      if (window.scrollY > 0 && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) actual = ids.at(-1);
+      setActiva(actual);
+    };
+    const alMover = () => { if (!cuadro) cuadro = requestAnimationFrame(medir); };
+    medir();
+    window.addEventListener('scroll', alMover, { passive: true });
+    window.addEventListener('resize', alMover);
+    return () => { window.removeEventListener('scroll', alMover); window.removeEventListener('resize', alMover); cancelAnimationFrame(cuadro); };
   }, [secciones]); // eslint-disable-line react-hooks/exhaustive-deps
+  const ir = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ block: 'start', behavior: quieto ? 'auto' : 'smooth' });
+    history.replaceState(null, '', '#' + (id === 'resumen' && capaId ? capaId : id));
+  };
   return (
     <nav className="q-indice" aria-label={etiqueta}>
       <span className="q-indice-titulo">En esta capa</span>
       <ol>
-        {conResumen && <li><a href="#resumen" aria-current={activa === 'resumen' ? 'true' : undefined}>Resumen</a></li>}
+        {conResumen && <li><a href={'#' + (capaId || 'resumen')} onClick={(e) => ir(e, 'resumen')} aria-current={activa === 'resumen' ? 'true' : undefined}>Resumen</a></li>}
         {secciones.map((s) => (
-          <li key={s.id}><a href={'#' + s.id} aria-current={s.id === activa ? 'true' : undefined}>{s.titulo}</a></li>
+          <li key={s.id}><a href={'#' + s.id} onClick={(e) => ir(e, s.id)} aria-current={s.id === activa ? 'true' : undefined}>{s.titulo}</a></li>
         ))}
       </ol>
     </nav>

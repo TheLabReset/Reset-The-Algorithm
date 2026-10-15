@@ -34,10 +34,11 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 
 - **Pestaña de capa:** número y nombre. La capa activa tiene un fondo apenas teñido del color de acento de la marca (`--acento-suave`), texto y número en ese color (`--acento-texto`) y una marca redonda de 28 × 7 px pegada abajo. El radio es de 6 px arriba y 0 abajo. Al pasar el mouse, fondo de capítulo. [`.q-capas` en `src/sistema/componentes.css`]
 - Las pestañas van en su propia fila, con una línea abajo. Los filtros (mes, comparar con) van en la fila siguiente. Las dos filas quedan fijas arriba en pantallas anchas.
-- Índice «En esta capa» al costado, que marca el capítulo que se está leyendo.
+- Índice «En esta capa» al costado, que marca el capítulo que se está leyendo: el último cuyo inicio ya pasó bajo la barra fija. Arriba de todo marca Resumen y al final de la página, el último capítulo. Un clic baja al capítulo sin cambiar de capa. [`IndiceCapa`]
+- El alto de la barra fija se mide en pantalla (`--alto-capas`), no se escribe a mano: así un ancla nunca deja el título debajo de la barra, aunque la barra cambie de alto. En celular la barra no es fija y el alto es cero.
 - **Qué se monitorea:** un botón junto a las fuentes de cada capa abre un panel lateral con lo que sigue cada fuente: palabras de Google Trends, hashtags, marcas, cuentas de pauta, palabras clave y páginas del sitio. Es configuración, no medición. [`PanelLateral`, `Monitoreo`; `monitoreo` en `src/calculo/vista.js`]
 - **Presentar:** un botón en la barra superior agranda la letra para proyectar en una reunión, sin cambiar la página.
-- Las anclas llevan de cualquier lado a cualquier lado: `#s-3-2` (un capítulo), `#a-…` (una alerta, que además se abre) y `#p-google` (una plataforma). [`src/App.jsx`]
+- Las anclas llevan de cualquier lado a cualquier lado: `#activacion` (una capa, desde su resumen), `#s-3-2` (un capítulo), `#a-…` (una alerta, que además se abre) y `#p-google` (una plataforma). Un ancla que no dice capa deja la capa donde está; nunca devuelve a la primera. [`src/App.jsx`]
 
 ## 4. Anatomía de una capa
 

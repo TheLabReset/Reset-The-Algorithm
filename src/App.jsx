@@ -49,7 +49,8 @@ export default function App() {
   useEffect(() => { if (presentar) document.documentElement.dataset.presentar = ''; else delete document.documentElement.dataset.presentar; }, [presentar]);
   const cambiarTema = () => { const t = tema === 'dark' ? 'light' : 'dark'; setTema(t); guardarPref('tema-elegido', t); };
   useEffect(() => {
-    const alCambiar = () => setCapa(capaDeLaUrl());
+    // un ancla que no dice capa (#resumen, #a-… ya abierta) deja la capa donde está; nunca devuelve a la primera
+    const alCambiar = () => setCapa((c) => capaDeAncla(ancla()) || c);
     window.addEventListener('hashchange', alCambiar);
     return () => window.removeEventListener('hashchange', alCambiar);
   }, []);
@@ -60,6 +61,18 @@ export default function App() {
     const t = setTimeout(() => document.getElementById(h)?.scrollIntoView({ block: 'start' }), 60);
     return () => clearTimeout(t);
   }, [capa]);
+  // Alto real de la barra fija (pestañas y filtros): lo usan el índice, los saltos a un capítulo y el borde de lectura.
+  // En pantallas angostas la barra no es fija: el alto es cero.
+  useEffect(() => {
+    const barra = document.querySelector('.q-filtros');
+    if (!barra) return undefined;
+    const medir = () => document.documentElement.style.setProperty('--alto-capas', `${getComputedStyle(barra).position === 'sticky' ? barra.offsetHeight : 0}px`);
+    const ro = new ResizeObserver(medir);
+    ro.observe(barra);
+    window.addEventListener('resize', medir);
+    medir();
+    return () => { ro.disconnect(); window.removeEventListener('resize', medir); };
+  }, []);
   const irACapa = (id) => { setCapa(id); history.replaceState(null, '', '#' + id); window.scrollTo({ top: 0 }); };
 
   const vista = useMemo(() => armarVista(data, { mes, comparar }, demo === 'crm' ? { fuentesCaidas: ['crm'] } : demo === 'ga4' ? { fuentesCaidas: ['web'] } : {}), [data, mes, comparar, demo]);

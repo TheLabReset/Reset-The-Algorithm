@@ -53,7 +53,7 @@ export function MarcoCapa({ capa, vista, bajada, conResumen = true, children }) 
   return (
     <VentanaContexto.Provider value={ventana}>
     <div className="q-envoltura q-capa-marco">
-      <IndiceCapa secciones={capa.secciones} etiqueta={`Capítulos de ${capa.nombre}`} conResumen={conResumen} />
+      <IndiceCapa secciones={capa.secciones} etiqueta={`Capítulos de ${capa.nombre}`} conResumen={conResumen} capaId={capa.id} />
       <div className="q-capa">
         <header className="q-capa-cab">
           <h1>{capa.titulo}</h1>

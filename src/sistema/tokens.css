@@ -124,7 +124,7 @@
   --ancho-lectura: 68ch;   /* texto corrido */
   --ancho-indice: 184px;   /* índice lateral de la capa */
   --alto-barra: 52px;      /* barra de marca */
-  --alto-capas: 52px;      /* fila de capas y filtros, fija al bajar */
+  --alto-capas: 112px;     /* pestañas y filtros, fijos al bajar; la app lo reemplaza por el alto medido */
 
   /* ── Radio: tres, con rol ── */
   --escala-presentar: 112.5%; /* tamaño de letra al presentar */

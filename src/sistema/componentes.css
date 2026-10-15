@@ -218,7 +218,7 @@
 
 
 /* ── Alertas: el nivel lo dicen el icono y la palabra, en su color; la tarjeta es igual a las demás ── */
-.q-alerta { grid-column: span 12; display: grid; gap: var(--e-2); align-content: start; padding: var(--e-5) var(--e-6); border-radius: var(--r-bloque); background: var(--superficie); border: 1px solid var(--borde); min-width: 0; scroll-margin-top: calc(var(--alto-capas) + var(--e-6)); }
+.q-alerta { grid-column: span 12; display: grid; gap: var(--e-2); align-content: start; padding: var(--e-5) var(--e-6); border-radius: var(--r-bloque); background: var(--superficie); border: 1px solid var(--borde); min-width: 0; }
 @media (min-width: 900px) { .q-alerta.q-mitad { grid-column: span 6; } }
 @media (max-width: 640px) { .q-alerta { padding: var(--e-4); } }
 .q-alerta:target { outline: 2px solid var(--foco); outline-offset: 2px; }

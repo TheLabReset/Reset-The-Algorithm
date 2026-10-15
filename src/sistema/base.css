@@ -9,7 +9,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--alto-capas) + var(--e-6)); }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--alto-capas) + var(--e-6)); } /* --alto-capas lo mide la app: un ancla nunca cae debajo de la barra fija */
 body {
   margin: 0; min-height: 100vh;
   background: var(--fondo); color: var(--texto-1);
