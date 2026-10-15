@@ -2,6 +2,8 @@
 
 Así se diseña un algoritmo de The Lab para cualquier cliente. Sale del algoritmo que ya está en producción y de lo que se aprendió armando la demo de Fit Lab. Cada regla está implementada en este repositorio; la ruta entre corchetes dice dónde.
 
+El sistema de diseño con el que se construye (colores, componentes, gráficos y el chequeo) es [Quincha](quincha.md).
+
 Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder entregar con la data real?** Una vista nueva sirve si sale de fuentes que de verdad tenemos. Si no, no entra, aunque se vea bien.
 
 ## 1. Cuatro capas, en el orden en que trabaja la agencia
