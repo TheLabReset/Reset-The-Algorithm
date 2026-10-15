@@ -2,7 +2,6 @@
 // la data y la pantalla: los componentes no calculan. Cada sección trae su estado, su universo y su alcance.
 
 import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js';
-import { planDelDia } from '../muestra/generador.js';
 import {
   suma, razon, cambioPct, mayorResto, correlacion, indices, dentro, ventanaPlataforma, objetivoPlataforma, ventanaPauta, leadsPautaDia,
   ventanaCrm, ventanaWeb, sumarMeses, finDeMes, semanaEn, ETAPAS, porHoraDelDia, diaDestacado,
@@ -185,22 +184,6 @@ export function armarVista(data, filtros, estado = {}) {
     sobreMeta: canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl), cohorteDesde, cohorteHasta, cohorteCerrada: !!coCanal,
   };
 
-  // Ritmo: inversión acumulada contra el plan acumulado
-  // un día con una plataforma sin dato no se cuenta ni en lo real ni en el plan: se comparan los mismos días
-  let acum = 0, plan = 0, planMedido = 0;
-  const ritmoSerie = fechas.map((d) => {
-    const planDia = suma(cfg.canales, (c) => planDelDia(cfg, c, d));
-    plan += planDia;
-    const filas = cfg.canales.map((c) => ix.pautaDia[c.id].get(d));
-    const completo = filas.every((p) => p && !p.sinDato);
-    if (completo) { acum += suma(filas, (p) => p.inversion); planMedido += planDia; }
-    return { fecha: d, real: completo ? acum : null, plan };
-  });
-  const ritmo = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : {
-    estado: 'ok', universo: 'Pauta × plan de presupuesto', serie: ritmoSerie,
-    real: pa.inversion, plan, planMedido, ejecutado: razon(pa.inversion, planMedido), parciales: pa.parciales,
-  };
-
   // Demanda y respuesta: semanas de 52 hasta el período, búsqueda contra leads semanales de pauta
   const sem52 = data.semanas.filter((s) => sumarDias(s, 3) <= hasta).slice(-52);
   const leadsSemana = (s) => { let t = 0; for (let k = 0; k < 7; k++) { const v = leadsPautaDia(data, sumarDias(s, k)); if (v == null) return null; t += v; } return t; };
@@ -261,7 +244,7 @@ export function armarVista(data, filtros, estado = {}) {
     temporada(cfg, hasta),
   ].filter(Boolean);
 
-  const escenarioVista = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : { estado: 'ok', universo: 'Leads de pauta, si la inversión sigue el plan', ...escenario(data, hasta) };
+  const escenarioVista = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : { estado: 'ok', universo: 'Leads de pauta, si la inversión diaria se mantiene', ...escenario(data, hasta) };
 
   const reparto = plataformas.estado === 'ok' ? { estado: 'ok', universo: 'Inversión de plataformas por producto', ...analizaReparto(data, P, plataformas.plataformas) } : { estado: plataformas.estado };
   const pautaCrm = plataformas.estado === 'ok' && crmDetalle.estado === 'ok'
@@ -271,7 +254,7 @@ export function armarVista(data, filtros, estado = {}) {
   const vista = {
     periodo, fuentes,
     lee: { pauta, plataformas, crm, crmDetalle, busquedas, redes, competencia, conversacion, web },
-    analiza: { rendimiento, reparto, pautaCrm, ritmo, demandaRespuesta, horaDia, sedes },
+    analiza: { rendimiento, reparto, pautaCrm, demandaRespuesta, horaDia, sedes },
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };
   vista.sugiere.queMirar = fuera ? [] : queMirar(data, P, vista);

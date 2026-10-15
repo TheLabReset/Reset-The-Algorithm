@@ -1,8 +1,9 @@
-// Escenario de los próximos meses: cuántos leads de pauta habría SI la inversión sigue el plan
-// y la respuesta se parece a la de las últimas 4 semanas. No es meta ni promesa: es un rango condicional.
+// Escenario de los próximos meses: cuántos leads de pauta habría SI la inversión diaria se mantiene como en las
+// últimas 4 semanas y la respuesta también. No usa un plan de inversión: en producción no lo tenemos. No es meta ni promesa: es un rango condicional.
 //
 // Método (declarado en pantalla):
-//   leads por dólar de los últimos 28 días × estacionalidad del mes / estacionalidad de la ventana × inversión planeada del mes.
+//   leads por dólar de los últimos 28 días × estacionalidad del mes / estacionalidad de la ventana × inversión diaria de
+//   esos 28 días × días del mes.
 // Rango: del menor al mayor error que tuvo este mismo método en los meses pasados (real / estimado, por horizonte),
 //   usando solo meses que ya habían cerrado. El punto medio se corrige por el sesgo mediano de esos errores.
 //   No se le pone un nivel de confianza: se informa cuántas veces acertó.
@@ -13,11 +14,9 @@
 // y solo si el método le gana a lo ingenuo. Si no, la vista dice por qué no lo muestra.
 
 import { rango, sumarDias, mes } from '../muestra/calendario.js';
-import { planDelDia } from '../muestra/generador.js';
 import { suma, razon, cuantil, ventanaPauta, sumarMeses, finDeMes, diasDelMes } from './base.js';
 
 const estDia = (cfg, d) => cfg.estacionalidad[mes(d) - 1];
-const planMes = (cfg, aaaamm) => suma(rango(aaaamm + '-01', finDeMes(aaaamm)), (d) => suma(cfg.canales, (c) => planDelDia(cfg, c, d)));
 const MINIMO_ERRORES = 6;
 
 function ventana28(data, origen) {
@@ -34,7 +33,8 @@ function estimado(data, origen, aaaamm) {
   const porSol = razon(w.v.leads, w.v.inversion);
   if (porSol == null) return null;
   const estVentana = suma(rango(w.d0, origen), (d) => estDia(cfg, d)) / 28;
-  return porSol * (cfg.estacionalidad[+aaaamm.slice(5, 7) - 1] / estVentana) * planMes(cfg, aaaamm);
+  const inversionMes = (w.v.inversion / w.v.medidos) * diasDelMes(aaaamm); // si la inversión diaria se mantiene
+  return porSol * (cfg.estacionalidad[+aaaamm.slice(5, 7) - 1] / estVentana) * inversionMes;
 }
 
 // Lo ingenuo: el ritmo diario de las últimas 4 semanas, repetido todo el mes
@@ -113,6 +113,6 @@ export function escenario(data, origen) {
   return {
     origen, meses, historia, acierto, leGana,
     error: { metodo: errorMetodo, ingenuo: errorIngenuo },
-    supuestos: { ventanaDias: 28, inversionPlan: meses.map((m) => ({ mes: m.mes, dolares: planMes(cfg, m.mes) })) },
+    supuestos: { ventanaDias: 28 },
   };
 }

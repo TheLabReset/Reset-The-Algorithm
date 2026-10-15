@@ -39,7 +39,7 @@ export default function Sugiere({ capa, vista: v }) {
   // Al costado de la sugerencia: cuánto se lleva hoy cada plataforma y cuánto cuesta por lead y por inscripción
   const r = v.analiza.rendimiento;
   const columnas = r.estado !== 'ok' ? [] : r.canales.map((c) => ({
-    nombre: c.nombre, valor: porcentaje(c.pctInversion), unidad: 'del presupuesto',
+    nombre: c.nombre, valor: porcentaje(c.pctInversion), unidad: 'de la inversión',
     nota: `${dolares(c.cpl, 2)} por lead${c.cohorte?.cpa != null ? ` · ${dolares(c.cohorte.cpa)} por inscripción` : ''}`,
   }));
   return (

@@ -92,11 +92,6 @@ cada('hora y día: promedios no negativos y las horas de un día suman el día',
   const porDia = suma(h.porDiaSemana.map((x, i) => (x ?? 0) * h.veces[i]), (x) => x) / dias;
   assert.ok(Math.abs(porDia - suma(h.porHora, (x) => x)) < 1e-6, id);
 });
-cada('ritmo: lo ejecutado se compara contra el plan de los mismos días', (v, id) => {
-  if (v.analiza.ritmo.estado !== 'ok') return;
-  assert.ok(v.analiza.ritmo.planMedido <= v.analiza.ritmo.plan + 1e-6, id);
-  assert.ok(v.analiza.ritmo.ejecutado > 0.5 && v.analiza.ritmo.ejecutado <= 1.0001, id); // R8: nunca sobre el presupuesto
-});
 cada('escenario: el rango contiene al punto medio', (v, id) => {
   if (v.sugiere.escenario.estado !== 'ok') return;
   v.sugiere.escenario.meses.filter((m) => m.central != null).forEach((m) => assert.ok(m.baja <= m.central && m.central <= m.alta, `${id} ${m.mes}`));

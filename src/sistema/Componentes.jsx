@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
-  Sigma, Wallet, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
+  Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
   Eye, TrendingUp, Bot, ArrowUpRight as Ir,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
@@ -14,7 +14,6 @@ export const UNIVERSOS = {
   busquedas: { icono: Search, nombre: 'Búsquedas' },
   conversacion: { icono: MessagesSquare, nombre: 'Conversación' },
   web: { icono: Globe, nombre: 'Sitio web' },
-  plan: { icono: Wallet, nombre: 'Plan de inversión' },
   modelo: { icono: Sigma, nombre: 'Modelo' },
 };
 

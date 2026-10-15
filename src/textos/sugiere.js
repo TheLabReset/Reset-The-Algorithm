@@ -124,10 +124,10 @@ export function escenarioTexto(e) {
   const ocultos = e.meses.filter((m) => m.central == null);
   const r = (x) => numero(Math.round(x));
   return {
-    titulo: 'Si la inversión sigue el plan',
+    titulo: 'Si la inversión diaria se mantiene',
     lectura: m1
       ? `${capital(mesTexto(m1.mes))} cerraría entre ${r(m1.baja)} y ${r(m1.alta)} leads reportados. Probado con meses ya cerrados, ese rango contuvo el resultado real ${numero(m1.acierto.dentro)} de ${numero(m1.acierto.probados)} veces.`
       : 'Ningún mes tiene pruebas suficientes para mostrar un rango.',
-    nota: `En promedio el método se equivoca ${porcentaje(e.error.metodo * 100)}; repetir el mes anterior se equivoca ${porcentaje(e.error.ingenuo * 100)}.${ocultos.length ? ` ${capital(lista(ocultos.map((m) => mesTexto(m.mes))))} no se ${ocultos.length === 1 ? 'muestra' : 'muestran'}: a ese plazo acierta poco.` : ''} No es una meta: es lo que pasaría si nada cambia.`,
+    nota: `En promedio el método se equivoca ${porcentaje(e.error.metodo * 100)}; repetir los leads de las últimas cuatro semanas sin ajustar por temporada, ${porcentaje(e.error.ingenuo * 100)}.${ocultos.length ? ` ${capital(lista(ocultos.map((m) => mesTexto(m.mes))))} no se ${ocultos.length === 1 ? 'muestra' : 'muestran'}: a ese plazo acierta poco.` : ''} Supone que se invierte cada día lo mismo que en las últimas cuatro semanas. No es una meta: es lo que pasaría si nada cambia.`,
   };
 }

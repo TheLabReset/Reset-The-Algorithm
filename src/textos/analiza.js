@@ -28,12 +28,6 @@ export function productos(v) {
   return { titulo: 'Por producto y plataforma', lectura: `${porcentaje((marca.total / total) * 100)} de la inversión de ${periodoTexto(v.periodo)} fue a campañas de marca, que no buscan leads.` };
 }
 
-export function ritmo(v) {
-  const r = v.analiza.ritmo;
-  const base = `Al cierre de ${periodoTexto(v.periodo)} se invirtió ${porcentaje(r.ejecutado * 100, 1)} del plan de los mismos días.`;
-  return { titulo: 'Ritmo de inversión contra el plan', lectura: r.parciales.length ? `${base} No cuenta ${numero(r.parciales.length)} ${r.parciales.length === 1 ? 'día' : 'días'} con una plataforma sin dato, ni en lo real ni en el plan.` : base };
-}
-
 export function pautaCrm(v) {
   const ps = v.analiza.pautaCrm.plataformas;
   const peor = [...ps].sort((a, b) => a.porCadaReportado - b.porCadaReportado)[0];

@@ -1,7 +1,7 @@
 // Capa 2 · Analiza: lo que aparece al cruzar fuentes. Lo de universos distintos se compara, nunca se suma.
 // No calcula: pinta v.analiza y los textos de src/textos/analiza.js.
 import { Bloque, Tabla } from '../sistema/Componentes.jsx';
-import { Acumulado, Columnas, Barras, DosLineas } from '../sistema/graficos/Graficos.jsx';
+import { Columnas, Barras, DosLineas } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, variacion } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, HorasYDias } from './comun.jsx';
 import { mesTexto } from '../textos/comun.js';
@@ -17,11 +17,6 @@ export default function Analiza({ capa, vista: v }) {
     <MarcoCapa capa={capa} vista={v} conResumen={false}>
       {/* ───── 2.1 Reparto de la inversión ───── */}
       <SeccionDe def={s21} vista={v}>
-        {a.ritmo.estado !== 'ok' ? <Bloque titulo="Ritmo de inversión" universo="plan" estado={sinDato(a.ritmo.estado)} /> : (
-          <Bloque universo="plan" {...A.ritmo(v)} pie={<span>Plan: el presupuesto del mes repartido por igual entre sus días.</span>}>
-            <Acumulado serie={a.ritmo.serie} formato={(n) => dolares(n)} etiqueta="Inversión acumulada contra el plan acumulado" />
-          </Bloque>
-        )}
         {r.estado === 'ok' && <>
           <Bloque universo="pauta" ancho="mitad" {...A.inversionContraLeads(v)}
             pie={<span>De cada 100 dólares y de cada 100 leads reportados en el mes, por plataforma.</span>}>
