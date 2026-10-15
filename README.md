@@ -18,6 +18,7 @@ Van en el orden en que trabaja la agencia: escuchar el mercado, leer lo que dice
 | [`docs/guia-algoritmo.md`](docs/guia-algoritmo.md) | Cómo se diseña un algoritmo: capas, navegación, tarjeta, gráficos, datos honestos y lo que dice el modelo |
 | [`docs/quincha.md`](docs/quincha.md) | El sistema de diseño: tokens, tipografía, componentes, gráficos y el chequeo |
 | [`docs/nuevo-algoritmo.md`](docs/nuevo-algoritmo.md) | **Duplicar el repo para otra marca**, paso a paso, y cómo conectar data real |
+| [`docs/produccion-actions.md`](docs/produccion-actions.md) | **Pasar a producción:** cómo cobra GitHub Actions, lo que ya nos pasó y cómo gastar lo menos posible |
 | [`docs/marca/fit-lab/`](docs/marca/fit-lab/) | La marca ficticia de la demo: logo, guía e investigación |
 | [`CLAUDE.md`](CLAUDE.md) | Las reglas que sigue Claude Code en este repo |
 

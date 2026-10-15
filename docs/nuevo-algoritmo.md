@@ -176,6 +176,8 @@ Hoy toda cifra sale del generador. Para conectar data real se reemplaza la fuent
 
 El detalle (campañas, palabras clave, términos, CRM por lead, hashtags, redes, regiones y GA4 por hora) lo arma `detallar()` en `src/muestra/detalle.js`. **Esta es la primera costura que hay que abrir:** hoy `src/calculo/produccion.js` llama a `detallar()` directo. Un lector de data real tiene que devolver el detalle con la misma forma y entrar por ese mismo punto.
 
+**Antes de pasar a producción** se lee [produccion-actions.md](produccion-actions.md): cómo cobra GitHub los workflows, lo que ya nos pasó y la lista de lo que tiene que estar listo, incluido que el repo sea privado.
+
 Las carpetas `scrapers/`, `ml/` y `apify-actors/` son el pipeline de datos anterior. Todavía no están conectadas al panel; sus guías están en `docs/SCRAPERS_GUIDE.md`, `docs/APIFY_SCRAPERS.md`, `docs/API_SETUP_GUIDE.md` y `docs/ML_ARCHITECTURE_PLAN.md`.
 
 ## Qué cambió frente al playbook anterior
