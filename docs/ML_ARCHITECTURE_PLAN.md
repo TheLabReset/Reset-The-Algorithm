@@ -1,4 +1,4 @@
-# Plan de Arquitectura ML - The Algorithm by Reset
+# Plan de Arquitectura ML - The Algorithm by The Lab
 
 ## Resumen Ejecutivo
 
@@ -170,7 +170,7 @@ features = {
 **Output**:
 ```json
 {
-  "keyword": "universidad arequipa",
+  "keyword": "universidad Lima",
   "current_interest": 78,
   "predicted_7d": 85,
   "confidence": 0.82,
@@ -285,7 +285,7 @@ class SentimentAnalyzer {
 features = {
     # Demográficos
     'age_group': categorical,  # 17-19, 20-22, 23-25, 25+
-    'region': categorical,     # Arequipa, Puno, Cusco, etc.
+    'region': categorical,     # Lima, Puno, Cusco, etc.
 
     # Comportamiento
     'pages_visited': int,
@@ -499,7 +499,7 @@ public/data/
   },
   "keyword_predictions": [
     {
-      "keyword": "universidad arequipa",
+      "keyword": "universidad Lima",
       "current": 78,
       "predicted_7d": 85,
       "predicted_30d": 92,
@@ -847,5 +847,5 @@ ml/
 
 ---
 
-*Documento preparado para The Algorithm by Reset*
+*Documento preparado para The Algorithm by The Lab*
 *Versión 1.0 - Enero 2026*

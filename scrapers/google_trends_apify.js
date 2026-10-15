@@ -6,7 +6,7 @@
  * Se ejecuta semanalmente (Lunes 8am) via GitHub Actions.
  *
  * Uso:
- *   node google_trends_apify.js --client=ucsp
+ *   node google_trends_apify.js --client=example
  *
  * Requiere:
  *   APIFY_TOKEN en .env o variable de entorno
@@ -31,7 +31,7 @@ const ACTOR_ID = 'apify/google-trends-scraper';
 // ============================================================================
 function parseArgs() {
   const args = process.argv.slice(2);
-  const options = { client: 'ucsp' };
+  const options = { client: 'example' };
   args.forEach(arg => {
     if (arg.startsWith('--client=')) options.client = arg.split('=')[1];
   });

@@ -9,7 +9,7 @@
  * - Crecimiento
  *
  * Uso:
- *   node meta_apify.js --client=ucsp
+ *   node meta_apify.js --client=example
  *
  * Requisitos:
  *   1. Subir el actor a Apify: cd apify-actors/social-listening-meta && apify push
@@ -40,7 +40,7 @@ const ACTOR_ID = process.env.APIFY_ACTOR_META || 'globular_cinema/my-actor';
 // ============================================================================
 function parseArgs() {
   const args = process.argv.slice(2);
-  const options = { client: 'ucsp' };
+  const options = { client: 'example' };
   args.forEach(arg => {
     if (arg.startsWith('--client=')) options.client = arg.split('=')[1];
   });

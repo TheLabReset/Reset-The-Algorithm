@@ -1,0 +1,233 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Quincha · tokens de The Algorithm
+   Quincha es la técnica limeña de caña y barro: liviana, flexible, resiste temblores.
+   Un sistema que se adapta por cliente sin romperse: este archivo lleva la marca del cliente
+   (Fit Lab: tinta, cal, rojo y menta) y nada más cambia.
+
+   Dos capas:
+   1. Primitivos (--p-*): la paleta. Ningún componente los usa directo.
+   2. Semánticos: lo único que tocan los componentes. Cada uno dice para qué sirve;
+      su contraste no se escribe a mano: lo mide `npm run sistema`.
+   Regla de huérfanos (la vigila `npm run sistema`): todo primitivo lo usa al menos
+   un semántico, y todo semántico lo usa al menos un componente.
+
+   Claro por defecto: se proyecta en reuniones y se lee de día. Oscuro con
+   [data-theme="dark"] o la preferencia del sistema, armado por niveles propios
+   (más claro es más cerca), no invertido.
+
+   Tres niveles de superficie, del fondo hacia el lector:
+   fondo (la página) → capítulo (el panel que agrupa) → superficie (la tarjeta).
+   La profundidad sale del valor de la superficie, no de sombras ni de bordes gruesos.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Primitivos: marca Fit Lab ── */
+  --p-tinta: #121318;      /* el negro de la marca */
+  --p-cal: #f4f4f1;        /* el blanco cálido de la marca */
+  --p-rojo: #f5332a;       /* el rojo de la pesa: identidad, nunca dato */
+  --p-rojo-texto: #b51e17; /* rojo legible sobre claro */
+  --p-rojo-claro: #ff7a70; /* rojo legible sobre oscuro */
+  --p-menta: #3ee6b0;      /* la menta de la marca, sobre oscuro */
+  --p-menta-oscura: #0a7254; /* menta legible sobre claro */
+
+  /* ── Primitivos: neutros con el tono cálido de la cal ── */
+  --p-n-0: #ffffff;
+  --p-n-75: #ebebe6;
+  --p-n-100: #e3e3dd;
+  --p-n-200: #c8c9c4;   /* barras que no se resaltan */
+  --p-n-300: #a3a6ad;   /* niebla */
+  --p-n-400: #7d8088;
+  --p-n-600: #5c5f67;
+  --p-n-750: #44474f;
+
+  /* ── Primitivos: neutros del oscuro, de la tinta hacia arriba ── */
+  --p-o-950: #0b0c0f;
+  --p-o-900: #1c1d23;
+  --p-o-800: #272930;
+  --p-o-750: #33353d;
+  --p-o-700: #3c3e46;
+  --p-o-600: #55575f;   /* barras que no se resaltan, sobre oscuro */
+  --p-o-400: #7b7e86;
+  --p-o-300: #a4a7ae;
+  --p-o-200: #c9cacd;
+
+  /* ── Primitivos: rampa de menta para magnitud (mapa de calor), de menos a más ── */
+  --p-m-1: #e9f8f2; --p-m-2: #b9e6d4; --p-m-3: #86d2b8; --p-m-4: #4fb796; --p-m-5: #239676; --p-m-6: #0e7258; --p-m-7: #08493a;
+  --p-mo-1: #21403a; --p-mo-2: #1d5e4f; --p-mo-3: #1b7d65; --p-mo-4: #26a07f; --p-mo-5: #4fc29f; --p-mo-6: #8fdcc1; --p-mo-7: #cff4e6;
+
+  /* ── Primitivos: estado (reservados, nunca serie) ── */
+  --p-ambar-700: #8c5b10;
+  --p-ambar-300: #ffbc63;
+
+  /* ── Primitivos: categorías, orden fijo, validadas para daltonismo en las dos superficies ── */
+  --p-cat-menta: #0c8a66;
+  --p-cat-naranja: #c2601a;
+  --p-cat-azul: #4b63c4;
+  --p-cat-menta-o: #1ea47f;
+  --p-cat-naranja-o: #d26a26;
+  --p-cat-azul-o: #6d84e6;
+
+  /* ══════════ Semánticos · tema claro (por defecto) ══════════ */
+  --fondo: var(--p-cal);                 /* la página */
+  --superficie-capitulo: var(--p-n-75);  /* panel que agrupa las tarjetas de un capítulo */
+  --superficie: var(--p-n-0);            /* tarjetas */
+  --elevada: var(--p-n-0);               /* lo que flota: ayuda, pista de gráfico */
+  --barra: var(--p-tinta);               /* barra de marca arriba */
+  --sobre-barra: var(--p-cal);           /* texto sobre la barra */
+  --sobre-barra-2: var(--p-n-300);       /* texto secundario sobre la barra */
+  --texto-1: var(--p-tinta);             /* cifras y títulos */
+  --texto-2: var(--p-n-750);             /* texto de lectura */
+  --texto-3: var(--p-n-600);             /* notas, ejes, rótulos secundarios */
+  --borde: var(--p-n-100);               /* separadores */
+  --borde-control: var(--p-n-400);       /* bordes de controles y marcas que hay que ver (≥ 3:1) */
+  --acento: var(--p-rojo);               /* la capa activa y el número de capítulo: marca, no dato */
+  --acento-texto: var(--p-rojo-texto);   /* texto en el rojo de la marca */
+  --acento-suave: color-mix(in oklab, var(--p-rojo) 9%, var(--superficie)); /* fondo de la capa activa */
+  --seleccion: var(--p-tinta);           /* opción elegida en un control */
+  --sobre-seleccion: var(--p-cal);       /* texto sobre la opción elegida */
+  --foco: var(--p-tinta);                /* anillo de foco */
+  --mejora: var(--p-menta-oscura);       /* variación favorable: siempre con flecha y signo */
+  --empeora: var(--p-rojo-texto);        /* variación desfavorable */
+  --atencion: var(--p-ambar-700);        /* pocos casos, dato parcial */
+  --s1: var(--p-tinta);                  /* la serie propia: tinta, como la marca */
+  --resalte: var(--p-cat-menta);         /* lo que se mira primero en un gráfico: una sola marca por gráfico */
+  --serie-1: var(--resalte);            /* barras y líneas de dato: el color de la marca para datos */
+  --serie-resto: var(--p-n-200);  /* el resto, cuando un gráfico resalta una sola marca */
+  --resalte-suave: color-mix(in oklab, var(--resalte) 10%, var(--superficie));
+  --s2: var(--p-cat-menta);              /* categorías en orden fijo */
+  --s3: var(--p-cat-naranja);
+  --s4: var(--p-cat-azul);
+  --previa: var(--p-n-400);              /* período de comparación: siempre gris */
+  --q0: var(--p-m-1);                    /* rampa secuencial en menta, de menos a más: un solo tono */
+  --q1: var(--p-m-2);
+  --q2: var(--p-m-3);
+  --q3: var(--p-m-4);
+  --q4: var(--p-m-5);
+  --q5: var(--p-m-6);
+  --q6: var(--p-m-7);
+  --banda-0: var(--p-n-100);             /* la zona hasta el objetivo en una bala: un solo gris, nunca escalones */
+  --sombra-flota: 0 10px 28px rgb(18 19 24 / 0.14);
+  color-scheme: light;
+
+  /* ── Tipografía de la marca: Bricolage Grotesque para títulos y cifras, Atkinson Hyperlegible Next para leer ── */
+  --f-titulo: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+  --f-texto: 'Cifras de la marca', 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', Verdana, Arial, sans-serif;
+  --f-tabla: var(--f-texto); /* sin marca propia: Sofia Sans Semi Condensed; Fit Lab usa la de texto */
+  --t-12: 0.75rem;  --t-13: 0.8125rem; --t-15: 0.9375rem; --t-17: 1.0625rem; --t-20: 1.25rem; --t-24: 1.5rem; --t-32: 2rem;
+  --c-22: 1.375rem; --c-28: 1.75rem;
+  --peso-lectura: 400; --peso-rotulo: 600; --peso-cifra: 600; --peso-titulo: 700;
+
+  /* ── Espacio (base 4) ── */
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 20px; --e-6: 24px; --e-8: 32px; --e-10: 40px; --e-12: 48px; --e-16: 64px;
+
+  /* ── Medidas de composición ── */
+  --ancho-max: 1360px;     /* la página no crece más: las líneas largas se leen mal */
+  --ancho-lectura: 68ch;   /* texto corrido */
+  --ancho-indice: 184px;   /* índice lateral de la capa */
+  --alto-barra: 52px;      /* barra de marca */
+  --alto-capas: 112px;     /* pestañas y filtros, fijos al bajar; la app lo reemplaza por el alto medido */
+
+  /* ── Radio: tres, con rol ── */
+  --escala-presentar: 112.5%; /* tamaño de letra al presentar */
+  --r-control: 6px; --r-bloque: 10px; --r-capitulo: 16px; --r-marca: 999px;
+
+  /* ── Movimiento: corto y productivo; nada se anima por adorno ── */
+  --d-110: 110ms;
+  --d-latido: 1200ms; /* solo el esqueleto de carga */
+  --d-240: 240ms;     /* el abanico que se abre y la ventana que entra */
+  --curva-productiva: cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: var(--p-tinta);
+    --superficie-capitulo: var(--p-o-900);
+    --superficie: var(--p-o-800);
+    --elevada: var(--p-o-750);
+    --barra: var(--p-o-950);
+    --sobre-barra: var(--p-cal);
+    --sobre-barra-2: var(--p-o-300);
+    --texto-1: var(--p-cal);
+    --texto-2: var(--p-o-200);
+    --texto-3: var(--p-o-300);
+    --borde: var(--p-o-750);
+    --borde-control: var(--p-o-400);
+    --acento: var(--p-rojo);
+    --acento-texto: var(--p-rojo-claro);
+    --acento-suave: color-mix(in oklab, var(--p-rojo) 16%, var(--superficie));
+    --seleccion: var(--p-cal);
+    --sobre-seleccion: var(--p-tinta);
+    --foco: var(--p-cal);
+    --mejora: var(--p-menta);
+    --empeora: var(--p-rojo-claro);
+    --atencion: var(--p-ambar-300);
+    --s1: var(--p-cal);
+    --resalte: var(--p-menta);
+    --serie-1: var(--resalte);
+    --serie-resto: var(--p-o-600);
+    --resalte-suave: color-mix(in oklab, var(--resalte) 18%, var(--superficie));
+    --s2: var(--p-cat-menta-o);
+    --s3: var(--p-cat-naranja-o);
+    --s4: var(--p-cat-azul-o);
+    --previa: var(--p-o-400);
+    --q0: var(--p-mo-1);
+    --q1: var(--p-mo-2);
+    --q2: var(--p-mo-3);
+    --q3: var(--p-mo-4);
+    --q4: var(--p-mo-5);
+    --q5: var(--p-mo-6);
+    --q6: var(--p-mo-7);
+    --banda-0: var(--p-o-700);
+    --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.45);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --fondo: var(--p-tinta);
+  --superficie-capitulo: var(--p-o-900);
+  --superficie: var(--p-o-800);
+  --elevada: var(--p-o-750);
+  --barra: var(--p-o-950);
+  --sobre-barra: var(--p-cal);
+  --sobre-barra-2: var(--p-o-300);
+  --texto-1: var(--p-cal);
+  --texto-2: var(--p-o-200);
+  --texto-3: var(--p-o-300);
+  --borde: var(--p-o-750);
+  --borde-control: var(--p-o-400);
+  --acento: var(--p-rojo);
+  --acento-texto: var(--p-rojo-claro);
+  --acento-suave: color-mix(in oklab, var(--p-rojo) 16%, var(--superficie));
+  --seleccion: var(--p-cal);
+  --sobre-seleccion: var(--p-tinta);
+  --foco: var(--p-cal);
+  --mejora: var(--p-menta);
+  --empeora: var(--p-rojo-claro);
+  --atencion: var(--p-ambar-300);
+  --s1: var(--p-cal);
+  --resalte: var(--p-menta);
+  --serie-1: var(--resalte);
+  --serie-resto: var(--p-o-600);
+  --resalte-suave: color-mix(in oklab, var(--resalte) 18%, var(--superficie));
+  --s2: var(--p-cat-menta-o);
+  --s3: var(--p-cat-naranja-o);
+  --s4: var(--p-cat-azul-o);
+  --previa: var(--p-o-400);
+  --q0: var(--p-mo-1);
+  --q1: var(--p-mo-2);
+  --q2: var(--p-mo-3);
+  --q3: var(--p-mo-4);
+  --q4: var(--p-mo-5);
+  --q5: var(--p-mo-6);
+  --q6: var(--p-mo-7);
+  --banda-0: var(--p-o-700);
+  --sombra-flota: 0 12px 32px rgb(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --d-110: 0ms; --d-latido: 0ms; --d-240: 0ms; }
+}

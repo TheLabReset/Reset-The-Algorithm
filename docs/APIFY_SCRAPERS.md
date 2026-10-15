@@ -35,7 +35,7 @@ scrapers/
 ├── tiktok_apify.js          # Scraper de TikTok
 ├── meta_apify.js            # Scraper de Facebook
 └── config/
-    ├── ucsp.json            # Config cliente UCSP
+    ├── example-client.json            # Config cliente MARCA
     └── [cliente].json       # Config otros clientes
 ```
 
@@ -105,7 +105,7 @@ GET https://api.apify.com/v2/acts/{actorId}?token={token}
 ```json
 {
   "keywords": [
-    "universidad arequipa",
+    "universidad Lima",
     "carreras universitarias peru"
   ],
   "region": "PE",
@@ -117,7 +117,7 @@ GET https://api.apify.com/v2/acts/{actorId}?token={token}
 
 ```json
 {
-  "searchTerm": "universidad arequipa",
+  "searchTerm": "universidad Lima",
   "interestOverTime_timelineData": [...],
   "interestBySubregion": [...],
   "relatedTopics_top": [...],
@@ -306,16 +306,16 @@ APIFY_ACTOR_META=tu-username/social-listening-meta
 
 ```json
 {
-  "clientName": "UCSP",
-  "clientFullName": "Universidad Católica San Pablo",
+  "clientName": "MARCA",
+  "clientFullName": "Cliente de ejemplo",
   "facebookPages": [
-    "https://www.facebook.com/UCSPoficial"
+    "https://www.facebook.com/PaginaDeEjemplo"
   ],
   "topics": [
     {
       "name": "Admisión 2026",
       "keywords": ["admisión", "postular", "examen de admisión"],
-      "brands": ["UCSP", "UNSA", "UCSM"]
+      "brands": ["MARCA", "COMPETIDOR_1", "COMPETIDOR_2"]
     },
     {
       "name": "Becas",
@@ -336,14 +336,14 @@ APIFY_ACTOR_META=tu-username/social-listening-meta
 ```json
 {
   "facebook_pages": [
-    "https://www.facebook.com/UCSPoficial"
+    "https://www.facebook.com/PaginaDeEjemplo"
   ],
 
   "social_listening_topics": [
     {
       "name": "Admisión 2026",
       "keywords": ["admisión", "admision", "postular", "examen de admisión"],
-      "brands": ["UCSP", "UNSA", "UCSM"]
+      "brands": ["MARCA", "COMPETIDOR_1", "COMPETIDOR_2"]
     },
     {
       "name": "Becas y Financiamiento",
@@ -370,7 +370,7 @@ APIFY_ACTOR_META=tu-username/social-listening-meta
   "source": "Meta/Facebook Social Listening",
   "region": "LATAM",
   "category": "Social Listening",
-  "client": "UCSP - Universidad Católica San Pablo",
+  "client": "Cliente de ejemplo",
   "aggregatedTopics": [
     {
       "topic": "Admisión 2026",
@@ -378,7 +378,7 @@ APIFY_ACTOR_META=tu-username/social-listening-meta
       "engagement_score": 8.5,
       "growth": "+25%",
       "sentiment": "muy_positivo",
-      "top_brands": ["UCSP", "UNSA"],
+      "top_brands": ["MARCA", "COMPETIDOR_1"],
       "avg_reactions": 120,
       "avg_comments": 15,
       "avg_shares": 8
@@ -403,7 +403,7 @@ Si no tienes el actor custom, el scraper usa automáticamente el actor genérico
 ```json
 {
   "startUrls": [
-    { "url": "https://www.facebook.com/UCSPoficial" }
+    { "url": "https://www.facebook.com/PaginaDeEjemplo" }
   ],
   "maxPosts": 30,
   "maxComments": 10,
@@ -424,7 +424,7 @@ Si no tienes el actor custom, el scraper usa automáticamente el actor genérico
 
 ```json
 {
-  "pageName": "Universidad Católica San Pablo",
+  "pageName": "Cliente de ejemplo",
   "text": "Contenido del post...",
   "time": "2026-01-05T10:00:00Z",
   "reactions": 150,

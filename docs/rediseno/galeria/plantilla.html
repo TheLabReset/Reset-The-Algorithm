@@ -1,0 +1,212 @@
+<title>Galería de formas The Algorithm</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400..700&display=swap">
+<style>
+/* Concepto: una columna de decisiones; cada bloque abre con la pregunta y su lectura calculada,
+   y debajo sus opciones lado a lado. Oscuro por defecto (identidad A, guía de la agencia). */
+:root {
+  /* Identidad A · oscuro. Tono base 295° (violeta de la guía). Contrastes medidos en el informe 04 */
+  --fondo: #0a090f; --superficie: #100e16; --elevada: #1c1a23;
+  --texto-1: #f6f5f9; --texto-2: #c7c6ce; --texto-3: #a5a3ac;
+  --borde: #33313b; --borde-control: #817f88;
+  --acento: #ab91f2; --foco: #c5b4fb; --sobre-acento: #0a090f;
+  --mejora: #6ed889; --empeora: #fa887d; --atencion: #ffbc63;
+  --s1: #8b61e3; --s2: #d66919; --s3: #0096af; --s4: #7e8826; --s5: #337bd0;
+  --previa: #817f88;
+  --q0: #1f1830; --q1: #2e1f52; --q2: #45287d; --q3: #5e37a6; --q4: #7a52cf; --q5: #a083ef; --q6: #cdbcfd;
+  --sobre-alto: #0a090f;
+  --banda-0: #26242d; --banda-1: #33313b; --banda-2: #3f3d48;
+  --f-cifra: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+  --f-texto: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --r-control: 6px; --r-bloque: 10px; --r-flota: 14px;
+  --dur: 150ms; --curva: cubic-bezier(0.2, 0, 0.38, 0.9);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --fondo: #f6f5f9; --superficie: #fcfbfe; --elevada: #ffffff;
+    --texto-1: #100e16; --texto-2: #4d4b56; --texto-3: #66646f;
+    --borde: #dedde3; --borde-control: #817f88;
+    --acento: #6f42c1; --foco: #8257d9; --sobre-acento: #ffffff;
+    --mejora: #1d7d3e; --empeora: #c22826; --atencion: #956211;
+    --s1: #7544cd; --s2: #dd6f23; --s3: #0090a8; --s4: #848e2d; --s5: #1762b6;
+    --previa: #817f88;
+    --q0: #eee9ff; --q1: #ddd4ff; --q2: #c5b4fb; --q3: #ab91f2; --q4: #9572e7; --q5: #8257d9; --q6: #6f42c1;
+    --sobre-alto: #ffffff;
+    --banda-0: #edecf1; --banda-1: #dedde3; --banda-2: #c7c6ce;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --fondo: #f6f5f9; --superficie: #fcfbfe; --elevada: #ffffff;
+  --texto-1: #100e16; --texto-2: #4d4b56; --texto-3: #66646f;
+  --borde: #dedde3; --borde-control: #817f88;
+  --acento: #6f42c1; --foco: #8257d9; --sobre-acento: #ffffff;
+  --mejora: #1d7d3e; --empeora: #c22826; --atencion: #956211;
+  --s1: #7544cd; --s2: #dd6f23; --s3: #0090a8; --s4: #848e2d; --s5: #1762b6;
+  --previa: #817f88;
+  --q0: #eee9ff; --q1: #ddd4ff; --q2: #c5b4fb; --q3: #ab91f2; --q4: #9572e7; --q5: #8257d9; --q6: #6f42c1;
+  --sobre-alto: #ffffff;
+  --banda-0: #edecf1; --banda-1: #dedde3; --banda-2: #c7c6ce;
+  color-scheme: light;
+}
+/* Identidad B: la de reset.com.pe (negro, beige, verde neón). Solo oscuro, como su sitio.
+   El neón es marca y foco; nunca serie ni estado. Paleta de series validada aparte (peor ΔE con daltonismo 13,0). */
+:root[data-identidad="b"] {
+  --fondo: #0a0a09; --superficie: #121211; --elevada: #1b1a19;
+  --texto-1: #e8e2df; --texto-2: #c4beba; --texto-3: #9d9792;
+  --borde: #2c2a28; --borde-control: #7d7873;
+  --acento: #00ff63; --foco: #00ff63; --sobre-acento: #0a0a09;
+  --mejora: #8fdcaa; --empeora: #ff8a7a; --atencion: #f2c14e;
+  --s1: #2f8adc; --s2: #c3457f; --s3: #d67b19; --s4: #19aa8e; --s5: #8670c0;
+  --previa: #7d7873;
+  --q0: #0f1d2e; --q1: #16304d; --q2: #1d4670; --q3: #245e95; --q4: #2f78bb; --q5: #5b9bd8; --q6: #9cc4ee;
+  --sobre-alto: #0a0a09;
+  --banda-0: #1f1e1c; --banda-1: #2c2a28; --banda-2: #3a3835;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto-1); font: 400 15px/1.5 var(--f-texto); font-variant-numeric: tabular-nums; }
+.envoltura { max-width: 1400px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 64px; display: grid; gap: 56px; }
+
+/* Barra superior */
+.barra { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: end; justify-content: space-between; border-bottom: 1px solid var(--borde); padding-bottom: 24px; }
+.barra h1 { font: 400 clamp(34px, 6vw, 64px)/0.95 var(--f-cifra); letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.barra h1 span { color: var(--acento); }
+.barra .lead { margin: 12px 0 0; color: var(--texto-2); max-width: 64ch; }
+.marca-muestra { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-2); border: 1px dashed var(--borde-control); border-radius: var(--r-control); padding: 4px 10px; }
+.controles { display: grid; gap: 10px; justify-items: start; }
+.grupo-botones { display: inline-flex; border: 1px solid var(--borde-control); border-radius: var(--r-control); overflow: hidden; }
+.grupo-botones button { font: 560 13px var(--f-texto); color: var(--texto-2); background: transparent; border: 0; padding: 8px 12px; cursor: pointer; transition: background-color var(--dur) var(--curva), color var(--dur) var(--curva); }
+.grupo-botones button + button { border-left: 1px solid var(--borde-control); }
+.grupo-botones button[aria-pressed="true"] { background: var(--acento); color: var(--sobre-acento); }
+.grupo-botones button:hover:not([aria-pressed="true"]) { background: var(--elevada); color: var(--texto-1); }
+:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.rotulo-control { font-size: 12px; color: var(--texto-3); }
+#nota-b { font-size: 13px; color: var(--texto-2); max-width: 46ch; margin: 0; }
+
+/* Bloques */
+.bloque { display: grid; gap: 20px; }
+.bloque-cab { display: grid; gap: 6px; max-width: 92ch; }
+.capa { margin: 0; font-size: 13px; font-weight: 560; color: var(--texto-3); }
+.bloque h2 { margin: 0; font: 640 clamp(22px, 2.6vw, 28px)/1.2 var(--f-texto); text-wrap: balance; }
+.titulo-calculado { margin: 0; font-size: 17px; color: var(--texto-1); text-wrap: pretty; }
+.sub { margin: 0; font-size: 13px; color: var(--texto-3); }
+.chip-muestra { display: inline-block; margin-left: 6px; font-size: 12px; font-weight: 560; color: var(--texto-2); border: 1px dashed var(--borde-control); border-radius: var(--r-control); padding: 0 6px; }
+.opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; }
+.opcion { min-width: 0; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--r-bloque); padding: 16px; }
+.opcion.recomendada { border-color: var(--acento); }
+.opcion h3 { margin: 0; font: 560 14px/1.3 var(--f-texto); color: var(--texto-1); display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.letra { font: 400 20px/1 var(--f-cifra); color: var(--texto-3); }
+.chip-rec { font-size: 12px; font-weight: 600; color: var(--sobre-acento); background: var(--acento); border-radius: var(--r-control); padding: 1px 7px; }
+.opcion dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 13px; border-top: 1px solid var(--borde); padding-top: 12px; }
+.opcion dt { color: var(--texto-3); font-weight: 560; }
+.opcion dd { margin: 0; color: var(--texto-2); }
+.lienzo { min-width: 0; align-self: start; }
+.lienzo.ancho { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--r-bloque); padding: 16px; overflow-x: auto; }
+.grupo { margin: 10px 0 2px; font-size: 12px; font-weight: 600; color: var(--texto-3); }
+.grupo:first-child { margin-top: 0; }
+.nota-estado { margin: 0; padding: 16px; border: 1px dashed var(--borde-control); border-radius: var(--r-bloque); color: var(--texto-2); font-size: 13px; }
+.grupo-botones button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Gráficos: todo color sale de los tokens */
+svg.g { display: block; overflow: visible; }
+.g text { font: 400 12px var(--f-texto); fill: var(--texto-2); font-variant-numeric: tabular-nums; }
+.g .eje { fill: var(--texto-3); }
+.g .rejilla { stroke: var(--borde); stroke-width: 1; }
+.g .serie-1 { fill: none; stroke: var(--s1); stroke-width: 2; stroke-linejoin: round; }
+.g .serie-previa { fill: none; stroke: var(--previa); stroke-width: 1.5; stroke-dasharray: 0; opacity: 0.8; }
+.g .punto-oculto { fill: transparent; }
+.g .punto-final { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
+.g .rotulo-final { fill: var(--texto-1); font-weight: 640; }
+.g .rotulo-previo { fill: var(--texto-3); }
+.g .meta, .g .referencia { stroke: var(--texto-3); stroke-dasharray: 4 3; }
+.g .rotulo-meta { fill: var(--texto-3); }
+.g .evento { stroke: var(--borde-control); stroke-dasharray: 2 3; }
+.g .rotulo-evento { fill: var(--texto-3); font-size: 11.5px; }
+.g .rotulo-fila { fill: var(--texto-2); }
+.g .rotulo-fila.fuerte, .g .fuerte { fill: var(--texto-1); font-weight: 640; }
+.g .rotulo-valor { fill: var(--texto-1); font-weight: 560; }
+.g .rotulo-valor.empeora { fill: var(--empeora); }
+.g .nota, .g tspan.nota { fill: var(--texto-3); font-weight: 400; }
+.g .leyenda-b { fill: var(--s1); font-weight: 600; }
+.g .dumbbell { stroke: var(--borde-control); stroke-width: 2; }
+.g .punto-previo { fill: var(--superficie); stroke: var(--previa); stroke-width: 2; }
+.g .punto-actual { fill: var(--s1); stroke: var(--superficie); stroke-width: 2; }
+.g .pendiente { stroke: var(--previa); stroke-width: 1.5; }
+.g .pendiente-resaltada { stroke: var(--s1); stroke-width: 3; }
+.g .bump { fill: none; stroke: var(--previa); stroke-width: 2; opacity: 0.7; }
+.g .bump-propia { fill: none; stroke: var(--s1); stroke-width: 3.5; }
+.g .punto-bump { fill: var(--previa); }
+.g .punto-disp { fill: var(--texto-2); stroke: var(--superficie); stroke-width: 2; }
+.g .barra { fill: var(--texto-3); }
+.g .barra-acento, .g .barra-valor { fill: var(--s1); }
+.g .barra-empeora { fill: var(--empeora); }
+.g .marca-previa { stroke: var(--texto-1); stroke-width: 2; }
+.g .marca-meta { stroke: var(--texto-1); stroke-width: 3; }
+.g .banda.b-0 { fill: var(--banda-2); } .g .banda.b-1 { fill: var(--banda-1); } .g .banda.b-2 { fill: var(--banda-0); }
+.g .celda.sec-0 { fill: var(--q0); } .g .celda.sec-1 { fill: var(--q1); } .g .celda.sec-2 { fill: var(--q2); } .g .celda.sec-3 { fill: var(--q3); }
+.g .celda.sec-4 { fill: var(--q4); } .g .celda.sec-5 { fill: var(--q5); } .g .celda.sec-6 { fill: var(--q6); }
+.g .celda.sin-dato { fill: var(--superficie); stroke: var(--borde-control); stroke-dasharray: 2 2; }
+.g .tesela-nombre { font-size: 12px; fill: var(--texto-1); font-weight: 560; }
+.g .tesela-valor { font: 400 22px var(--f-cifra); fill: var(--texto-1); }
+.g .tesela-cambio { font-size: 11.5px; fill: var(--texto-2); }
+.g .sobre-oscuro { fill: var(--sobre-alto); }
+.p-0 { fill: var(--s1); background: var(--s1); } .p-1 { fill: var(--s2); background: var(--s2); } .p-2 { fill: var(--s3); background: var(--s3); }
+.p-3 { fill: var(--s4); background: var(--s4); } .p-4 { fill: var(--s5); background: var(--s5); } .p-5 { fill: var(--texto-3); background: var(--texto-3); } .p-6 { fill: var(--previa); background: var(--previa); }
+.g .parte { stroke: var(--superficie); stroke-width: 0; }
+.g-1 { fill: var(--texto-3); background: var(--texto-3); } .g-2 { fill: var(--borde-control); background: var(--borde-control); }
+.g-3 { fill: var(--banda-2); background: var(--banda-2); } .g-4 { fill: var(--banda-1); background: var(--banda-1); }
+.g .cinta { fill: var(--previa); opacity: 0.35; }
+.g .cinta-alta { fill: var(--s1); opacity: 0.75; }
+.g .nodo { fill: var(--texto-3); } .g .nodo-alta { fill: var(--s1); }
+.escala { display: flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 12px; color: var(--texto-3); }
+.escala span { padding: 0 6px; } .escala .q { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.q0 { background: var(--q0); } .q1 { background: var(--q1); } .q2 { background: var(--q2); } .q3 { background: var(--q3); } .q4 { background: var(--q4); } .q5 { background: var(--q5); } .q6 { background: var(--q6); }
+.g .celda.marcada { stroke: var(--texto-1); stroke-width: 1.5; }
+.muestra.marco { border: 1.5px solid var(--texto-1); background: transparent; }
+.multiplos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.multiplo { margin: 0; min-width: 0; }
+.multiplo figcaption { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.multiplo .nombre { color: var(--texto-1); font-weight: 560; } .multiplo .cambio { color: var(--texto-2); }
+.leyenda, .aportes { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--texto-2); }
+.leyenda b, .aportes b { color: var(--texto-1); font-weight: 640; }
+.muestra { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: -1px; }
+.aportes .nota { color: var(--texto-3); }
+.pie { border-top: 1px solid var(--borde); padding-top: 20px; font-size: 13px; color: var(--texto-3); display: grid; gap: 6px; }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0ms !important; animation-duration: 0ms !important; } }
+</style>
+
+<div class="envoltura">
+  <header class="barra">
+    <div>
+      <h1>The Algorithm <span>·</span> galería de formas</h1>
+      <p class="lead">Seis bloques de la demo, cada uno en dos o tres formas dibujadas con la misma data de muestra. La recomendada va primero y con borde. Se elige una por bloque.</p>
+      <p class="lead" style="margin-top:8px">Cliente demo: <b id="marca"></b>, cadena de gimnasios en Lima. Período: <b id="periodo"></b>.</p>
+    </div>
+    <div class="controles">
+      <span class="marca-muestra">Datos de muestra al <span id="corte"></span></span>
+      <span class="rotulo-control">Identidad</span>
+      <div class="grupo-botones" role="group" aria-label="Identidad visual">
+        <button type="button" id="id-a" data-pone-identidad="a" aria-pressed="true">A · Guía de la agencia</button>
+        <button type="button" id="id-b" data-pone-identidad="b" aria-pressed="false">B · reset.com.pe</button>
+      </div>
+      <p id="nota-b" hidden>Identidad B en oscuro, como su sitio. Sus tipografías (Sanomat, Aeonik, Druk) son comerciales: aquí se ve Montserrat de reemplazo.</p>
+      <span class="rotulo-control">Tema</span>
+      <div class="grupo-botones" role="group" aria-label="Tema">
+        <button type="button" id="tema-oscuro" data-pone-tema="dark">Oscuro</button>
+        <button type="button" id="tema-claro" data-pone-tema="light">Claro (sala con luz)</button>
+      </div>
+    </div>
+  </header>
+  <div id="bloques" style="display:grid;gap:64px"></div>
+  <div id="extra"></div>
+  <footer class="pie">
+    <p>Toda cifra de dato sale de un generador con semilla fija y de una función pura que arma la vista; los umbrales de método (60 % de días medidos, 120 días, bandas) están declarados en la configuración o en el texto. Los competidores son marcas reales con data de muestra: solo conversación, sin sentimiento ni juicios.</p>
+    <p>THE LAB · rama claude/modest-tesla-a7501f · docs/rediseno/galeria</p>
+  </footer>
+</div>
+<!--APP-->
