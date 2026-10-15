@@ -33,12 +33,15 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 - **Pestaña de capa:** número y nombre. La capa activa tiene un fondo apenas teñido del color de acento de la marca (`--acento-suave`), texto y número en ese color (`--acento-texto`) y una marca redonda de 28 × 7 px pegada abajo. El radio es de 6 px arriba y 0 abajo. Al pasar el mouse, fondo de capítulo. [`.q-capas` en `src/sistema/componentes.css`]
 - Las pestañas van en su propia fila, con una línea abajo. Los filtros (mes, comparar con) van en la fila siguiente. Las dos filas quedan fijas arriba en pantallas anchas.
 - Índice «En esta capa» al costado, que marca el capítulo que se está leyendo.
+- **Qué se monitorea:** un botón junto a las fuentes de cada capa abre un panel lateral con lo que sigue cada fuente: palabras de Google Trends, hashtags, marcas, cuentas de pauta, palabras clave y páginas del sitio. Es configuración, no medición. [`PanelLateral`, `Monitoreo`; `monitoreo` en `src/calculo/vista.js`]
+- **Presentar:** un botón en la barra superior agranda la letra para proyectar en una reunión, sin cambiar la página.
 - Las anclas llevan de cualquier lado a cualquier lado: `#s-3-2` (un capítulo), `#a-…` (una alerta, que además se abre) y `#p-google` (una plataforma). [`src/App.jsx`]
 
 ## 4. Anatomía de una capa
 
 1. **Cabecera:** título, una bajada de una línea y las fuentes con su fecha de corte. Un punto verde, ámbar o rojo dice el estado, y el texto también lo dice.
-2. **Resumen:** de cuatro a cinco cifras. Cada una lleva su variación o su nota y un enlace al capítulo que la explica. Un costo con objetivo lleva debajo su barra: hasta el valor, una raya en el objetivo y «$0,37 por debajo» en verde o «por encima» en rojo. [`Resumen`, `ContraObjetivo`]
+2. **Resumen:** de cuatro a cinco cifras. Cada una lleva su variación o su nota y un enlace al capítulo que la explica. Las cifras de una plataforma llevan el punto de su color en el rótulo («● CPL Google Ads»).
+   - **El objetivo se dice en una frase, no en una barra.** Va en una caja gris debajo de las cifras, con una línea por plataforma: «Google Ads pagó **$7,14** por lead: $0,37 por debajo de su objetivo de **$7,51**». Solo la distancia lleva color (rojo si pasa el objetivo, verde si queda debajo) y las cifras van en negrita. Se eligió así porque no hay nada que aprender a leer, ocupa pocas líneas y no compite con las cifras de arriba. [`Resumen`, `frases`; `objetivoFrase` en `src/textos/capas.js`]
 3. **Capítulos:** un panel gris con número, título y pregunta. Arriba van los avisos de las alertas que ese capítulo sostiene, en una línea cada uno, y debajo las tarjetas blancas.
 
 ## 5. La tarjeta
@@ -71,18 +74,23 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 - **Plataformas como las ve el cliente.** Google Ads es una sola plataforma; Search y Display son tipos de campaña dentro de ella. [`plataformas` en `src/muestra/configuracion.js`]
 - **Solo lo que tenemos.** No hay plan de inversión por día, así que no se muestra ritmo contra plan, y el escenario supone que la inversión diaria de las últimas cuatro semanas se mantiene. De la competencia solo se lee lo publicado: sin comparar contra el año anterior.
 - **Universos.** Pauta, CRM y sitio cuentan cosas distintas: se leen lado a lado y nunca se suman. Las inscripciones se miden por cohorte cerrada, porque un lead tarda en inscribirse.
-- **Sin ganadores falsos.** Si los valores están a menos de 10 % entre sí (costos por inscripción, días de la semana), se dice que «se parecen» y no se resalta ninguno. [`margenParecido`]
-- **Alertas.** Cada una sale de una regla con un umbral fijo y trae su dato. La acción queda dentro de lo que maneja la agencia (pujas, palabras, páginas, reparto) o se plantea como conversación con el cliente. Nunca se presiona al personal del cliente.
+- **Sin ganadores falsos.** Si los valores están a menos de 10 % entre sí, se dice que «se parecen» y no se resalta ninguno. El empate se mide contra el mejor: si Google cuesta $51 por inscripción y Meta $52, se parecen aunque TikTok cueste $67. [`margenParecido`, `cpaParecido`]
+- **Alertas.** Cada una sale de una regla con un umbral fijo y trae su dato. Incluye el calendario: una campaña del CRM que cierra dentro del mes siguiente avisa, para que la pauta que la empuja llegue hasta el cierre. La acción queda dentro de lo que maneja la agencia (pujas, palabras, páginas, reparto) o se plantea como conversación con el cliente. Nunca se presiona al personal del cliente.
 - **Textos.** En español peruano, sin rayas largas ni «gente». Las cifras chicas al inicio de una frase van en letras. Observan, no ordenan. Antes de entregar, todo texto pasa por vickyfy.
 
 ## 8. Lo que dice el modelo
 
 - **Qué mirar:** una sola tarjeta con una lista numerada por nivel (piden atención, para revisar, oportunidades, lo que va bien). Cada fila tiene el dato en el título y la acción debajo; al abrirla, el detalle y el enlace a la tarjeta que lo sostiene. [`ListaAlertas`]
-- **Sugerencia del modelo:** tarjeta con robot y rótulo, apenas teñida. Lleva una frase grande que se puede decidir y su detalle, y al costado una columna por plataforma. Si no propone mover nada, la frase dice por qué. [`SugerenciaModelo`]
+- **Sugerencia del modelo:** tarjeta con robot y rótulo, apenas teñida. Lleva una frase grande que se puede decidir y su detalle, y al costado una columna por plataforma. Si no propone mover nada, la frase dice por qué. Propone mover inversión solo si una plataforma pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción (sin pocos casos). Si dos destinos cuestan parecido por inscripción, gana el de lead más barato. [`SugerenciaModelo`, `reasignacion`]
 - **Índice de oportunidad:** la cifra con su banda, cómo vino al cierre de cada mes y cada componente de 0 a 100 con su peso.
 - **Escenario:** un rango, no una cifra. Dice cuántas veces acertó con meses ya cerrados y si le gana a la estimación ingenua. Un mes que acierta poco no se muestra.
 
-## 9. Antes de entregar
+## 9. La demo
+
+- **Barra de la demo**, abajo a la izquierda: datos, cargando, el CRM no cargó y GA4 no cargó. Sirve para mostrar en vivo que el panel dice lo que falta en vez de dibujar ceros. [`BarraDemo` en `src/App.jsx`]
+- **Escenario forzado**, solo en la data de muestra: desde setiembre TikTok se encarece y sus leads se inscriben menos. Así el modelo llega a una recomendación con sus reglas de siempre. Se hace en la configuración del generador (`cambiosCosto` y la calidad de cada canal), nunca tocando el modelo. [`src/muestra/configuracion.js`]
+
+## 10. Antes de entregar
 
 - `npm run prueba`: las reglas de cálculo y las anclas de las alertas.
 - `npm run sistema`: tokens, contraste y espacios.

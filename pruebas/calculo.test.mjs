@@ -172,5 +172,21 @@ cada('la inversión por día de pauta suma la inversión del período', (v, id) 
   assert.ok(Math.abs(s - v.lee.pauta.inversion) < 0.01, `${id}: ${s} contra ${v.lee.pauta.inversion}`);
 });
 cada('con costos por inscripción parecidos no hay alerta de desacuerdo', (v, id) => {
-  if (v.analiza.rendimiento.cpaParecido) assert.ok(!v.sugiere.queMirar.some((a) => a.id === 'plataforma-vs-crm'), id);
+  const r = v.analiza.rendimiento;
+  if (r.cpaParecido && r.cpaParecido.ids.includes(r.masBaratoPorLead?.id)) assert.ok(!v.sugiere.queMirar.some((a) => a.id === 'plataforma-vs-crm'), id);
+});
+
+// Una fuente caída nunca se reemplaza con data vieja: sin CRM no hay costo por inscripción ni propuesta de mover inversión
+test('sin CRM no hay costo por inscripción ni sugerencia de reparto', () => {
+  const v = armarVista(data, { mes: meses.at(-1), comparar: 'anio' }, { fuentesCaidas: ['crm'] });
+  assert.equal(v.analiza.rendimiento.totalCohorte, null);
+  assert.ok(v.analiza.rendimiento.canales.every((c) => c.cohorte == null));
+  assert.ok(!v.sugiere.sugerencias.some((s) => s.id === 'reasignar'));
+});
+// La demo trae un mes en que el modelo propone mover inversión, con sus reglas de siempre
+test('el último mes de la muestra trae una propuesta de reparto', () => {
+  const v = armarVista(data, { mes: meses.at(-1), comparar: 'anio' });
+  const s = v.sugiere.sugerencias.find((x) => x.id === 'reasignar');
+  assert.ok(s, 'el escenario de la demo dejó de producir una propuesta');
+  assert.ok(s.desde.cpl > s.desde.metaCpl && !s.desde.cohorte.pocosCasos);
 });

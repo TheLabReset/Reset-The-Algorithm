@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useId, useRef, useState } from 'r
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
-  Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ArrowUpRight as Ir,
+  Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
 
@@ -118,6 +118,8 @@ export function Estado({ tipo, titulo, children }) {
 // Cada tarjeta dice su ventana arriba a la derecha: con calendario si sigue el período elegido, con alfiler si no
 // (una cohorte, la última lectura, los meses que vienen). El período de la capa llega por contexto.
 export const VentanaContexto = createContext(null);
+// Demo: mientras «carga», cada tarjeta muestra su esqueleto en lugar del cuerpo
+export const CargandoContexto = createContext(false);
 export function Ventana({ texto, fija }) {
   const Icono = fija ? Pin : Calendar;
   return <span className={`q-ventana${fija ? ' q-ventana-fija' : ''}`} title={fija ? 'No sigue el período elegido' : 'Sigue el período elegido'}><Icono size={12} aria-hidden="true" />{texto}</span>;
@@ -126,7 +128,9 @@ export function Ventana({ texto, fija }) {
 export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance, ventana, estado, ayuda, pie, children, id }) {
   const u = UNIVERSOS[universo];
   const periodo = useContext(VentanaContexto);
+  const cargando = useContext(CargandoContexto);
   const texto = alcance || (ventana === false ? null : ventana || periodo);
+  if (cargando) estado = { tipo: 'cargando', reemplaza: true };
   return (
     <article className={`q-bloque q-${ancho}`} id={id} data-estado={estado?.tipo || 'ok'}>
       <header className="q-bloque-cab">
@@ -317,20 +321,18 @@ export function AvisosCapitulo({ avisos }) {
   );
 }
 
-// Cifra contra su objetivo, debajo de la cifra: barra hasta el valor, raya en el objetivo y cuánto se aleja.
-// valor y meta en la misma unidad; sobre: true si pasar el objetivo es malo (un costo)
-function ContraObjetivo({ valor, meta, textoMeta, textoDiferencia, sobre }) {
-  const max = Math.max(valor, meta) * 1.25;
-  return (
-    <span className={`q-contra-objetivo${sobre ? ' q-contra-objetivo-sobre' : ''}`}>
-      <span className="q-contra-objetivo-barra" aria-hidden="true"><i style={{ width: `${(valor / max) * 100}%` }} /><b style={{ left: `${(meta / max) * 100}%` }} /></span>
-      <span className="q-contra-objetivo-texto">{textoMeta} <span>{textoDiferencia}</span></span>
-    </span>
-  );
+// Texto con énfasis: una frase armada en src/textos como segmentos { t, cifra, tono }.
+// cifra va en negrita; tono 'empeora' o 'mejora' colorea solo ese tramo (la distancia al objetivo), nunca la frase entera
+export function Frase({ segmentos }) {
+  return <>{segmentos.map((g, i) => (g.cifra ? <b key={i}>{g.t}</b> : g.tono ? <span key={i} className={'q-tono-' + g.tono}>{g.t}</span> : <span key={i}>{g.t}</span>))}</>;
 }
 
 // ── Resumen de la capa: pocas cifras, cada una lleva a su capítulo ──
-export function Resumen({ titulo, items, pie }) {
+// frases: una línea por plataforma debajo de las cifras (cuánto pagó y qué tan lejos quedó de su objetivo).
+// Se eligió la frase y no una barra: se lee sin aprender a leer nada y no compite con las cifras de arriba.
+export function Resumen({ titulo, items, pie, frases = [] }) {
+  const cargando = useContext(CargandoContexto);
+  if (cargando) return <section className="q-resumen" id="resumen"><h2 className="q-resumen-titulo">{titulo}</h2><Estado tipo="cargando" /></section>;
   return (
     <section className="q-resumen" aria-labelledby="resumen-t" id="resumen">
       <h2 id="resumen-t" className="q-resumen-titulo">{titulo}</h2>
@@ -339,15 +341,19 @@ export function Resumen({ titulo, items, pie }) {
           const u = UNIVERSOS[i.universo];
           return (
             <li key={i.rotulo}>
-              <span className="q-resumen-rotulo">{i.rotulo}</span>
+              <span className="q-resumen-rotulo">{i.serie != null && <span className={`q-punto q-p${i.serie}`} aria-hidden="true" />}{i.rotulo}</span>
               <span className={`q-cifra-valor${i.valor == null ? ' q-cifra-sin-dato' : ''}`} data-clave={i.dataClave}>{i.valor ?? NO_MEDIDO}</span>
               {i.delta ? <Delta {...i.delta} /> : i.nota ? <span className="q-delta">{i.nota}</span> : null}
-              {i.objetivo && <ContraObjetivo {...i.objetivo} />}
               {i.ir && <a className="q-resumen-ir" href={'#' + i.ir}>{u && <u.icono size={13} aria-hidden="true" />}{i.irTexto}</a>}
             </li>
           );
         })}
       </ul>
+      {frases.length > 0 && (
+        <ul className="q-resumen-frases">
+          {frases.map((f, k) => <li key={k}><span className={`q-punto q-p${f.serie}`} aria-hidden="true" /><span><Frase segmentos={f.segmentos} /></span></li>)}
+        </ul>
+      )}
       {pie && <footer className="q-bloque-pie">{pie}</footer>}
     </section>
   );
@@ -465,4 +471,53 @@ export function Tabla({ etiqueta, columnas, filas, numericas = [], barra, destac
 
 export function Datos({ pares }) {
   return <dl className="q-datos">{pares.map(([k, v]) => [<dt key={k + 't'}>{k}</dt>, <dd key={k + 'd'}>{v}</dd>])}</dl>;
+}
+
+// ── Panel lateral (Qué se monitorea): se abre desde la cabecera de la capa; Esc o la X lo cierran ──
+export function PanelLateral({ titulo, bajada, abierto, onCerrar, children }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (abierto && !d.open) d.showModal();
+    if (!abierto && d.open) d.close();
+  }, [abierto]);
+  return (
+    <dialog ref={ref} className="q-panel" aria-labelledby="panel-t" onClose={onCerrar} onClick={(e) => { if (e.target === ref.current) onCerrar(); }}>
+      <div className="q-panel-cuerpo">
+        <header className="q-panel-cab">
+          <div><h2 id="panel-t">{titulo}</h2>{bajada && <p>{bajada}</p>}</div>
+          <button type="button" className="q-boton q-boton-quieto" onClick={onCerrar} aria-label="Cerrar"><X size={18} aria-hidden="true" /></button>
+        </header>
+        {children}
+      </div>
+    </dialog>
+  );
+}
+
+export function Monitoreo({ grupos }) {
+  return (
+    <div className="q-monitoreo">
+      {grupos.map((g) => (
+        <section key={g.titulo}>
+          <h3>{g.titulo} <span>{g.items.length}</span></h3>
+          <ul className="q-palabras">{g.items.map((x) => <li key={x}>{x}</li>)}</ul>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+export function BotonMonitoreo({ onClick }) {
+  return <button type="button" className="q-boton q-boton-chico" onClick={onClick}><ListChecks size={15} aria-hidden="true" />Qué se monitorea</button>;
+}
+
+// ── Barra de la demo: muestra en vivo cómo responde el panel cuando carga o cuando una fuente no llega ──
+export function BarraDemo({ opciones, valor, onCambiar }) {
+  return (
+    <div className="q-barra-demo" role="group" aria-label="Estados de la demo">
+      <span><Layers size={14} aria-hidden="true" />Demo</span>
+      {opciones.map((o) => <button key={o.valor} type="button" aria-pressed={o.valor === valor} onClick={() => onCambiar(o.valor)}>{o.texto}</button>)}
+    </div>
+  );
 }

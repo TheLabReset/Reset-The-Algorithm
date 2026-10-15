@@ -32,7 +32,7 @@ export const CONFIG = {
   canales: [
     { id: 'meta', nombre: 'Meta Ads', cpm: 3.2, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 3.2, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
     { id: 'search', nombre: 'Search', cpm: 24, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 6.7, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
-    { id: 'tiktok', nombre: 'TikTok Ads', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.95 }, webPropia: 0.25, inflacion: 0.18 },
+    { id: 'tiktok', nombre: 'TikTok Ads', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.8 }, webPropia: 0.25, inflacion: 0.18 },
     { id: 'display', nombre: 'Display', cpm: 1.6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 12, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
   ],
   // Plataformas como las ve el cliente y como reporta cada una: Google Ads junta sus campañas de Search y de Display.
@@ -267,6 +267,10 @@ export const CONFIG = {
   segundosWeb: { organica: 74, directo: 92, redes: 41, referidos: 66, ads: 58, display: 22, redesPagadas: 33 },
   // Historia de la muestra: desde las piezas nuevas de Meta (8 set) los clics suben, pero llegan a /promo-setiembre,
   // que carga lento en celular, y la interacción de las sesiones de redes pagadas cae
+  // Escenario de la demo, para que el modelo proponga mover inversión con sus reglas de siempre: desde setiembre
+  // la subasta de TikTok se encarece (pasa su objetivo de costo por lead) y sus leads se inscriben menos que los de
+  // las otras plataformas (calidad.alta), así el CRM confirma que es la que más cuesta por inscripción.
+  cambiosCosto: [{ canal: 'tiktok', desde: '2026-09-01', factor: 1.7 }],
   cambiosInteraccion: [{ fuente: 'redesPagadas', desde: '2026-09-08', factor: 0.62, texto: 'las piezas nuevas de Meta llevan a /promo-setiembre' }],
   // Vistas de página por sesión, por página (asumo)
   vistasPorSesion: 2.1,

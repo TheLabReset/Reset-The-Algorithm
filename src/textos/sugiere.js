@@ -2,7 +2,7 @@
 // Lo que se propone queda dentro de lo que maneja la agencia (pauta, piezas, páginas, palabras clave).
 // Lo que depende del cliente (su equipo, sus sedes) se conversa con él; nunca se le pide más al personal.
 import { numero, dolares, porcentaje, fecha } from '../sistema/formato.js';
-import { mesTexto, lista, capital, enLetras, tramoFechas } from './comun.js';
+import { mesTexto, lista, capital, enLetras, tramoFechas, parecidoTexto } from './comun.js';
 
 const pct = (x, d = 0) => porcentaje(x * 100, d);
 const de100 = (x) => numero(Math.round(x * 100));
@@ -44,6 +44,11 @@ const ALERTAS = {
     titulo: `De ${d.plataforma} llegan al CRM menos leads de los que reporta`,
     dato: `De cada 100 leads que reporta, ${numero(d.de100)} están en el CRM (${numero(d.enCrm)} de ${numero(d.reportados)}).`,
     mirar: `Con quien administra el CRM, la conexión del formulario de ${d.plataforma} y los leads duplicados o de prueba.`,
+  }),
+  'cierra-campana': (d) => ({
+    titulo: `«${d.campana}» cierra en ${numero(d.faltan)} ${d.faltan === 1 ? 'día' : 'días'}`,
+    dato: `La campaña del CRM termina el ${fecha(d.hasta)} y lleva ${numero(d.leads)} leads y ${numero(d.altas)} inscripciones desde que empezó.`,
+    mirar: `Que ${d.plataformas.length ? lista(d.plataformas) : 'la pauta que la empuja'} tenga inversión hasta el cierre, y conversar con Fit Lab qué mensaje sigue después.`,
   }),
   'interaccion-cae': (d) => ({
     titulo: `Las visitas desde ${d.canal.toLowerCase()} interactúan menos`,
@@ -97,9 +102,9 @@ export function sugerencia(s) {
   const d = s.desde, h = s.hacia, r = (x) => numero(Math.round(x));
   return {
     titulo: `Pasar ${dolares(s.monto)} al mes de ${d.nombre} a ${h.nombre}`,
-    dato: `${d.nombre} cuesta ${dolares(d.cpl, 2)} por lead y ${dolares(d.cohorte.cpa)} por inscripción; ${h.nombre}, ${dolares(h.cpl, 2)} y ${dolares(h.cohorte.cpa)}.`,
+    dato: `${d.nombre} cuesta ${dolares(d.cpl, 2)} por lead, con un objetivo de ${dolares(d.metaCpl, 2)}, y ${dolares(d.cohorte.cpa)} por inscripción; ${h.nombre}, ${dolares(h.cpl, 2)} y ${dolares(h.cohorte.cpa)}.`,
     estimacion: `Podría sumar entre ${r(s.leads.baja)} y ${r(s.leads.alta)} leads al mes y unas ${r(s.inscripciones.central)} inscripciones. Es una estimación con rango, no una promesa.`,
-    sostiene: `La plataforma y el CRM coinciden en que ${d.nombre} es la más cara.${d.cohorte.pocosCasos ? ` Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción puede cambiar mucho de un mes a otro.` : ''}`,
+    sostiene: `${d.nombre} pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción.${d.cohorte.pocosCasos ? ` Ojo: ${d.nombre} tiene pocas inscripciones en la cohorte, así que su costo por inscripción puede cambiar mucho de un mes a otro.` : ''}`,
     supuestos: s.supuestos, ir: 's-4-2', irTexto: 'De la pauta al CRM',
   };
 }
@@ -108,14 +113,15 @@ export function sugerencia(s) {
 export function sinReasignar(r, periodo) {
   const base = 'El modelo no propone mover el reparto';
   if (r.estado !== 'ok') return { titulo: `${base}: falta el dato de pauta del período.` };
+  if (r.crmEstado === 'no-cargo') return { titulo: `${base}: el CRM no cargó y sin él no se sabe cuánto cuesta cada inscripción.` };
   if (!r.cohorteCerrada) return { titulo: `${base}: la cohorte que mide el costo por inscripción todavía no cierra.` };
   const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
   const detalle = !a ? null : !b ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción todavía no hay casos suficientes.`
-    : r.cpaParecido ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción, las ${enLetras(r.canales.length, true)} cuestan parecido (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
+    : r.cpaParecido ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)} (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
     : a.id === b.id ? `${capital(periodo)}. ${a.nombre} consigue el lead y la inscripción más baratos.`
     : `${capital(periodo)}. Por lo que reporta la plataforma, ${a.nombre} consigue el lead más barato; por inscripción en el CRM, ${b.nombre}.`;
   if (!r.sobreMeta.length) return { titulo: `${base}: las ${enLetras(r.canales.length, true)} plataformas quedan bajo su objetivo de costo por lead.`, detalle };
-  return { titulo: `${base}: la plataforma y el CRM no coinciden en cuál es la más cara.`, detalle };
+  return { titulo: `${base}: la plataforma que pasa su objetivo no es la que más cuesta por inscripción.`, detalle };
 }
 
 // Escenario si nada cambia: con pinzas. Dice cuánto acertó el método antes y qué meses no muestra

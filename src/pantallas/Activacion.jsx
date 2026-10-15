@@ -9,7 +9,7 @@ import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import * as A from '../textos/analiza.js';
 import { sugerencia, sinReasignar } from '../textos/sugiere.js';
-import { plataformaLectura } from '../textos/capas.js';
+import { plataformaLectura, objetivoFrase } from '../textos/capas.js';
 
 const TIPO = { search: 'Search', display: 'Display' };
 const PRODUCTO = { marca: 'Marca', membresias: 'Membresías' };
@@ -30,13 +30,13 @@ export default function Activacion({ capa, vista: v }) {
   return (
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={`Resumen de ${periodoTexto(v.periodo)}`}
+        frases={ok(pl) ? pl.plataformas.map((p, i) => ({ serie: i, segmentos: objetivoFrase(p) })) : []}
         pie={<span>Lo que reporta cada plataforma. Cada variación compara {periodoTexto(v.periodo)} con {comparacionTexto(v.periodo)}.</span>}
         items={[
           { rotulo: 'Inversión total', universo: 'pauta', ir: s31.id, irTexto: s31.titulo, valor: ok(pa) ? dolares(pa.inversion) : null, nota: ok(pl) ? `en ${numero(pl.plataformas.length)} plataformas` : null },
-          ...(ok(pl) ? pl.plataformas.map((p) => ({
-            rotulo: `Costo por lead · ${p.nombre}`, universo: 'pauta', ir: 'p-' + p.id, irTexto: p.nombre, valor: p.cpl == null ? null : dolares(p.cpl, 2),
+          ...(ok(pl) ? pl.plataformas.map((p, i) => ({
+            rotulo: `CPL ${p.nombre}`, serie: i, universo: 'pauta', ir: 'p-' + p.id, irTexto: p.nombre, valor: p.cpl == null ? null : dolares(p.cpl, 2),
             delta: deltaCorto(p.cambioCpl, 'baja', v),
-            objetivo: p.cpl == null || p.objetivo == null ? null : { valor: p.cpl, meta: p.objetivo, sobre: p.difObjetivo > 0, textoMeta: `Objetivo ${dolares(p.objetivo, 2)} ·`, textoDiferencia: `${dolares(Math.abs(p.difObjetivo), 2)} ${p.difObjetivo > 0 ? 'por encima' : 'por debajo'}` },
           })) : []),
           { rotulo: 'Leads de las plataformas', universo: 'pauta', ir: s32.id, irTexto: s32.titulo, valor: ok(pa) ? numero(pa.leads) : null, delta: ok(pa) ? deltaCorto(pa.cambio, 'sube', v) : null, dataClave: 'pauta-leads' },
         ]} />
@@ -65,7 +65,7 @@ export default function Activacion({ capa, vista: v }) {
           </Bloque>
           {sugerencias.length === 0 && <SugerenciaModelo {...sinReasignar(r, periodoTexto(v.periodo))} columnas={columnas}
             ayuda={<p>Solo propone mover inversión cuando una plataforma pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción.</p>}
-            pie={<span>Inversión de {periodoTexto(v.periodo)} · inscripciones de la cohorte de {mesTexto(r.cohorteDesde?.slice(0, 7))}</span>} />}
+            pie={<span>Inversión de {periodoTexto(v.periodo)}{r.cohorteCerrada ? ` · inscripciones de la cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}` : ''}</span>} />}
           {sugerencias.map((s) => (
             <SugerenciaModelo key={s.titulo} titulo={s.titulo} detalle={`${s.dato} ${s.estimacion}`} columnas={columnas}
               ayuda={<><p>{s.sostiene}</p><ul>{s.supuestos.map((x) => <li key={x}>{x}</li>)}</ul></>}

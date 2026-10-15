@@ -1,6 +1,6 @@
 // Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
 import { useState } from 'react';
-import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto } from '../sistema/Componentes.jsx';
+import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo } from '../sistema/Componentes.jsx';
 import { Histograma, Barras, Dispersion } from '../sistema/graficos/Graficos.jsx';
 import { diaSemanaLargo, compacto, mesCorto } from '../sistema/formato.js';
 import { comparacionTexto, tramoFechas } from '../textos/comun.js';
@@ -49,6 +49,7 @@ export const partesConResto = (partes, nombreResto) => {
 export function MarcoCapa({ capa, vista, bajada, conResumen = true, children }) {
   const ids = [...new Set(capa.secciones.flatMap((s) => s.fuentes))];
   const ventana = tramoFechas(vista.periodo.desde, vista.periodo.hasta).replace(/^del /, '');
+  const [monitoreo, setMonitoreo] = useState(false);
   return (
     <VentanaContexto.Provider value={ventana}>
     <div className="q-envoltura q-capa-marco">
@@ -57,7 +58,13 @@ export function MarcoCapa({ capa, vista, bajada, conResumen = true, children }) 
         <header className="q-capa-cab">
           <h1>{capa.titulo}</h1>
           <p>{bajada || capa.bajada}</p>
-          {ids.length > 0 && <FuentesCapa fuentes={fuentesDe(ids, vista)} />}
+          <div className="q-capa-fuentes">
+            {ids.length > 0 && <FuentesCapa fuentes={fuentesDe(ids, vista)} />}
+            <BotonMonitoreo onClick={() => setMonitoreo(true)} />
+          </div>
+          <PanelLateral titulo="Qué se monitorea" bajada="Lo que sigue cada fuente. Es configuración, no medición: se cambia a pedido de Fit Lab." abierto={monitoreo} onCerrar={() => setMonitoreo(false)}>
+            <Monitoreo grupos={vista.monitoreo} />
+          </PanelLateral>
         </header>
         {children}
       </div>

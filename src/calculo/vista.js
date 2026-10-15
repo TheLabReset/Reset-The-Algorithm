@@ -161,7 +161,8 @@ export function armarVista(data, filtros, estado = {}) {
   const sumaComun = (pl, k) => suma(diasComunes, (d) => suma(pl.canales, (id) => ix.pautaDia[id].get(d)[k]));
   const pctInv = mayorResto(cfg.plataformas.map((pl) => sumaComun(pl, 'inversion')));
   const pctLeads = mayorResto(cfg.plataformas.map((pl) => sumaComun(pl, 'leads')));
-  const coCanal = cohorteFuera || !cerrada ? null : ventanaCrm(data, cohorteDesde, cohorteHasta);
+  // el costo por inscripción necesita el CRM: si no cargó, no se calcula (nunca se muestra con data vieja)
+  const coCanal = cohorteFuera || !cerrada || estadoGrupo('crm') !== 'ok' ? null : ventanaCrm(data, cohorteDesde, cohorteHasta);
   // Rendimiento por plataforma, como la ve el cliente: Google Ads junta Search y Display
   const canales = cfg.plataformas.map((pl, i) => {
     const a = ventanaPlataforma(data, pl, desde, hasta);
@@ -181,9 +182,12 @@ export function armarVista(data, filtros, estado = {}) {
   const porCpa = [...canales].filter((c) => c.cohorte?.cpa != null && !c.cohorte.pocosCasos).sort((a, b) => a.cohorte.cpa - b.cohorte.cpa);
   const rendimiento = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : {
     estado: 'ok', universo: 'Pauta × CRM: inversión de cada plataforma, inscripciones del CRM',
-    // si el costo por inscripción de todas cae dentro de un margen chico, no hay «más barata»: se dice que cuestan parecido
-    cpaParecido: porCpa.length > 1 && porCpa.at(-1).cohorte.cpa / porCpa[0].cohorte.cpa - 1 < cfg.metodo.margenParecido ? { min: porCpa[0].cohorte.cpa, max: porCpa.at(-1).cohorte.cpa } : null,
-    canales, totalCohorte, masBaratoPorLead: porCpl[0] || null, masBaratoPorInscripcion: porCpa[0] || null,
+    // empate arriba: las que cuestan por inscripción a menos del margen de la más barata no tienen ganadora entre sí
+    cpaParecido: (() => {
+      const top = porCpa.filter((c) => c.cohorte.cpa / porCpa[0].cohorte.cpa - 1 < cfg.metodo.margenParecido);
+      return top.length > 1 ? { min: top[0].cohorte.cpa, max: top.at(-1).cohorte.cpa, ids: top.map((c) => c.id), nombres: top.map((c) => c.nombre), todas: top.length === porCpa.length } : null;
+    })(),
+    canales, totalCohorte, crmEstado: estadoGrupo('crm'), masBaratoPorLead: porCpl[0] || null, masBaratoPorInscripcion: porCpa[0] || null,
     sobreMeta: canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl), cohorteDesde, cohorteHasta, cohorteCerrada: !!coCanal,
   };
 
@@ -254,8 +258,18 @@ export function armarVista(data, filtros, estado = {}) {
     ? { estado: 'ok', universo: 'Pauta × CRM: lo reportado contra lo que llega', plataformas: analizaPautaCrm(data, P, plataformas.plataformas) }
     : { estado: plataformas.estado !== 'ok' ? plataformas.estado : crmDetalle.estado };
 
+  // Qué se monitorea: lo que sigue cada fuente. Es configuración, no medición: se cambia a pedido del cliente
+  const monitoreo = [
+    { titulo: 'Palabras en Google Trends', items: cfg.busquedas.map((b) => b.termino) },
+    { titulo: 'Hashtags en TikTok', items: cfg.hashtags.map((h) => h.tag) },
+    { titulo: 'Marcas en Facebook', items: cfg.conversacion.filter((x) => x.id !== 'otros').map((x) => x.nombre) },
+    { titulo: 'Cuentas de pauta', items: cfg.plataformas.map((p) => p.nombre) },
+    { titulo: 'Palabras clave en Google Ads', items: cfg.palabrasClave.filter((k) => !k.resto).map((k) => k.texto) },
+    { titulo: 'Páginas del sitio en GA4', items: cfg.web.paginas.map((p) => p.ruta) },
+  ];
+
   const vista = {
-    periodo, fuentes,
+    periodo, fuentes, monitoreo,
     lee: { pauta, plataformas, crm, crmDetalle, busquedas, redes, competencia, conversacion, web },
     analiza: { rendimiento, reparto, pautaCrm, demandaRespuesta, horaDia, sedes },
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },

@@ -37,6 +37,8 @@ export const diasTexto = (porDia, mayor, unidad, formato) => {
     : `El día con más es el ${DIAS_SEMANA[mayor]}: unos ${formato(porDia[mayor])} ${unidad}.`;
 };
 const DIAS_SEMANA = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+// Empate por inscripción: «las tres cuestan parecido» o «Google Ads y Meta Ads cuestan parecido»
+export const parecidoTexto = (p, total) => (p.todas ? `las ${enLetras(total, true)} cuestan parecido` : `${lista(p.nombres)} cuestan parecido`);
 export const lista = (xs) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`);
 
 // Cantidades chicas en letras (al inicio de una frase o en un sujeto): «dos campañas», «tres plataformas»

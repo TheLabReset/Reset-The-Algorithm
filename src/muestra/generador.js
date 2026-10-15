@@ -70,7 +70,9 @@ export function generar(cfg) {
       // historias que la data cuenta: TikTok mejora en 2026; Meta se fatiga entre fines de julio y las nuevas piezas
       if (c.id === 'tiktok') cvr *= 1 + 0.45 * Math.max(0, (t(d) - 0.55) / 0.45);
       if (c.id === 'meta' && d >= '2026-07-20' && d < '2026-09-08') ctr *= 1 - 0.35 * Math.min(1, diasEntre('2026-07-20', d) / 40);
-      const cpm = c.cpm * cfg.presionSubasta[mes(d) - 1] * Math.exp(0.05 * az.normal());
+      // un cambio de costo de la subasta desde una fecha (escenario de la demo); no toca el azar: la serie sigue igual
+      const subasta = (cfg.cambiosCosto || []).filter((k) => k.canal === c.id && d >= k.desde).reduce((f, k) => f * k.factor, 1);
+      const cpm = c.cpm * cfg.presionSubasta[mes(d) - 1] * subasta * Math.exp(0.05 * az.normal());
       const impresiones = Math.round((inversion / cpm) * 1000);
       const clics = az.binomial(impresiones, Math.min(0.5, ctr));
       const leads = az.binomial(clics, Math.min(0.9, cvr));

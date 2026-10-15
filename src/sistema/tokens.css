@@ -127,6 +127,7 @@
   --alto-capas: 52px;      /* fila de capas y filtros, fija al bajar */
 
   /* ── Radio: tres, con rol ── */
+  --escala-presentar: 112.5%; /* tamaño de letra al presentar */
   --r-control: 6px; --r-bloque: 10px; --r-capitulo: 16px; --r-marca: 999px;
 
   /* ── Movimiento: corto y productivo; nada se anima por adorno ── */

@@ -37,3 +37,16 @@ export function indiceLectura(ix) {
 }
 
 export const bandaTexto = (banda) => (banda ? `${capital(banda.nombre)} para captar socios` : '');
+
+// Una frase por plataforma para el resumen: cuánto pagó por lead y qué tan lejos quedó de su objetivo.
+// La distancia lleva el color (rojo si pasa el objetivo, verde si queda debajo); las cifras, negrita.
+export function objetivoFrase(p) {
+  if (p.cpl == null || p.objetivo == null) return [{ t: `${p.nombre} no tiene objetivo de costo por lead cargado.` }];
+  const d = Math.round(p.difObjetivo * 100) / 100;
+  if (d === 0) return [{ t: `${p.nombre} pagó ` }, { t: dolares(p.cpl, 2), cifra: true }, { t: ' por lead, justo en su objetivo.' }];
+  return [
+    { t: `${p.nombre} pagó ` }, { t: dolares(p.cpl, 2), cifra: true }, { t: ' por lead: ' },
+    { t: `${dolares(Math.abs(d), 2)} ${d > 0 ? 'por encima' : 'por debajo'}`, tono: d > 0 ? 'empeora' : 'mejora' },
+    { t: ' de su objetivo de ' }, { t: dolares(p.objetivo, 2), cifra: true }, { t: '.' },
+  ];
+}

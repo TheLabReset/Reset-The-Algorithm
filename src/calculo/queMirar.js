@@ -4,8 +4,8 @@
 //  · revisar: una lectura que conviene confirmar antes de decidir
 // Cada aviso dice en qué plataforma mirar y qué sección lo sostiene.
 
-import { rango, sumarDias } from '../muestra/calendario.js';
-import { suma, razon, cuantil, indices, sumarMeses, finDeMes } from './base.js';
+import { rango, sumarDias, diasEntre } from '../muestra/calendario.js';
+import { suma, razon, cuantil, indices, sumarMeses, finDeMes, plataformaDe } from './base.js';
 import { leeCrmDetalle, interaccionCanal } from './produccion.js';
 
 export const UMBRALES = {
@@ -16,6 +16,7 @@ export const UMBRALES = {
   subeBusqueda: 50, // % de subida en tres meses
   caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior
   diaBajo: 0.5, // un día con menos de la mitad de la inversión mediana del período
+  cierraCampana: 31, // días: una campaña del CRM que cierra dentro del mes siguiente al período
 };
 
 export function queMirar(data, P, v) {
@@ -51,11 +52,19 @@ export function queMirar(data, P, v) {
       const caida = (ant.atencion.enElDia - cd.atencion.enElDia) * 100;
       if (caida >= UMBRALES.caidaContactoEnElDia) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '4.3', datos: { ahora: cd.atencion.enElDia, antes: ant.atencion.enElDia, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null, causaDesde: cd.atencion.cambioDesde?.desde || null } });
     }
+    // Calendario: una campaña del CRM que cierra pronto; la pauta que la empuja tiene que llegar hasta el cierre
+    for (const k of cd.campanas) {
+      const faltan = diasEntre(P.hasta, k.hasta);
+      if (faltan > 0 && faltan <= UMBRALES.cierraCampana) {
+        const plataformas = [...new Set((k.canales || []).map((c) => plataformaDe(cfg, c)?.nombre).filter(Boolean))];
+        add({ id: 'cierra-campana', nivel: 'revisar', fuente: 'Calendario', sostiene: '4.3', datos: { campana: k.nombre, hasta: k.hasta, faltan, leads: k.leads, altas: k.altas, plataformas } });
+      }
+    }
     if (cd.atencion.masDeUnDiaFinDeSemana > UMBRALES.finDeSemanaEspera) add({ id: 'fin-de-semana', nivel: 'revisar', fuente: 'CRM', sostiene: '4.3', datos: { finDeSemana: cd.atencion.masDeUnDiaFinDeSemana, laborable: cd.atencion.masDeUnDiaLaborable } });
   }
 
   const r = v.analiza.rendimiento;
-  if (r.estado === 'ok' && !r.cpaParecido && r.masBaratoPorLead && r.masBaratoPorInscripcion && r.masBaratoPorLead.id !== r.masBaratoPorInscripcion.id) {
+  if (r.estado === 'ok' && !(r.cpaParecido && r.cpaParecido.ids.includes(r.masBaratoPorLead?.id)) && r.masBaratoPorLead && r.masBaratoPorInscripcion && r.masBaratoPorLead.id !== r.masBaratoPorInscripcion.id) {
     add({ id: 'plataforma-vs-crm', nivel: 'revisar', fuente: 'CRM', sostiene: '4.2', datos: { porLead: r.masBaratoPorLead.nombre, porInscripcion: r.masBaratoPorInscripcion.nombre } });
   }
   const pc = v.analiza.pautaCrm;

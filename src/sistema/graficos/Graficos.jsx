@@ -89,6 +89,7 @@ export function Linea({ serie, previa, eventos = [], formato = numero, alto: alt
         return (
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
             {ys.map((v) => <g key={v}><line className="q-rejilla" x1={m.l} x2={ancho - m.r} y1={y(v)} y2={y(v)} /><text className="q-eje" x={m.l - 8} y={y(v) + 4} textAnchor="end">{formato(v)}</text></g>)}
+            <path className="q-area" d={area(serie, x, y, y(0))} />
             {serie.map((p, i) => {
               const mostrar = rotuloX === 'mes' ? i % paso === 0 : rotuloX === 'semana' ? i % Math.max(paso, 4) === 0 : (serie.length <= 45 ? i % Math.max(7, paso) === 0 : p.fecha.endsWith('-01'));
               return mostrar ? <text key={p.fecha} className="q-eje" x={x(i)} y={alto - 8} textAnchor="middle">{rotuloX === 'mes' ? mesCorto(+p.fecha.slice(5, 7)) : fechaCorta(p.fecha)}</text> : null;
@@ -96,7 +97,6 @@ export function Linea({ serie, previa, eventos = [], formato = numero, alto: alt
             {serie.map((p, i) => <Zona key={'z' + p.fecha} x={x(i) - (x(1) - x(0)) / 2} y={m.t} w={x(1) - x(0)} h={alto - m.b - m.t} pista={`${fecha(p.fecha)}\n${formato(p.valor)}${previa ? `\ncomparación: ${formato(previa[i]?.valor)}` : ''}`} />)}
             {eventos.map((e) => { const i = serie.findIndex((p) => p.fecha === e.fecha); return i < 0 ? null : <g key={e.fecha} className="q-evento"><line x1={x(i)} x2={x(i)} y1={m.t} y2={alto - m.b} /><text x={x(i) + 4} y={m.t + 10}>{e.texto}</text></g>; })}
             {serie.map((p, i) => (p.valor == null && serie.slice(0, i).some((q) => q.valor != null) && serie.slice(i + 1).some((q) => q.valor != null) ? <rect key={'h' + p.fecha} className="q-hueco" x={x(i) - 3} y={m.t} width={6} height={alto - m.b - m.t} /> : null))}
-            <path className="q-area" d={area(serie, x, y, y(0))} />
             {previa && <path className="q-linea-previa" d={camino(previa, x, y)} />}
             <path className="q-linea" d={camino(serie, x, y)} />
             {serie.map((p, i) => (p.valor != null ? <circle key={p.fecha} className="q-punto-oculto" cx={x(i)} cy={y(p.valor)} r="3" data-fecha={p.fecha} data-valor={p.valor} /> : null))}
@@ -436,9 +436,9 @@ export function Acumulado({ serie, formato = numero, etiqueta, rotuloReal = 'est
         return (
           <Svg ancho={ancho} alto={alto} etiqueta={etiqueta}>
             {ys.map((v) => <g key={v}><line className="q-rejilla" x1={m.l} x2={ancho - m.r} y1={y(v)} y2={y(v)} /><text className="q-eje" x={m.l - 8} y={y(v) + 4} textAnchor="end">{formato(v)}</text></g>)}
+            <path className="q-area" d={area(real, x, y, y(0))} />
             {serie.map((p, i) => (i % 7 === 0 ? <text key={p.fecha} className="q-eje" x={x(i)} y={alto - 8} textAnchor="middle">{fechaCorta(p.fecha)}</text> : null))}
             {serie.map((p, i) => <Zona key={'z' + i} x={x(i) - (x(1) - x(0)) / 2} y={m.t} w={x(1) - x(0)} h={alto - m.b - m.t} pista={`${fecha(p.fecha)}\n${rotuloReal}: ${formato(p.real)}\n${rotuloRef}: ${formato(p.plan)}`} />)}
-            <path className="q-area" d={area(real, x, y, y(0))} />
             <path className="q-linea-previa" d={camino(plan, x, y)} />
             <path className="q-linea" d={camino(real, x, y)} />
             {real.map((p, i) => (p.valor != null ? <circle key={i} className="q-punto-oculto" cx={x(i)} cy={y(p.valor)} r="3" data-valor={p.valor} /> : null))}

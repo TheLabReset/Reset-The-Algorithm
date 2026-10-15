@@ -14,7 +14,10 @@ export function reasignacion(cfg, canales) {
   const peorCrm = canales.filter((c) => c.cohorte?.cpa != null).sort((a, b) => b.cohorte.cpa - a.cohorte.cpa)[0];
   if (!peorCrm || peorCrm.id !== sobre.id) return null;
   const candidatos = canales.filter((c) => c.id !== sobre.id && c.cpl != null && c.cpl <= c.metaCpl && c.cohorte.altas >= cfg.metodo.casosMinimos && c.cohorte.cpa != null);
-  const destino = candidatos.sort((a, b) => a.cohorte.cpa - b.cohorte.cpa)[0];
+  // si las más baratas por inscripción se parecen (a menos del margen), entre ellas gana la de lead más barato
+  const orden = candidatos.sort((a, b) => a.cohorte.cpa - b.cohorte.cpa);
+  const empate = orden.filter((c) => orden[0] && c.cohorte.cpa / orden[0].cohorte.cpa - 1 < cfg.metodo.margenParecido);
+  const destino = [...empate].sort((a, b) => a.cpl - b.cpl)[0];
   if (!destino) return null;
   const monto = Math.round((sobre.inversion * 0.5) / 100) * 100; // asumo: mover la mitad de la inversión del canal sobre meta
   if (!(monto > 0)) return null;
@@ -27,7 +30,7 @@ export function reasignacion(cfg, canales) {
   return {
     id: 'reasignar', sostiene: ['3.1'], tipo: 'estimacion',
     desde: sobre, hacia: destino, monto, leads, inscripciones,
-    acuerdo: 'La plataforma y el CRM coinciden en que es la más cara; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada plataforma se mantiene'],
+    acuerdo: 'Pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada plataforma se mantiene', ...(empate.length > 1 ? [`${empate.map((c) => c.nombre).join(' y ')} cuestan parecido por inscripción; se elige la de lead más barato`] : [])],
   };
 }
 

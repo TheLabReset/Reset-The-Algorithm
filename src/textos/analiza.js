@@ -1,12 +1,12 @@
 // Lecturas de los cruces entre fuentes (Inteligencia, Activación y Rendimiento). Observan; no ordenan.
 import { numero, dolares, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
-import { periodoTexto, mesTexto, capital, lista, horasTexto, diasTexto } from './comun.js';
+import { periodoTexto, mesTexto, capital, lista, horasTexto, diasTexto, parecidoTexto } from './comun.js';
 
 export function veredicto(v) {
   const r = v.analiza.rendimiento;
   if (r.estado !== 'ok' || !r.masBaratoPorLead) return null;
   if (!r.masBaratoPorInscripcion) return `${r.masBaratoPorLead.nombre} consigue el lead más barato. Por inscripción todavía no hay casos suficientes para decirlo.`;
-  if (r.cpaParecido) return `${r.masBaratoPorLead.nombre} consigue el lead más barato. Por inscripción, las plataformas cuestan parecido.`;
+  if (r.cpaParecido) return `${r.masBaratoPorLead.nombre} consigue el lead más barato. Por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)}.`;
   if (r.masBaratoPorLead.id === r.masBaratoPorInscripcion.id) return `${r.masBaratoPorLead.nombre} consigue el lead y la inscripción más baratos.`;
   return `${r.masBaratoPorLead.nombre} consigue el lead más barato; ${r.masBaratoPorInscripcion.nombre}, la inscripción más barata.`;
 }
@@ -37,10 +37,14 @@ export function pautaCrm(v) {
 export function costos(v) {
   const r = v.analiza.rendimiento;
   const titulo = 'Costo por lead y costo por inscripción';
+  if (r.crmEstado === 'no-cargo') return { titulo, lectura: 'El CRM no cargó: se muestra solo el costo por lead que reporta cada plataforma.' };
   if (!r.cohorteCerrada) return { titulo, lectura: `El costo por inscripción usa la cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}, que todavía no cierra: se muestra solo el costo por lead.` };
   const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
   if (!b) return { titulo, lectura: 'Ninguna plataforma tiene inscripciones suficientes para comparar el costo por inscripción.' };
-  if (r.cpaParecido) return { titulo, lectura: `Por lead, ${a.nombre} es la más barata (${dolares(a.cpl, 2)}). Por inscripción cuestan parecido, entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}, porque sus leads se inscriben en menor proporción.` };
+  if (r.cpaParecido) {
+    const fuera = r.canales.filter((c) => c.cohorte?.cpa != null && !c.cohorte.pocosCasos && !r.cpaParecido.ids.includes(c.id));
+    return { titulo, lectura: `Por lead, ${a.nombre} es la más barata (${dolares(a.cpl, 2)}). Por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)} (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)})${fuera.length ? `; ${lista(fuera.map((c) => `${c.nombre}, ${dolares(c.cohorte.cpa)}`))}` : ''}.` };
+  }
   return { titulo, lectura: a.id === b.id ? `${a.nombre} es la más barata por lead y por inscripción.` : `La plataforma y el CRM no coinciden: ${a.nombre} consigue el lead más barato (${dolares(a.cpl, 2)}) y ${b.nombre}, la inscripción más barata (${dolares(b.cohorte.cpa)}).` };
 }
 
