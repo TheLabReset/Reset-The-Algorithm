@@ -564,7 +564,7 @@ export function Dispersion({ puntos, elegido, onElegir, rotuloX, rotuloY, format
         const puestos = [];
         const cajaDe = (p, lado) => {
           // el rótulo arranca fuera del anillo de elección, para que nunca lo pise
-          const w = p.nombre.length * 7.2 + 4, cx = x(p.x), cy = y(p.y), d = (p.propia ? 12 : 10) + 6;
+          const w = p.nombre.length * 7.8 + 4, cx = x(p.x), cy = y(p.y), d = (p.propia ? 12 : 10) + 6;
           if (lado === 'der') return { x0: cx + d, x1: cx + d + w, y0: cy - 8, y1: cy + 6, tx: cx + d, ty: cy + 4, ancla: 'start' };
           if (lado === 'izq') return { x0: cx - d - w, x1: cx - d, y0: cy - 8, y1: cy + 6, tx: cx - d, ty: cy + 4, ancla: 'end' };
           if (lado === 'aba') return { x0: cx - w / 2, x1: cx + w / 2, y0: cy + d, y1: cy + d + 14, tx: cx, ty: cy + d + 11, ancla: 'middle' };
