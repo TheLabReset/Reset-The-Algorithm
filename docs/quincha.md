@@ -44,7 +44,7 @@ Tipografía, espacios, radios, duraciones y sombras también son tokens (`--t-*`
 
 Siete reglas, en `src/sistema/componentes.css`:
 
-1. **Tres niveles de superficie:** página, capítulo y tarjeta. La profundidad la da el valor de la superficie, no las sombras ni los bordes gruesos.
+1. **Tres niveles de superficie:** página, capítulo y tarjeta. La profundidad la da el valor de la superficie, no las sombras ni los bordes gruesos. El número y el título del capítulo van dentro del panel del capítulo, y ese panel se distingue de la página en los dos temas: en oscuro, la página es más oscura que el capítulo y la tarjeta la más clara. Al cambiar de marca, el negro de la marca no reemplaza al fondo de la página si queda igual al capítulo; `npm run sistema` falla si página y capítulo, o capítulo y tarjeta, no se distinguen.
 2. Cada capítulo abre con su **número y su pregunta** dentro del mismo panel, sin franjas a todo el ancho.
 3. Entre capítulos hay **el doble de aire** que entre tarjetas.
 4. Lo que no sigue el período **dice su propia ventana**, con alfiler en vez de calendario.

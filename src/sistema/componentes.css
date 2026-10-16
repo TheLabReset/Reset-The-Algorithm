@@ -175,7 +175,9 @@
 .q-ayuda-boton { display: inline-grid; place-items: center; width: 28px; height: 28px; margin: calc(-1 * var(--e-1)) calc(-1 * var(--e-1)) 0 0; border-radius: 50%; border: 0; background: transparent; color: var(--texto-3); cursor: pointer; }
 .q-ayuda-boton:hover, .q-ayuda-boton[aria-expanded="true"] { color: var(--texto-1); background: var(--superficie-capitulo); }
 .q-ayuda-globo {
-  position: absolute; right: 0; top: calc(100% + var(--e-2)); z-index: 10; width: min(360px, 80vw);
+  /* ancho y alto que caben en la pantalla; el componente lo corre hacia adentro si se sale por un costado */
+  position: absolute; right: 0; top: calc(100% + var(--e-2)); z-index: 10; width: min(360px, calc(100vw - 2 * var(--e-4)));
+  max-height: min(480px, 70vh); overflow-y: auto; overscroll-behavior: contain;
   display: grid; gap: var(--e-2); padding: var(--e-4); border-radius: var(--r-bloque);
   background: var(--elevada); border: 1px solid var(--borde); box-shadow: var(--sombra-flota);
   font-size: var(--t-14); color: var(--texto-2); text-align: left;
