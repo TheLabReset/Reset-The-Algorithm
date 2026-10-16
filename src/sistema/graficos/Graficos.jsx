@@ -166,7 +166,14 @@ export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB,
                   {f.a != null && f.b != null && <line className="q-pesa" x1={x(f.a)} x2={x(f.b)} y1={cy} y2={cy} />}
                   {f.a != null && <circle className="q-punto-previo" cx={x(f.a)} cy={cy} r="5" data-valor={f.a} />}
                   {f.b != null && <circle className="q-punto-actual" cx={x(f.b)} cy={cy} r="6" data-valor={f.b} />}
-                  <text className="q-rotulo-valor" x={x(Math.max(f.a ?? min, f.b ?? min)) + 10} y={cy + 4}>{formato(f.b)}</text>
+                  {/* B a la derecha si va delante de A; detrás, a la izquierda de su punto si cabe y si no, encima: al lado
+                      del punto A se leería como la cifra de A, y entre los dos puntos quedaría sobre la línea */}
+                  {f.b != null && (() => {
+                    const t = formato(f.b), ancho = t.length * 7.8;
+                    if (f.a == null || f.b >= f.a) return <text className="q-rotulo-valor" x={x(Math.max(f.b, f.a ?? f.b)) + 10} y={cy + 4}>{t}</text>;
+                    if (x(f.b) - m.l >= ancho + 16) return <text className="q-rotulo-valor" x={x(f.b) - 12} y={cy + 4} textAnchor="end">{t}</text>;
+                    return <text className="q-rotulo-valor" x={x(f.b)} y={cy - 9} textAnchor="middle">{t}</text>;
+                  })()}
                 </g>
               );
             })}

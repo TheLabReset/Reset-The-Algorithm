@@ -110,7 +110,9 @@
 /* La retícula comparte filas con sus tarjetas (subgrid): cabeceras, cuerpos y pies vecinos quedan a la misma altura */
 .q-capitulo-cuerpo { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: row dense; gap: var(--e-5); }
 @media (max-width: 640px) {
-  .q-capitulo { padding: var(--e-4) var(--e-3); border-radius: var(--r-bloque); }
+  /* el capítulo llega al borde de la pantalla y su relleno lleva el margen: el texto sigue a 16 px o más del borde,
+     y cada tarjeta gana el ancho que antes se iba en dos márgenes */
+  .q-capitulo { padding: var(--e-4) max(var(--e-4), env(safe-area-inset-left, 0px)); margin-inline: calc(-1 * max(var(--e-4), env(safe-area-inset-left, 0px))); border-radius: 0; }
   .q-capitulo-cab { grid-template-columns: auto minmax(0, 1fr); }
   .q-capitulo-avisos { grid-column: 1 / -1; justify-content: flex-start; }
   .q-capitulo-cuerpo { gap: var(--e-3); }
@@ -128,7 +130,7 @@
   .q-bloque.q-tercio { grid-column: span 4; }
   .q-bloque.q-dos-tercios { grid-column: span 8; }
 }
-@media (max-width: 640px) { .q-bloque { padding: var(--e-4); } }
+@media (max-width: 640px) { .q-bloque { padding: var(--e-4) var(--e-3); } }
 /* lo que no sigue el período: borde punteado y su fecha arriba; el fondo no cambia (dos blancos casi iguales no se ven) */
 .q-bloque-cab { display: grid; gap: var(--e-1); align-content: start; }
 .q-bloque-titulo { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--e-3); }
