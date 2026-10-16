@@ -37,8 +37,8 @@ export function camino(serie, x, y) {
 export const ultimoConValor = (serie) => { for (let i = serie.length - 1; i >= 0; i--) if (serie[i].valor != null) return i; return -1; };
 
 // Margen para rótulos de fila: el texto más largo (≈ 6,9 px por carácter a 12 px), con tope de 45 % del ancho
-export const margenRotulos = (nombres, ancho) => Math.min(Math.round(ancho * 0.5), 16 + Math.ceil(Math.max(...nombres.map((n) => String(n).length)) * 7.2));
-export const recortar = (t, px) => { const max = Math.max(4, Math.floor((px - 16) / 7.2)); t = String(t); return t.length > max ? t.slice(0, max - 1) + '…' : t; };
+export const margenRotulos = (nombres, ancho) => Math.min(Math.round(ancho * 0.5), 16 + Math.ceil(Math.max(...nombres.map((n) => String(n).length)) * 7.8));
+export const recortar = (t, px) => { const max = Math.max(4, Math.floor((px - 16) / 7.8)); t = String(t); return t.length > max ? t.slice(0, max - 1) + '…' : t; };
 
 // Separa rótulos verticales que chocan: empuja hacia abajo de a `paso` px
 export function separar(ys, paso = 14) {

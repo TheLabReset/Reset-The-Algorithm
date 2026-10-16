@@ -166,7 +166,14 @@ export function Pesas({ filas, formato = numero, max, min = 0, rotuloA, rotuloB,
                   {f.a != null && f.b != null && <line className="q-pesa" x1={x(f.a)} x2={x(f.b)} y1={cy} y2={cy} />}
                   {f.a != null && <circle className="q-punto-previo" cx={x(f.a)} cy={cy} r="5" data-valor={f.a} />}
                   {f.b != null && <circle className="q-punto-actual" cx={x(f.b)} cy={cy} r="6" data-valor={f.b} />}
-                  <text className="q-rotulo-valor" x={x(Math.max(f.a ?? min, f.b ?? min)) + 10} y={cy + 4}>{formato(f.b)}</text>
+                  {/* B a la derecha si va delante de A; detrás, a la izquierda de su punto si cabe y si no, encima: al lado
+                      del punto A se leería como la cifra de A, y entre los dos puntos quedaría sobre la línea */}
+                  {f.b != null && (() => {
+                    const t = formato(f.b), ancho = t.length * 7.8;
+                    if (f.a == null || f.b >= f.a) return <text className="q-rotulo-valor" x={x(Math.max(f.b, f.a ?? f.b)) + 10} y={cy + 4}>{t}</text>;
+                    if (x(f.b) - m.l >= ancho + 16) return <text className="q-rotulo-valor" x={x(f.b) - 12} y={cy + 4} textAnchor="end">{t}</text>;
+                    return <text className="q-rotulo-valor" x={x(f.b)} y={cy - 9} textAnchor="middle">{t}</text>;
+                  })()}
                 </g>
               );
             })}
@@ -564,7 +571,7 @@ export function Dispersion({ puntos, elegido, onElegir, rotuloX, rotuloY, format
         const puestos = [];
         const cajaDe = (p, lado) => {
           // el rótulo arranca fuera del anillo de elección, para que nunca lo pise
-          const w = p.nombre.length * 7.2 + 4, cx = x(p.x), cy = y(p.y), d = (p.propia ? 12 : 10) + 6;
+          const w = p.nombre.length * 7.8 + 4, cx = x(p.x), cy = y(p.y), d = (p.propia ? 12 : 10) + 6;
           if (lado === 'der') return { x0: cx + d, x1: cx + d + w, y0: cy - 8, y1: cy + 6, tx: cx + d, ty: cy + 4, ancla: 'start' };
           if (lado === 'izq') return { x0: cx - d - w, x1: cx - d, y0: cy - 8, y1: cy + 6, tx: cx - d, ty: cy + 4, ancla: 'end' };
           if (lado === 'aba') return { x0: cx - w / 2, x1: cx + w / 2, y0: cy + d, y1: cy + d + 14, tx: cx, ty: cy + d + 11, ancla: 'middle' };

@@ -119,7 +119,7 @@ export default function Rendimiento({ capa, vista: v }) {
               </Bloque>
             : <Bloque universo="crm" titulo="Del lead a la inscripción" estado={sinDato(co.estado)} />}
           <Bloque universo="crm" ancho="mitad" {...L.crmAtencion(v)}>
-            <Histograma etiqueta="Tiempo al primer contacto" formato={(n) => `${numero(n)} leads`} rotulo={(b) => `${numero(b.pct)} %`}
+            <Histograma etiqueta="Tiempo al primer contacto" formato={(n) => `${numero(n)} leads`} rotulo={(b) => `${numero(b.pct)} %`}
               barras={cr.atencion.tramos.map((t) => ({ nombre: t.nombre, corto: t.nombre.replace('menos de ', '< ').replace('más de ', '> '), valor: t.valor, pct: t.pct }))} resaltar={[]} />
             <p className="q-nota-bloque">La mitad de los leads tuvo {numero(cr.atencion.medianaIntentos)} {cr.atencion.medianaIntentos === 1 ? 'intento' : 'intentos'} de contacto o menos. {numero(cr.atencion.sinRegistro)} contactos sin registro de hora.</p>
           </Bloque>

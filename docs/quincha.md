@@ -44,7 +44,7 @@ Tipografía, espacios, radios, duraciones y sombras también son tokens (`--t-*`
 
 Siete reglas, en `src/sistema/componentes.css`:
 
-1. **Tres niveles de superficie:** página, capítulo y tarjeta. La profundidad la da el valor de la superficie, no las sombras ni los bordes gruesos.
+1. **Tres niveles de superficie:** página, capítulo y tarjeta. La profundidad la da el valor de la superficie, no las sombras ni los bordes gruesos. El número y el título del capítulo van dentro del panel del capítulo, y ese panel se distingue de la página en los dos temas: en oscuro, la página es más oscura que el capítulo y la tarjeta la más clara. Al cambiar de marca, el negro de la marca no reemplaza al fondo de la página si queda igual al capítulo; `npm run sistema` falla si página y capítulo, o capítulo y tarjeta, no se distinguen.
 2. Cada capítulo abre con su **número y su pregunta** dentro del mismo panel, sin franjas a todo el ancho.
 3. Entre capítulos hay **el doble de aire** que entre tarjetas.
 4. Lo que no sigue el período **dice su propia ventana**, con alfiler en vez de calendario.
@@ -60,6 +60,10 @@ Tres papeles: **títulos y cifras** (`--f-titulo`), **texto** (`--f-texto`) y **
 - Si no, van las del algoritmo de referencia: Sofia Sans Condensed en títulos, Sofia Sans en texto y Sofia Sans Semi Condensed en tablas. No vienen instaladas: el paso está en [nuevo-algoritmo.md](nuevo-algoritmo.md).
 
 Las cifras van en números tabulares. Si la tipografía de texto tiene el cero cruzado, se reemplazan solo los dígitos.
+
+**Escala** (`--t-13` a `--t-36`, en px): 13 para ejes, pies y chips; 14 para tablas; 16 para la lectura; 19 para el título de tarjeta; 24 para el capítulo; 28 y 36 para la cabecera de capa. Cifras: 24 y 32 (`--c-24`, `--c-32`). Pesos de la letra variable: 400 lectura, 560 rótulos, 640 cifras, 700 títulos. Se subió un escalón en octubre de 2026: la de antes (12, 13, 15, 17, 20) dejaba niveles muy pegados y lo secundario chico, más con Sofia Sans, que es más baja que una letra común (altura de x 0,49 contra 0,53 de Arial).
+
+**Una letra condensada solo desde 24 px.** Más chica se aprieta. El título de tarjeta va en `--f-tarjeta`: la de texto si la de títulos es condensada, la de títulos si no lo es. El modo presentar sube toda la escala con `--escala-presentar`.
 
 ## 4. Componentes
 

@@ -43,7 +43,7 @@ export default function Inteligencia({ capa, vista: v }) {
           </div>
           <h4 className="q-subtitulo">Cada componente, de 0 a 100</h4>
           <Barras etiqueta="Componentes del índice de oportunidad" formato={(n) => numero(Math.round(n))} max={100}
-            filas={ix.componentes.map((c) => ({ nombre: c.nombre, valor: Math.round(c.puntaje), nota: `peso ${numero(Math.round(c.pesoEfectivo * 100))} %` }))} />
+            filas={ix.componentes.map((c) => ({ nombre: c.nombre, valor: Math.round(c.puntaje), nota: `peso ${numero(Math.round(c.pesoEfectivo * 100))} %` }))} />
         </Bloque>
 
         <div className="q-bloque q-completo q-bloque-lista">

@@ -1,5 +1,5 @@
 // Componentes de Quincha. No calculan: reciben cifras ya armadas por src/calculo y textos por src/textos.
-import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
@@ -71,7 +71,22 @@ export function Delta({ cambio, mejorSi = 'sube', referencia, motivo, decimales 
 export function Ayuda({ titulo = 'Cómo se calcula', children }) {
   const [abierta, setAbierta] = useState(false);
   const id = useId();
-  const ref = useRef(null);
+  const ref = useRef(null), globo = useRef(null);
+  // el globo nunca sale de la pantalla: al abrirlo (y si cambia el ancho) se mide y se corre hacia adentro, con 16 px
+  // de margen. Anclado al botón, se saldría por la izquierda cuando el botón no está pegado al borde derecho
+  useLayoutEffect(() => {
+    const g = globo.current;
+    if (!abierta || !g) return undefined;
+    const ubicar = () => {
+      g.style.transform = '';
+      const r = g.getBoundingClientRect(), m = 16, ancho = document.documentElement.clientWidth;
+      const dx = r.left < m ? m - r.left : r.right > ancho - m ? ancho - m - r.right : 0;
+      if (dx) g.style.transform = `translateX(${Math.round(dx)}px)`;
+    };
+    ubicar();
+    window.addEventListener('resize', ubicar);
+    return () => window.removeEventListener('resize', ubicar);
+  }, [abierta]);
   useEffect(() => {
     if (!abierta) return undefined;
     const fuera = (e) => { if (!ref.current?.contains(e.target)) setAbierta(false); };
@@ -85,7 +100,7 @@ export function Ayuda({ titulo = 'Cómo se calcula', children }) {
       <button type="button" className="q-ayuda-boton" aria-expanded={abierta} aria-controls={id} onClick={() => setAbierta((a) => !a)}>
         <CircleHelp size={16} aria-hidden="true" /><span className="solo-lector">{titulo}</span>
       </button>
-      <div id={id} className="q-ayuda-globo" role="note" hidden={!abierta}>
+      <div id={id} ref={globo} className="q-ayuda-globo" role="note" hidden={!abierta}>
         <b>{titulo}</b>
         {children}
       </div>

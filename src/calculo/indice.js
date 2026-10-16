@@ -10,7 +10,7 @@ const posicion = (v, min, max) => (max > min ? acotar(((v - min) / (max - min)) 
 
 export const COMPONENTES = [
   { id: 'demanda', nombre: 'Demanda de búsqueda', peso: 0.25, fuente: '1.1', mide: `Interés de «${CLIENTE.busqueda}» en las últimas 4 semanas, dentro de su rango de 52 semanas` },
-  { id: 'eficiencia', nombre: 'Costo por lead contra meta', peso: 0.25, fuente: '3.1', mide: 'CPL de 28 días contra la meta combinada: 100 si está 30 % bajo la meta, 50 en la meta, 0 si está 30 % sobre' },
+  { id: 'eficiencia', nombre: 'Costo por lead contra meta', peso: 0.25, fuente: '3.1', mide: 'CPL de 28 días contra la meta combinada: 100 si está 30 % bajo la meta, 50 en la meta, 0 si está 30 % sobre' },
   { id: 'conversion', nombre: `Conversión a ${CLIENTE.cliente}`, peso: 0.2, fuente: '4.3', mide: 'Tasa de inscripción de la última cohorte cerrada de 28 días, dentro del rango de las 12 anteriores' },
   { id: 'conversacion', nombre: 'Conversación propia', peso: 0.15, fuente: '1.1', mide: 'Participación de la marca en 4 semanas, dentro de su rango de 52 semanas' },
   { id: 'temporada', nombre: 'Temporada del mes siguiente', peso: 0.15, fuente: '1.1', mide: 'Estacionalidad del mes siguiente dentro del rango del año' },

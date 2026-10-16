@@ -27,6 +27,8 @@ const GRAFICO = ['s1', 'resalte', 's2', 's3', 's4', 'previa'];
 // Regla de la casa: nunca dos grises vecinos que se confundan (asumo 1,2:1 entre escalones como piso perceptible
 // para rellenos grandes; 2:1 entre la serie y su comparación).
 const CONVIVEN = [
+  // los tres niveles de la página: el capítulo se distingue de la página y la tarjeta del capítulo, en los dos temas
+  ['fondo', 'superficie-capitulo', 1.05], ['superficie-capitulo', 'superficie', 1.05],
   ['s1', 'previa', 2], ['banda-0', 'superficie', 1.2], ['s1', 'banda-0', 4.5], ['borde-control', 'superficie', 3],
   ['serie-1', 'superficie', 3], ['serie-1', 'serie-resto', 2], ['serie-resto', 'superficie', 1.4],
   ['q0', 'q1', 1.2], ['q1', 'q2', 1.2], ['q2', 'q3', 1.2], ['q3', 'q4', 1.2], ['q4', 'q5', 1.2], ['q5', 'q6', 1.2],

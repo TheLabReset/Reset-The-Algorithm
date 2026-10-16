@@ -50,7 +50,7 @@ export function variacionFrase(sujeto, cambio, P) {
   if (cambio == null) return null;
   const r = Math.round(Math.abs(cambio));
   if (r === 0) return `${sujeto} se mantienen igual que en ${comparacionTexto(P)}`;
-  return `${sujeto} ${cambio > 0 ? 'suben' : 'bajan'} ${numero(r)} % frente a ${comparacionTexto(P)}`;
+  return `${sujeto} ${cambio > 0 ? 'suben' : 'bajan'} ${numero(r)} % frente a ${comparacionTexto(P)}`;
 }
 
 // «del 24 al 30 de setiembre» si es el mismo mes; si no, cada fecha completa

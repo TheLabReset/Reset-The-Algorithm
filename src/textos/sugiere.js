@@ -58,7 +58,7 @@ const ALERTAS = {
   }),
   'busqueda-sube': (d) => ({
     titulo: `Sube el interés por «${d.termino}»`,
-    dato: d.sinBase ? 'Hace tres meses casi no se buscaba en Google; hoy sí.' : `En Google, ${numero(d.cambio)} % más interés que hace tres meses.`,
+    dato: d.sinBase ? 'Hace tres meses casi no se buscaba en Google; hoy sí.' : `En Google, ${numero(d.cambio)} % más interés que hace tres meses.`,
     mirar: `Si ${CLIENTE.nombre} ofrece esa clase o piensa ofrecerla, se puede probar con una campaña chica de Search. Si no, queda anotado.`,
   }),
 };
