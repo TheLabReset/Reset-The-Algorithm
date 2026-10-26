@@ -90,11 +90,12 @@ export function detallar(data) {
 
   // ── CRM por dentro ──
   const c = cfg.crm;
-  const azC = crearAzar(semillaDe(cfg.semilla, 'crm'));
   const fuentesSitio = cfg.web.fuentes.filter((f) => !f.deClics).map((f) => f.id);
   const webDia = new Map(data.web.map((w) => [w.fecha, w]));
   const etapas = ['leads', 'contactos', 'citas', 'asisten', 'altas'];
   const crm = data.cohortes.map((x) => {
+    // azar por fila (día, origen y sede): que el corte abra o descarte los leads recientes no mueve a las demás filas
+    const azC = crearAzar(semillaDe(cfg.semilla, 'crm', x.fecha, x.canal, x.sede));
     // fuente por último clic: la pauta es su canal; el sitio sin pauta se reparte según las solicitudes del día por fuente
     let porFuente;
     if (x.canal === cfg.organico.id) {

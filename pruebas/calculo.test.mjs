@@ -3,10 +3,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { generar } from '../src/muestra/generador.js';
-import { CONFIG } from '../src/muestra/configuracion.js';
+import { BASE } from '../src/muestra/configuracion.js';
+import { muestraAl } from '../src/muestra/fechaMovil.js';
 import { armarVista, mesesDisponibles } from '../src/calculo/vista.js';
 import { CAPAS } from '../src/capas/estructura.js';
 
+// La maqueta corta ayer (fecha móvil); las pruebas fijan el corte en la fecha de referencia para ser reproducibles.
+// La fecha móvil tiene sus propias pruebas en pruebas/fecha-movil.test.mjs
+const CONFIG = muestraAl(BASE, BASE.corte);
 const data = generar(CONFIG);
 if (process.env.SEMBRAR === '1') data.pauta.meta.find((p) => p.fecha === '2026-07-14').sinDato = false; // defecto: el día caído vuelve como dato vacío
 const suma = (a, f) => a.reduce((s, x) => s + f(x), 0);
