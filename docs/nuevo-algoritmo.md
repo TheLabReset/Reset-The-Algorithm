@@ -116,6 +116,7 @@ Los archivos van en este orden. Después de cada uno se corre `npm run prueba`.
 - `hashtags`, `palabrasClave`, `terminosBusqueda`, `campanas`, `productos`.
 - `eventos`: los días en que una fuente no cargó, para que la demo muestre un hueco y no un cero.
 - `cambiosCosto` y la `calidad` de cada canal: el escenario forzado que hace que el modelo proponga mover inversión en el último mes. Se ajusta hasta que la prueba «el último mes de la muestra trae una propuesta de reparto» pase, sin tocar el modelo.
+- `fechaMovil`: la maqueta corta ayer y su historia se mueve con el corte. Cada fecha que se agregue a la configuración es de rango, de calendario o de historia, y se suma a `muestraAl()` según su clase. Se ajusta el escenario hasta que pase el barrido de `pruebas/fecha-movil.test.mjs`. Todo está en [fecha-movil.md](fecha-movil.md).
 
 **No se tocan** `src/sistema/` (los componentes de Quincha) ni `src/calculo/` (las reglas). Si un cliente de verdad necesita otra regla, se cambia con su prueba y se anota en la guía.
 
@@ -159,7 +160,7 @@ Las reglas no cambian con el cliente:
 
 ## De la muestra a la data real
 
-Hoy toda cifra sale del generador. Para conectar data real se reemplaza la fuente y nada más: el cálculo, los textos y las pantallas quedan igual.
+Hoy toda cifra sale del generador. Para conectar data real se reemplaza la fuente y nada más: el cálculo, los textos y las pantallas quedan igual. **Antes, se apaga la fecha móvil** (`fechaMovil.activa: false` en `configuracion.js`, o se quita `src/muestra/fechaMovil.js`): con data real, el corte es el último día que entregó cada fuente y ninguna fecha se corre ([fecha-movil.md](fecha-movil.md)).
 
 **La única puerta es `armarVista(data, filtros, estado)`** en `src/calculo/vista.js`. Recibe un objeto `data` con esta forma, que hoy arman `generar()` y `detallar()`:
 

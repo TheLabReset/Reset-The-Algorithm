@@ -93,7 +93,8 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 ## 9. La demo
 
 - **Barra de la demo**, abajo a la izquierda: datos, cargando, el CRM no cargó y GA4 no cargó. Sirve para mostrar en vivo que el panel dice lo que falta en vez de dibujar ceros. [`BarraDemo` en `src/App.jsx`]
-- **Escenario forzado**, solo en la data de muestra: desde setiembre TikTok se encarece y sus leads se inscriben menos. Así el modelo llega a una recomendación con sus reglas de siempre. Se hace en la configuración del generador (`cambiosCosto` y la calidad de cada canal), nunca tocando el modelo. [`src/muestra/configuracion.js`]
+- **Escenario forzado**, solo en la data de muestra: desde la segunda quincena del mes anterior al último mes cerrado, TikTok se encarece y sus leads se inscriben menos. Así el modelo llega a una recomendación con sus reglas de siempre. Se hace en la configuración del generador (`cambiosCosto` y la calidad de cada canal), nunca tocando el modelo. [`src/muestra/configuracion.js`]
+- **Fecha móvil**, solo en la maqueta: la muestra corta ayer en Lima y su historia se corre al último mes cerrado, así el panel se ve al día. El sello dice «Datos al 25 de octubre». Se apaga con `fechaMovil.activa: false`; una implementación real no la usa. [`src/muestra/fechaMovil.js`, [fecha-movil.md](fecha-movil.md)]
 
 ## 10. Antes de entregar
 

@@ -3,11 +3,25 @@
 // Para adaptar la demo a otro cliente se cambia este archivo, no los componentes.
 
 import { CLIENTE } from '../cliente.js';
+import { muestraAl, hoyEnLima } from './fechaMovil.js';
+import { sumarDias } from './calendario.js';
 
-export const CONFIG = {
+// La configuración se escribe para una fecha de referencia (corte). Con la fecha móvil encendida, la muestra corta ayer
+// en Lima y sus fechas se mueven con ese corte (src/muestra/fechaMovil.js, docs/fecha-movil.md)
+export const BASE = {
   semilla: 20260930,
   desde: '2025-01-01',
-  corte: '2026-09-30', // fecha fija de la muestra: nunca Date.now()
+  corte: '2026-09-30', // fecha de referencia: para ella se escribieron todas las fechas de abajo
+  tramoTendencia: 637, // días en que corren las tendencias (TikTok mejora, las marcas crecen): de desde a la referencia
+  fechaMovil: {
+    activa: true, // false: la muestra queda fija al corte de arriba, con estas mismas fechas
+    // lo que se repite cada año (clase calendario); lo demás con fecha es historia y se corre con el corte
+    feriadosFijos: ['01-01', '05-01', '06-07', '06-29', '07-23', '07-28', '07-29', '08-06', '08-30', '10-08', '11-01', '12-08', '12-09', '12-25'],
+    campanaEnero: { desde: '01-02', hasta: '02-15' }, // el Reto de enero, en Meta, TikTok y el CRM
+    retoMeta: 'm-reto',
+    retoCrm: { canales: ['meta', 'tiktok'], participacion: 0.8 },
+    promo: { pagina: 'promo', desde: '2026-09-08' }, // la página de la promo toma el nombre del mes en que empieza
+  },
   marca: CLIENTE, // quién es el cliente: src/cliente.js
   moneda: '$', // todo monto en dólares, como facturan las plataformas
 
@@ -17,7 +31,8 @@ export const CONFIG = {
   diaSemana: [1.05, 1.04, 1.02, 1.0, 0.95, 0.96, 0.98],
   factorFeriado: 0.78, // asumo: el lead baja en feriado aunque la búsqueda suba (informe 06 §4.4)
 
-  // Feriados nacionales 2025 y 2026 (confirmé, informe 06 §4.6)
+  // Feriados nacionales 2025 y 2026 (confirmé, informe 06 §4.6). Con la fecha móvil se calculan para cada año del rango
+  // con fechaMovil.feriadosFijos más el Jueves y el Viernes Santo
   feriados: [
     '2025-01-01', '2025-04-17', '2025-04-18', '2025-05-01', '2025-06-07', '2025-06-29', '2025-07-23', '2025-07-28', '2025-07-29',
     '2025-08-06', '2025-08-30', '2025-10-08', '2025-11-01', '2025-12-08', '2025-12-09', '2025-12-25',
@@ -32,10 +47,10 @@ export const CONFIG = {
   // Montos en dólares: los supuestos se calibraron en soles para Lima y se pasaron a 3,75 soles por dólar (asumo;
   // es muestra fija, no sigue el tipo de cambio del día).
   canales: [
-    { id: 'meta', nombre: 'Meta Ads', cpm: 3.2, ctr: 0.015, cvr: 0.08, reparto: 0.45, metaCpl: 3.2, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
+    { id: 'meta', nombre: 'Meta Ads', cpm: 3.2, ctr: 0.015, cvr: 0.08, reparto: 0.3, metaCpl: 3.2, calidad: { cita: 0.85, alta: 0.85 }, webPropia: 0.25, inflacion: 0.14 },
     { id: 'search', nombre: 'Search', cpm: 24, ctr: 0.055, cvr: 0.07, reparto: 0.3, metaCpl: 6.7, calidad: { cita: 1.3, alta: 1.35 }, webPropia: 1, inflacion: 0.04 },
-    { id: 'tiktok', nombre: 'TikTok Ads', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.15, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.8 }, webPropia: 0.25, inflacion: 0.18 },
-    { id: 'display', nombre: 'Display', cpm: 1.6, ctr: 0.004, cvr: 0.025, reparto: 0.1, metaCpl: 12, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
+    { id: 'tiktok', nombre: 'TikTok Ads', cpm: 2.67, ctr: 0.009, cvr: 0.05, reparto: 0.35, metaCpl: 5.3, calidad: { cita: 0.9, alta: 0.72 }, webPropia: 0.25, inflacion: 0.18 },
+    { id: 'display', nombre: 'Display', cpm: 1.6, ctr: 0.004, cvr: 0.025, reparto: 0.05, metaCpl: 12, calidad: { cita: 1.0, alta: 1.0 }, webPropia: 1, inflacion: 0.09 },
   ],
   // Plataformas como las ve el cliente y como reporta cada una: Google Ads junta sus campañas de Search y de Display.
   // Los canales de arriba son el detalle interno del generador; en pantalla todo se lee por plataforma.
@@ -50,7 +65,9 @@ export const CONFIG = {
   // Leads que llegan por el sitio sin pauta: entran al CRM pero no son leads de pauta (asumo: convierten un poco más)
   organico: { id: 'organico', nombre: 'Sitio sin pauta', calidad: { cita: 1.1, alta: 1.1 } },
 
-  presupuestoMensual: 16000, // asumo, en dólares
+  // asumo, en dólares. Con 24 000 (y TikTok al 35 %), TikTok junta más de 30 inscripciones al mes en cualquier mes del año:
+  // así la historia de la demo se sostiene con casos suficientes en el mes que el panel abre (pruebas/fecha-movil.test.mjs)
+  presupuestoMensual: 24000,
   pesoPresupuestoMes: [1.3, 1.15, 1.0, 0.9, 0.9, 0.85, 0.95, 1.05, 1.0, 0.95, 0.95, 1.0], // asumo: la inversión sigue a la demanda
   presionSubasta: [1.15, 1.0, 1.0, 1.0, 1.0, 1.0, 1.05, 1.0, 1.0, 1.0, 1.12, 1.18], // asumo: CPM más caro en enero y fin de año
 
@@ -201,7 +218,7 @@ export const CONFIG = {
     tramosContacto: ['menos de 1 h', '1 a 4 h', '4 a 24 h', '1 a 2 días', 'más de 2 días'],
     contactoLaborable: [0.42, 0.26, 0.2, 0.08, 0.04],
     contactoFinDeSemana: [0.18, 0.2, 0.32, 0.18, 0.12],
-    contactoLento: { desde: '2026-09-01', texto: 'Dos asesoras menos en el equipo', factor: [0.75, 0.95, 1.1, 1.6, 2] }, // historia de setiembre
+    contactoLento: { desde: '2026-09-01', texto: 'Dos asesoras menos en el equipo', factor: [0.75, 0.95, 1.1, 1.6, 2] }, // historia del último mes cerrado
     sinRegistroContacto: 0.07,
     intentos: [0.27, 0.24, 0.19, 0.12, 0.08, 0.1], // 1, 2, 3, 4, 5, 6 o más intentos de contacto
     motivosDescarte: [
@@ -273,12 +290,17 @@ export const CONFIG = {
   // Sesiones por usuario al día y segundos de interacción por sesión con interacción, por canal (asumo)
   usuariosWeb: { organica: 1.15, directo: 1.3, redes: 1.1, referidos: 1.1, ads: 1.12, display: 1.05, redesPagadas: 1.06 },
   segundosWeb: { organica: 74, directo: 92, redes: 41, referidos: 66, ads: 58, display: 22, redesPagadas: 33 },
-  // Historia de la muestra: desde las piezas nuevas de Meta (8 set) los clics suben, pero llegan a /promo-setiembre,
+  // Historia de la muestra (fechas de la referencia; con la fecha móvil se corren al último mes cerrado): desde las piezas
+  // nuevas de Meta (8 set) los clics suben, pero llegan a /promo-setiembre,
   // que carga lento en celular, y la interacción de las sesiones de redes pagadas cae
-  // Escenario de la demo, para que el modelo proponga mover inversión con sus reglas de siempre: desde setiembre
-  // la subasta de TikTok se encarece (pasa su objetivo de costo por lead) y sus leads se inscriben menos que los de
+  // Meta se fatiga entre fines de julio y las piezas nuevas (el CTR baja hasta 35 %)
+  fatigaMeta: { desde: '2026-07-20', hasta: '2026-09-08' },
+  // El Reto de enero también se busca y se comenta más (búsquedas de marca y conversación propia)
+  campanaPropia: [{ desde: '2026-01-05', hasta: '2026-02-16' }],
+  // Escenario de la demo, para que el modelo proponga mover inversión con sus reglas de siempre: desde la segunda
+  // quincena del mes anterior (así la cohorte del CRM ya lo ve) la subasta de TikTok se encarece (pasa su objetivo de costo por lead) y sus leads se inscriben menos que los de
   // las otras plataformas (calidad.alta), así el CRM confirma que es la que más cuesta por inscripción.
-  cambiosCosto: [{ canal: 'tiktok', desde: '2026-09-01', factor: 1.7 }],
+  cambiosCosto: [{ canal: 'tiktok', desde: '2026-08-16', factor: 1.7 }],
   cambiosInteraccion: [{ fuente: 'redesPagadas', desde: '2026-09-08', factor: 0.62, texto: 'las piezas nuevas de Meta llevan a /promo-setiembre' }],
   // Vistas de página por sesión, por página (asumo)
   vistasPorSesion: 2.1,
@@ -308,3 +330,6 @@ export const CONFIG = {
     pruebasMinimas: 10,
   },
 };
+
+// La que usa la app: ayer en Lima, si la fecha móvil está encendida; si no, la de referencia
+export const CONFIG = BASE.fechaMovil.activa ? muestraAl(BASE, sumarDias(hoyEnLima(), -1)) : BASE;

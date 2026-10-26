@@ -5,7 +5,7 @@ import { CONFIG } from './muestra/configuracion.js';
 import { generar } from './muestra/generador.js';
 import { armarVista, mesesDisponibles } from './calculo/vista.js';
 import { CAPAS } from './capas/estructura.js';
-import { fecha } from './sistema/formato.js';
+import { fechaSinAnio } from './sistema/formato.js';
 import { mesTexto } from './textos/comun.js';
 import { NavegacionCapas, Selector, Grupo, SelloMuestra, BarraDemo, CargandoContexto } from './sistema/Componentes.jsx';
 import logoCliente from '../public/marca/logo-barra.svg?raw'; // logo del cliente en negativo, sobre la barra oscura
@@ -89,7 +89,7 @@ export default function App() {
             <span className="q-marca-producto"><b>The Algorithm</b><span>By The Lab</span></span>
           </a>
           <div className="q-barra-controles">
-            <SelloMuestra>Datos de muestra al {fecha(CONFIG.corte)}</SelloMuestra>
+            <SelloMuestra>Datos al {fechaSinAnio(CONFIG.corte)}</SelloMuestra>
             <button type="button" className="q-boton q-boton-quieto q-boton-presentar" aria-pressed={presentar} onClick={() => setPresentar((x) => !x)}>
               <Presentation size={16} aria-hidden="true" /><span>Presentar</span>
             </button>

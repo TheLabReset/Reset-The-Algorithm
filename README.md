@@ -45,7 +45,7 @@ Ninguna cifra se escribe en un componente. La data entra por un solo lado, se ca
 ```
 src/
 ├── cliente.js        Quién es el cliente: nombre, rubro, búsqueda principal. Único archivo que nombra a la marca
-├── muestra/          Generador de data de muestra con semilla fija y su configuración (cada parámetro con su origen)
+├── muestra/          Generador de data de muestra con semilla fija y su configuración (cada parámetro con su origen); corta ayer (fecha móvil, docs/fecha-movil.md)
 ├── calculo/          Reglas puras: vista.js es la única puerta entre la data y la pantalla
 ├── textos/           Las lecturas, en español peruano: observan, no ordenan
 ├── capas/            Las cuatro capas y sus capítulos

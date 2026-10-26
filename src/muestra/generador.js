@@ -49,7 +49,10 @@ export function generar(cfg) {
   const dias = rango(cfg.desde, cfg.corte);
   const feriado = new Set(cfg.feriados);
   const caidas = new Set(cfg.eventos.filter((e) => e.tipo === 'caida').map((e) => `${e.canal}|${e.fecha}`));
-  const t = (d) => diasEntre(cfg.desde, d) / diasEntre(cfg.desde, cfg.corte); // 0 a 1 en el rango
+  // 0 a 1 a lo largo de un tramo fijo desde el inicio (no del rango): con la fecha móvil, el corte se mueve y lo ya
+  // generado no cambia de un día al otro
+  const t = (d) => Math.min(1, diasEntre(cfg.desde, d) / cfg.tramoTendencia);
+  const enCampanaPropia = (s) => cfg.campanaPropia.some((k) => s >= k.desde && s < k.hasta);
   const demanda = (d) => cfg.estacionalidad[mes(d) - 1] * cfg.diaSemana[diaSemana(d)] * (feriado.has(d) ? cfg.factorFeriado : 1);
 
   // ── Pauta: valores reales del día y lo que la plataforma reporta ──
@@ -69,7 +72,7 @@ export function generar(cfg) {
       let cvr = c.cvr * demanda(d) * Math.exp(0.08 * az.normal());
       // historias que la data cuenta: TikTok mejora en 2026; Meta se fatiga entre fines de julio y las nuevas piezas
       if (c.id === 'tiktok') cvr *= 1 + 0.45 * Math.max(0, (t(d) - 0.55) / 0.45);
-      if (c.id === 'meta' && d >= '2026-07-20' && d < '2026-09-08') ctr *= 1 - 0.35 * Math.min(1, diasEntre('2026-07-20', d) / 40);
+      if (c.id === 'meta' && d >= cfg.fatigaMeta.desde && d < cfg.fatigaMeta.hasta) ctr *= 1 - 0.35 * Math.min(1, diasEntre(cfg.fatigaMeta.desde, d) / 40);
       // un cambio de costo de la subasta desde una fecha (escenario de la demo); no toca el azar: la serie sigue igual
       const subasta = (cfg.cambiosCosto || []).filter((k) => k.canal === c.id && d >= k.desde).reduce((f, k) => f * k.factor, 1);
       const cpm = c.cpm * cfg.presionSubasta[mes(d) - 1] * subasta * Math.exp(0.05 * az.normal());
@@ -113,12 +116,13 @@ export function generar(cfg) {
   // ── CRM: cada lead real (de pauta o del sitio sin pauta) repartido por sede y seguido hasta la inscripción ──
   const e = cfg.embudo;
   const cohortes = []; // {fecha, canal, sede, leads, contactos, citas, asisten, altas}
-  const azE = crearAzar(semillaDe(cfg.semilla, 'embudo'));
+  // azar por origen y por día: que el corte censure las altas recientes no mueve el azar de los demás días
   const origenes = [...cfg.canales.map((c) => ({ id: c.id, calidad: c.calidad, leads: (i) => real[c.id][i].leads })), { id: cfg.organico.id, calidad: cfg.organico.calidad, leads: (i) => web[i].organicos }];
   for (const o of origenes) {
     dias.forEach((d, i) => {
       const n = o.leads(i);
       if (!n) return;
+      const azE = crearAzar(semillaDe(cfg.semilla, 'embudo', o.id, d));
       const abiertas = cfg.sedes.filter((s) => !s.abre || d >= s.abre);
       const reparto = multinomial(azE, n, abiertas.map((s) => s.peso));
       abiertas.forEach((s, k) => {
@@ -146,29 +150,30 @@ export function generar(cfg) {
   const semanas = [];
   for (let s = inicioSemana(cfg.desde); s <= cfg.corte; s = sumarDias(s, 7)) if (s >= cfg.desde && sumarDias(s, 6) <= cfg.corte) semanas.push(s);
 
-  const azB = crearAzar(semillaDe(cfg.semilla, 'busquedas'));
   const crudas = cfg.busquedas.map((k) => {
-    // un término que aparece a mitad de la muestra lleva su propio flujo: agregarlo no cambia a los demás
-    const az = k.aparece ? crearAzar(semillaDe(cfg.semilla, 'busquedas', k.id)) : azB;
+    // cada término lleva su propio flujo: agregar uno, o una semana más, no cambia a los demás
+    const az = crearAzar(semillaDe(cfg.semilla, 'busquedas', k.id));
     return semanas.map((s) => {
     let v = k.base * cfg.estacionalidad[mes(sumarDias(s, 3)) - 1] * (1 + (k.crece || 0) * t(s)) * Math.exp(0.07 * az.normal());
     if (k.aparece && s >= k.aparece) v *= 1 + (k.despues / k.base - 1) * Math.min(1, diasEntre(k.aparece, s) / 84); // sube en 12 semanas
-    if (k.propia && s >= '2026-01-05' && s < '2026-02-16') v *= 1.6; // campaña de enero
+    if (k.propia && enCampanaPropia(s)) v *= 1.6; // campaña de enero
     return v;
     });
   });
   const maxB = Math.max(...crudas.flat());
   const busquedas = cfg.busquedas.map((k, i) => ({ id: k.id, termino: k.termino, propia: !!k.propia, semanas: semanas.map((s, j) => ({ semana: s, indice: Math.max(1, Math.round((crudas[i][j] / maxB) * 100)) })) }));
 
-  const azC = crearAzar(semillaDe(cfg.semilla, 'conversacion'));
-  const conversacion = cfg.conversacion.map((m) => ({
+  const conversacion = cfg.conversacion.map((m) => {
+    const azC = crearAzar(semillaDe(cfg.semilla, 'conversacion', m.id)); // por marca: una semana más no mueve a las otras
+    return {
     id: m.id, nombre: m.nombre, propia: !!m.propia,
     semanas: semanas.map((s) => {
       let media = m.base * (m.picos?.[mes(sumarDias(s, 3))] || 1) * (1 + (m.crece || 0) * t(s));
-      if (m.propia && s >= '2026-01-05' && s < '2026-02-16') media *= 1.8;
+      if (m.propia && enCampanaPropia(s)) media *= 1.8;
       return { semana: s, menciones: azC.poisson(media * Math.exp(0.12 * azC.normal())) };
     }),
-  }));
+    };
+  });
 
   return { config: cfg, dias, semanas, pauta, web, cohortes, porHora, busquedas, conversacion };
 }
