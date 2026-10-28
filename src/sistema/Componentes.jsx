@@ -2,11 +2,12 @@
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
-  Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
-  Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
+  Sigma, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
+  Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
   ExternalLink, Play, Check, PanelRightOpen,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
+import { estadoDe } from './estados.js';
 
 // ── Universos: qué se cuenta y de dónde. El icono ayuda a reconocerlo sin leer; el color no se usa ──
 export const UNIVERSOS = {
@@ -18,28 +19,33 @@ export const UNIVERSOS = {
   modelo: { icono: Sigma, nombre: 'Modelo' },
 };
 
-export function Chip({ tipo = 'neutro', icono: Icono, children, titulo }) {
+// ── Etiqueta: la única forma de una etiqueta chica. Cinco variantes según qué dice, el tono según el catálogo de
+// estados (src/sistema/estados.js). Ninguna pantalla arma su propia pastilla: guía en docs/guia-rapida.md ──
+//  · borde: un dato del contexto (universo, fuente, ventana del período)
+//  · llena: un estado con juicio (rinde, costosa, sin leads)
+//  · tinta: una marca que se ve de lejos (Nuevo)
+//  · texto: un nivel o un sello sin caja (el nivel de una alerta, «Datos al…» en la barra)
+//  · rotulo: el nombre de un grupo, en mayúsculas grises («Los propios»)
+export function Etiqueta({ variante = 'borde', estado, tono, icono, titulo, className = '', children }) {
+  const e = estado ? estadoDe(estado) : null;
+  const Icono = icono === undefined ? e?.icono : icono;
   return (
-    <span className={`q-chip${tipo === 'neutro' ? '' : ' q-chip-' + tipo}`} title={titulo}>
-      {Icono && <Icono size={13} aria-hidden="true" strokeWidth={2.2} />}
+    <span className={`q-etiqueta q-etiqueta-${variante}${className ? ' ' + className : ''}`} data-tono={tono ?? e?.tono ?? 'neutro'} data-estado={estado} title={titulo}>
+      {Icono && <Icono size={13} aria-hidden="true" strokeWidth={2.4} />}
       {children}
     </span>
   );
 }
 
+// Atajos con significado: el universo de una cifra, el estado de una fuente, lo nuevo y el sello de la barra
 export const ChipUniverso = ({ universo, children }) => {
   const u = UNIVERSOS[universo];
-  return <Chip tipo="universo" icono={u.icono}>{children || u.nombre}</Chip>;
+  return <Etiqueta tono="fuerte" icono={u.icono}>{children || u.nombre}</Etiqueta>;
 };
-
-const ICONO_FUENTE = { ok: CircleCheck, parcial: TriangleAlert, 'no-cargo': CloudOff };
 export function ChipFuente({ nombre, estado, detalle }) {
-  return <Chip tipo={estado === 'ok' ? 'fuente' : 'atencion'} icono={ICONO_FUENTE[estado]} titulo={detalle}>{nombre}{detalle ? ` · ${detalle}` : ''}</Chip>;
+  return <Etiqueta estado={`fuente-${estado}`} titulo={detalle}>{nombre}{detalle ? ` · ${detalle}` : ''}</Etiqueta>;
 }
-
-export const SelloMuestra = ({ children }) => (
-  <span className="q-sello-muestra"><FlaskConical size={13} aria-hidden="true" />{children}</span>
-);
+export const SelloMuestra = ({ children }) => <Etiqueta variante="texto" tono="barra" icono={FlaskConical} className="q-sello-muestra">{children}</Etiqueta>;
 
 // ── Cifra con su variación ──
 // mejorSi: 'sube' o 'baja' decide el color; la flecha y el signo siempre van, así el color nunca va solo
@@ -138,7 +144,7 @@ export const VentanaContexto = createContext(null);
 export const CargandoContexto = createContext(false);
 export function Ventana({ texto, fija }) {
   const Icono = fija ? Pin : Calendar;
-  return <span className={`q-ventana${fija ? ' q-ventana-fija' : ''}`} title={fija ? 'No sigue el período elegido' : 'Sigue el período elegido'}><Icono size={12} aria-hidden="true" />{texto}</span>;
+  return <Etiqueta icono={Icono} className={`q-ventana${fija ? ' q-ventana-fija' : ''}`} titulo={fija ? 'No sigue el período elegido' : 'Sigue el período elegido'}>{texto}</Etiqueta>;
 }
 
 export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance, ventana, estado, ayuda, pie, children, id }) {
@@ -250,12 +256,12 @@ export function Seccion({ id, numero, titulo, pregunta, fuentes = [], avisos, ch
   );
 }
 
-// ── Alertas: el nivel lleva icono, palabra y color (el color nunca va solo) ──
+// ── Alertas: el nivel lleva icono, palabra y color (el color nunca va solo). Tono e icono, del catálogo de estados ──
 export const NIVELES = {
-  atencion: { icono: TriangleAlert, nombre: 'Atención' },
-  revisar: { icono: Eye, nombre: 'Para revisar' },
-  oportunidad: { icono: TrendingUp, nombre: 'Oportunidad' },
-  bien: { icono: CircleCheck, nombre: 'Va bien' },
+  atencion: { nombre: 'Atención' },
+  revisar: { nombre: 'Para revisar' },
+  oportunidad: { nombre: 'Oportunidad' },
+  bien: { nombre: 'Va bien' },
 };
 
 export function Alerta({ id, nivel, titulo, dato, mirar, fuente, ir, irTexto }) {
@@ -263,7 +269,7 @@ export function Alerta({ id, nivel, titulo, dato, mirar, fuente, ir, irTexto }) 
   return (
     <article className={`q-alerta q-alerta-${nivel}`} id={id}>
       <div className="q-alerta-cab">
-        <span className="q-nivel"><n.icono size={14} aria-hidden="true" strokeWidth={2.4} />{n.nombre}</span>
+        <Etiqueta variante="texto" estado={`nivel-${nivel}`} className="q-nivel">{n.nombre}</Etiqueta>
         <span className="q-alerta-fuente">{fuente}</span>
       </div>
       <h3>{titulo}</h3>
@@ -299,7 +305,7 @@ export function ListaAlertas({ grupos }) {
                     <summary>
                       <span className="q-fila-num">{n}</span>
                       <span className="q-fila-cuerpo">
-                        <span className="q-fila-titulo"><span className="q-nivel" title={nv.nombre}><nv.icono size={14} aria-hidden="true" strokeWidth={2.4} /><span className="solo-lector">{nv.nombre}: </span></span>{a.titulo}</span>
+                        <span className="q-fila-titulo"><Etiqueta variante="texto" estado={`nivel-${a.nivel}`} className="q-nivel" titulo={nv.nombre}><span className="solo-lector">{nv.nombre}: </span></Etiqueta>{a.titulo}</span>
                         {a.mirar && <span className="q-fila-mirar"><CornerDownRight size={14} aria-hidden="true" />{a.mirar}</span>}
                       </span>
                       <span className="q-fila-fuente">{a.fuente}</span>
@@ -329,7 +335,7 @@ export function AvisosCapitulo({ avisos }) {
         const n = NIVELES[a.nivel];
         return (
           <li key={a.id} className={`q-aviso q-alerta-${a.nivel}`}>
-            <a href={'#' + a.id}><span className="q-nivel"><n.icono size={14} aria-hidden="true" strokeWidth={2.4} />{n.nombre}</span><span className="q-aviso-texto">{a.titulo}</span><Ir size={14} aria-hidden="true" /></a>
+            <a href={'#' + a.id}><Etiqueta variante="texto" estado={`nivel-${a.nivel}`} className="q-nivel">{n.nombre}</Etiqueta><span className="q-aviso-texto">{a.titulo}</span><Ir size={14} aria-hidden="true" /></a>
           </li>
         );
       })}
@@ -531,12 +537,8 @@ export function SelectorPeriodo({ texto, atajo, atajos, desde, hasta, min, max, 
   );
 }
 
-// ── Insignia: un estado en su pastilla, con icono y palabra; el color nunca va solo ──
-export function Insignia({ tono = 'neutro', icono: Icono, children }) {
-  return <span className={`q-insignia q-insignia-${tono}`}>{Icono && <Icono size={13} aria-hidden="true" strokeWidth={2.4} />}{children}</span>;
-}
 // ── Sello de lo nuevo: lo que empezó dentro del período; va primero en su lista ──
-export const SelloNuevo = ({ texto = 'Nuevo', className = '' }) => <span className={`q-sello-nuevo ${className}`}>{texto}</span>;
+export const SelloNuevo = ({ texto = 'Nuevo', className = 'q-junto' }) => <Etiqueta variante="tinta" icono={null} className={className}>{texto}</Etiqueta>;
 
 // ── Tabla: números a la derecha, primera columna como encabezado de fila ──
 // barra: { columna, valores } pone una barra delgada junto a la cifra de esa columna (magnitud de un vistazo).
@@ -643,7 +645,7 @@ export function Monitoreo({ grupos }) {
       {grupos.map((g) => (
         <section key={g.titulo}>
           <h3>{g.titulo} <span>{g.items.length}</span></h3>
-          <ul className="q-palabras">{g.items.map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul className="q-palabras">{g.items.map((x) => <li key={x}><Etiqueta tono="fuerte" icono={null}>{x}</Etiqueta></li>)}</ul>
         </section>
       ))}
     </div>
@@ -765,7 +767,7 @@ function Mazo({ g, onAbrir, propio, t }) {
   return (
     <button type="button" className="q-mazo" onClick={() => onAbrir(g.nombre)} data-anunciante={g.nombre} aria-haspopup="dialog">
       <span className="q-mazo-pila" aria-hidden="true">
-        {g.nuevos > 0 && <SelloNuevo className="q-sello-nuevo-carta" />}
+        {g.nuevos > 0 && <SelloNuevo className="q-sobre-carta" />}
         {pila.map((a, i) => {
           const conImg = a.imagen && conImagen.length;
           return (
@@ -776,7 +778,7 @@ function Mazo({ g, onAbrir, propio, t }) {
           );
         })}
       </span>
-      <span className="q-mazo-nombre">{g.nombre}{propio && <span className="q-mazo-propio">{t.propio}</span>}</span>
+      <span className="q-mazo-nombre">{g.nombre}{propio && <Etiqueta variante="rotulo" icono={null}>{t.propio}</Etiqueta>}</span>
       <span className="q-mazo-dato"><b>{t.cuenta(n)}</b>{g.nuevos > 0 && t.nuevos ? ` · ${t.nuevos(g.nuevos)}` : t.detalle(g) && ` · ${t.detalle(g)}`}</span>
       <span className="q-mazo-ver">{t.ver(n)}<ArrowRight size={14} aria-hidden="true" /></span>
     </button>

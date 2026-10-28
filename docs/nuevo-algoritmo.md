@@ -10,6 +10,7 @@ Los tres documentos se reparten así:
 |---|---|
 | [guia-algoritmo.md](guia-algoritmo.md) | Qué se muestra y en qué orden: capas, navegación, tarjeta, gráficos, datos honestos, el modelo |
 | [quincha.md](quincha.md) | Con qué se construye: tokens, tipografía, componentes, gráficos y el chequeo |
+| [guia-rapida.md](guia-rapida.md) | Qué se usa para cada cosa: etiquetas y estados, componentes, formatos y textos. Un estado del rubro nuevo se agrega al catálogo `src/sistema/estados.js` |
 | Este archivo | Cómo se pasa todo eso a otro cliente |
 
 ## Tres reglas antes de empezar

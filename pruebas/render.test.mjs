@@ -72,7 +72,7 @@ test('lo nuevo va con su sello y primero en su conjunto', () => {
   const v = armarVista(d, {});
   const x = v.lee.piezas;
   assert.ok(x.nuevas > 0, 'la vista que abre el panel no tiene piezas nuevas');
-  assert.match(pintar('activacion', v), /q-sello-nuevo/);
+  assert.match(pintar('activacion', v), /class="q-etiqueta q-etiqueta-tinta[^"]*"[^>]*>Nuevo</);
   for (const k of x.conjuntos) {
     const de = x.piezas.filter((p) => p.conjunto === k.id && p.alAire);
     const i = de.findIndex((p) => !p.nueva);

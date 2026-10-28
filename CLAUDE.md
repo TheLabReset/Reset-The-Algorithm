@@ -4,6 +4,7 @@ Panel de inteligencia de marketing de The Lab. La demo usa data de muestra de Fi
 
 - **Cómo se diseña un algoritmo:** sigue `docs/guia-algoritmo.md`. Ahí están las cuatro capas, la pestaña, las tipografías por defecto, la tarjeta, los gráficos y las reglas de datos honestos. Si algo nuevo contradice la guía, se actualiza la guía en el mismo cambio.
 - **Con qué se construye:** el sistema de diseño Quincha, en `docs/quincha.md`. Para cambiar de marca se cambia la paleta en `src/sistema/tokens.css`; ningún componente se toca.
+- **Guía rápida:** `docs/guia-rapida.md` dice qué componente, etiqueta, formato o texto se usa para cada cosa. Toda etiqueta chica es `<Etiqueta>` con un estado del catálogo `src/sistema/estados.js`; un estado nuevo se agrega ahí, nunca en una pantalla. `npm run sistema` rechaza pastillas armadas aparte.
 - **Otra marca:** se sigue `docs/nuevo-algoritmo.md`. El nombre de la marca y las palabras de su rubro viven solo en `src/cliente.js`; una prueba falla si aparecen escritas en otro archivo.
 - **Producción:** antes de agregar un workflow, un cron o un job de GitHub Actions, se estima en minutos al mes según `docs/produccion-actions.md`. Ningún runner espera a un servicio externo.
 - **Ninguna cifra se escribe en un componente.** La data sale de `src/muestra` (generador con semilla fija), se calcula en `src/calculo` y los textos se arman en `src/textos`. Las pantallas (`src/pantallas`) solo pintan.

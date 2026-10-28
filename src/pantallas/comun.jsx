@@ -1,6 +1,6 @@
 // Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
 import { useState } from 'react';
-import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo, VentanaAnuncios } from '../sistema/Componentes.jsx';
+import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo, VentanaAnuncios, Etiqueta } from '../sistema/Componentes.jsx';
 import { Histograma, Barras, Dispersion } from '../sistema/graficos/Graficos.jsx';
 import { diaSemanaLargo, compacto } from '../sistema/formato.js';
 import { comparacionTexto, comparacionCorta, ventanaTexto } from '../textos/comun.js';
@@ -126,7 +126,7 @@ export function Competencia({ marcas, numero, anuncios, t, verSus, nota }) {
           <div><dt>Interacción</dt><dd><b>{compacto(m.interacciones)}</b> en {numero(m.publicaciones)} {m.publicaciones === 1 ? 'publicación' : 'publicaciones'}</dd></div>
           <div><dt>Sentimiento de los comentarios</dt><dd><b>{numero(m.sentimiento.indice)}</b></dd></div>
           <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b></dd></div>
-          <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
+          <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}><Etiqueta tono="fuerte" icono={null}>{p}</Etiqueta></li>)}</ul></dd></div>
         </dl>
         {suyos && <button type="button" className="q-boton" aria-haspopup="dialog" data-ver-anuncios={m.nombre} onClick={() => setAbierta(m.nombre)}>{verSus(suyos.anuncios.length)}</button>}
       </aside>

@@ -18,6 +18,7 @@ Van en el orden en que trabaja la agencia: escuchar el mercado, leer lo que dice
 | [`docs/guia-algoritmo.md`](docs/guia-algoritmo.md) | Cómo se diseña un algoritmo: capas, navegación, período, tarjeta, gráficos, datos honestos, glosario de medios y lo que dice el modelo |
 | [`docs/fecha-movil.md`](docs/fecha-movil.md) | La maqueta al día: corta ayer en Lima; cómo funciona y cómo se apaga |
 | [`docs/quincha.md`](docs/quincha.md) | El sistema de diseño: tokens, tipografía, componentes, gráficos y el chequeo |
+| [`docs/guia-rapida.md`](docs/guia-rapida.md) | Qué se usa para cada cosa: la etiqueta única y su catálogo de estados, componentes, formatos de cifras y textos que se repiten |
 | [`docs/abanico.md`](docs/abanico.md) | Cómo se muestran las artes: el abanico de anuncios y su ventana |
 | [`docs/nuevo-algoritmo.md`](docs/nuevo-algoritmo.md) | **Duplicar el repo para otra marca**, paso a paso, y cómo conectar data real |
 | [`docs/produccion-actions.md`](docs/produccion-actions.md) | **Pasar a producción:** cómo cobra GitHub Actions, lo que ya nos pasó y cómo gastar lo menos posible |

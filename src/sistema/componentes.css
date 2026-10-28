@@ -21,7 +21,6 @@
 .q-marca-producto b { font-family: var(--f-titulo); font-weight: var(--peso-titulo); font-size: var(--t-19); letter-spacing: -0.01em; }
 .q-marca-producto span { font-size: var(--t-13); color: var(--sobre-barra-2); }
 .q-barra-controles { display: flex; align-items: center; gap: var(--e-3); }
-.q-sello-muestra { display: inline-flex; align-items: center; gap: var(--e-2); font-size: var(--t-13); color: var(--sobre-barra-2); white-space: nowrap; }
 .q-barra .q-boton-quieto { color: var(--sobre-barra-2); }
 .q-barra .q-boton-quieto:hover { color: var(--sobre-barra); background: transparent; }
 @media (max-width: 640px) { .q-marca-producto span, .q-sello-muestra { display: none; } }
@@ -154,11 +153,6 @@
 .q-delta-igual .q-delta-valor { color: var(--texto-2); }
 
 /* ── Chips: solo para avisos de fuente y estado ── */
-.q-chip { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-13); font-weight: var(--peso-rotulo); line-height: 1.3; color: var(--texto-2); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde-control); white-space: nowrap; }
-.q-chip-universo { color: var(--texto-1); background: var(--superficie); }
-.q-chip-fuente { border-color: var(--borde); }
-.q-chip-atencion { color: var(--atencion); border-color: currentColor; background: var(--superficie); }
-.q-chip svg { flex: none; }
 
 /* ── Estados de un bloque ── */
 .q-estado { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-1) var(--e-3); align-items: start; padding: var(--e-4); border: 1px dashed var(--borde-control); border-radius: var(--r-bloque); color: var(--texto-2); font-size: var(--t-14); }
@@ -216,7 +210,6 @@
 .q-ficha dd { margin: 0; font-size: var(--t-14); color: var(--texto-2); }
 .q-ficha dd b { font-family: var(--f-titulo); font-size: var(--c-24); font-weight: var(--peso-cifra); color: var(--texto-1); margin-right: var(--e-1); }
 .q-palabras { list-style: none; margin: var(--e-1) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
-.q-palabras li { font-size: var(--t-13); color: var(--texto-1); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); border: 1px solid var(--borde); }
 
 /* Sentimiento: dos polos y un centro gris, cada parte con su número escrito */
 
@@ -230,7 +223,6 @@
 .q-alerta-revisar { --nivel: var(--atencion); }
 .q-alerta-oportunidad, .q-alerta-bien { --nivel: var(--mejora); }
 .q-alerta-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); }
-.q-nivel { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--nivel); }
 .q-alerta-fuente { font-size: var(--t-13); color: var(--texto-3); }
 .q-alerta h3 { font-family: var(--f-titulo); font-size: var(--t-19); font-weight: var(--peso-titulo); line-height: 1.3; }
 .q-alerta-dato { font-size: var(--t-16); color: var(--texto-1); max-width: var(--ancho-lectura); }
@@ -284,7 +276,6 @@
 
 /* ── Ventana de cada tarjeta, arriba a la derecha: calendario si sigue el período, alfiler si no ── */
 .q-bloque-marcas { display: flex; align-items: center; gap: var(--e-2); flex-shrink: 0; }
-.q-ventana { display: inline-flex; align-items: center; gap: var(--e-1); padding: 2px var(--e-2); border: 1px solid var(--borde); border-radius: var(--r-control); font-size: var(--t-13); color: var(--texto-2); white-space: nowrap; }
 @media (max-width: 520px) { .q-bloque-titulo { flex-wrap: wrap; } }
 
 /* ── Ver como tabla: debajo de cada gráfico, a la vista ── */
@@ -430,7 +421,6 @@
 .q-carta-texto { display: flex; align-items: center; padding: var(--e-3); }
 .q-carta-texto span { font-size: var(--t-13); color: var(--texto-2); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; line-clamp: 7; overflow: hidden; }
 .q-mazo-nombre { font-family: var(--f-titulo); font-size: var(--t-19); font-weight: var(--peso-titulo); }
-.q-mazo-propio { display: block; font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--texto-3); text-transform: uppercase; letter-spacing: 0.04em; }
 .q-mazo-dato { font-size: var(--t-14); color: var(--texto-2); }
 .q-mazo-dato b { font-family: var(--f-tabla); font-variant-numeric: tabular-nums; font-weight: var(--peso-rotulo); color: var(--texto-1); }
 .q-mazo-ver { display: inline-flex; align-items: center; gap: var(--e-1); margin-top: var(--e-2); font-size: var(--t-14); font-weight: var(--peso-rotulo); color: var(--texto-1); }
@@ -515,16 +505,7 @@
 .q-detalle-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-5); }
 .q-detalle-cuerpo > .q-bloque { grid-column: 1 / -1; }
 
-/* Insignia de estado: icono y palabra sobre su fondo */
-.q-insignia { display: inline-flex; align-items: center; gap: var(--e-1); padding: 2px var(--e-2); border-radius: var(--r-control); font-size: var(--t-13); font-weight: var(--peso-rotulo); white-space: nowrap; background: var(--superficie-capitulo); color: var(--texto-2); }
-.q-insignia-grave { background: var(--empeora); color: var(--superficie); }
-.q-insignia-alerta { background: var(--empeora-suave); color: var(--empeora); }
-.q-insignia-tinta { background: var(--atencion); color: var(--superficie); }
-.q-insignia-bien { background: var(--mejora-suave); color: var(--mejora); }
 
-/* Sello de lo nuevo: tinta llena, en mayúsculas cortas */
-.q-sello-nuevo { display: inline-flex; align-items: center; margin-left: var(--e-2); padding: 1px var(--e-2); border-radius: var(--r-control); background: var(--texto-1); color: var(--superficie); font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo); text-transform: uppercase; letter-spacing: 0.06em; vertical-align: middle; }
-.q-sello-nuevo-carta { position: absolute; z-index: 5; top: var(--e-2); left: var(--e-2); margin: 0; }
 
 /* Piezas y campañas (capa 3): la tabla por campaña, que se abre en conjuntos y piezas */
 .q-control-tarjeta { flex-wrap: wrap; }
@@ -548,3 +529,33 @@
 .q-arte-mini .q-arte { padding: var(--e-1); gap: var(--e-1); }
 .q-arte-mini .q-arte-tema { display: none; }
 .q-arte-mini .q-arte-marca { right: var(--e-1); bottom: var(--e-1); }
+
+/* ── Etiqueta: la única forma de una etiqueta chica (Etiqueta en Componentes.jsx; guía en docs/guia-rapida.md).
+   La variante dice qué es; data-tono, de qué color, desde el catálogo src/sistema/estados.js. Ninguna otra regla del
+   sistema arma una pastilla: npm run sistema lo revisa ── */
+.q-etiqueta {
+  --tono: var(--texto-2); --tono-fondo: var(--superficie-capitulo);
+  display: inline-flex; align-items: center; gap: var(--e-1); font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo);
+  line-height: 1.3; white-space: nowrap; color: var(--tono); vertical-align: middle;
+}
+.q-etiqueta svg { flex: none; }
+.q-etiqueta[data-tono="fuerte"] { --tono: var(--texto-1); }
+.q-etiqueta[data-tono="bien"] { --tono: var(--mejora); --tono-fondo: var(--mejora-suave); }
+.q-etiqueta[data-tono="atencion"] { --tono: var(--atencion); --tono-fondo: var(--atencion); }
+.q-etiqueta[data-tono="alerta"] { --tono: var(--empeora); --tono-fondo: var(--empeora-suave); }
+.q-etiqueta[data-tono="grave"] { --tono: var(--empeora); --tono-fondo: var(--empeora); }
+.q-etiqueta[data-tono="barra"] { --tono: var(--sobre-barra-2); gap: var(--e-2); font-weight: var(--peso-lectura); }
+/* borde: un dato del contexto */
+.q-etiqueta-borde { padding: 2px var(--e-2); border: 1px solid var(--borde); border-radius: var(--r-control); background: var(--superficie); }
+.q-etiqueta-borde[data-tono="fuerte"] { border-color: var(--borde-control); }
+.q-etiqueta-borde[data-tono="atencion"] { border-color: currentColor; }
+/* llena: un estado con juicio; los graves y los de atención, con la letra en blanco sobre el color */
+.q-etiqueta-llena { padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--tono-fondo); }
+.q-etiqueta-llena[data-tono="grave"], .q-etiqueta-llena[data-tono="atencion"] { color: var(--superficie); }
+/* tinta: una marca que se ve de lejos */
+.q-etiqueta-tinta { padding: 1px var(--e-2); border-radius: var(--r-control); background: var(--texto-1); color: var(--superficie); text-transform: uppercase; letter-spacing: 0.06em; }
+/* rótulo: el nombre de un grupo */
+.q-etiqueta-rotulo { display: block; color: var(--texto-3); text-transform: uppercase; letter-spacing: 0.04em; }
+/* dónde va (no cómo se ve): junto a un nombre, o sobre la pila de cartas de un mazo */
+.q-junto { margin-left: var(--e-2); }
+.q-sobre-carta { position: absolute; z-index: 5; top: var(--e-2); left: var(--e-2); }
