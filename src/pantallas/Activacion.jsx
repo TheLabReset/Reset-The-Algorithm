@@ -5,7 +5,7 @@ import { Bloque, Tabla, Resumen, SugerenciaModelo } from '../sistema/Componentes
 import { Linea, Franja } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, fecha } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, HorasYDias, sinDato, deltaCorto } from './comun.jsx';
-import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
+import { periodoTexto, comparacionTexto, mesTexto, resumenTitulo } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import * as A from '../textos/analiza.js';
 import { sugerencia, sinReasignar } from '../textos/sugiere.js';
@@ -29,7 +29,7 @@ export default function Activacion({ capa, vista: v }) {
   }));
   return (
     <MarcoCapa capa={capa} vista={v}>
-      <Resumen titulo={`Resumen de ${periodoTexto(v.periodo)}`}
+      <Resumen titulo={resumenTitulo(v.periodo)}
         frases={ok(pl) ? pl.plataformas.map((p, i) => ({ serie: i, segmentos: objetivoFrase(p) })) : []}
         pie={<span>Lo que reporta cada plataforma. Cada variación compara {periodoTexto(v.periodo)} con {comparacionTexto(v.periodo)}.</span>}
         items={[
@@ -85,7 +85,7 @@ export default function Activacion({ capa, vista: v }) {
       <SeccionDe def={s33} vista={v}>
         {!ok(w) ? <Bloque titulo="Cuándo se visita el sitio" universo="web" estado={sinDato(w.estado)} /> : (
           <Bloque universo="web" {...L.webHoras(v)}
-            pie={<span>GA4 entrega la hora y el día por separado. Por hora: usuarios activos en esa hora, promedio de los días del mes. Por día: usuarios activos al día, promedio de ese día de la semana.</span>}>
+            pie={<span>GA4 entrega la hora y el día por separado. Por hora: usuarios activos en esa hora, promedio de los días del período. Por día: usuarios activos al día, promedio de ese día de la semana.</span>}>
             <HorasYDias porHora={w.porHora} horasAltas={w.horasAltas} porDiaSemana={w.porDiaSemana} diaMayor={w.diaMayor} que="Usuarios activos" formato={(n) => (n == null ? 'sin dato' : numero(Math.round(n)))} />
           </Bloque>
         )}

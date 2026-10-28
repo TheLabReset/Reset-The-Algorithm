@@ -11,14 +11,11 @@ import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
 import { queMirar, queVaBien } from './queMirar.js';
 import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeAnuncios, leeGa4, analizaReparto, analizaPautaCrm } from './produccion.js';
+import { periodoDe } from './periodo.js';
 import { CLIENTE } from '../cliente.js';
 
-export function periodoDesdeFiltros(cfg, { mes, comparar = 'anio' }) {
-  const desde = mes + '-01', hasta = finDeMes(mes);
-  const comp = comparar === 'anio' ? sumarMeses(mes, -12) : sumarMeses(mes, -1);
-  const coh = sumarMeses(mes, -1);
-  return { desde, hasta, compararDesde: comp + '-01', compararHasta: finDeMes(comp), cohorteDesde: coh + '-01', cohorteHasta: finDeMes(coh), comparar, mes };
-}
+// El período de los filtros (un atajo, dos fechas o un mes) y su comparación: src/calculo/periodo.js
+export { periodoDe } from './periodo.js';
 
 export function mesesDisponibles(cfg) {
   const out = [];
@@ -28,7 +25,7 @@ export function mesesDisponibles(cfg) {
 
 export function armarVista(data, filtros, estado = {}) {
   const cfg = data.config;
-  const P = filtros.desde ? filtros : periodoDesdeFiltros(cfg, filtros);
+  const P = filtros.cohorteDesde ? filtros : periodoDe(cfg, filtros);
   const { desde, hasta, compararDesde, compararHasta, cohorteDesde, cohorteHasta } = P;
   if (hasta > cfg.corte) throw new Error('El período no puede pasar el corte de la muestra');
   const caidas = new Set(estado.fuentesCaidas || []); // escenario: fuentes que no cargaron
@@ -38,7 +35,8 @@ export function armarVista(data, filtros, estado = {}) {
   const compFuera = compararDesde < cfg.desde;
 
   const pa = ventanaPauta(data, desde, hasta), pb = ventanaPauta(data, compararDesde, compararHasta);
-  const comparable = !compFuera && pa.cobertura >= minCob && pb.cobertura >= minCob;
+  // una variación se publica con días suficientes, la comparación dentro de la muestra y días medidos en las dos ventanas
+  const comparable = P.conComparacion && !compFuera && pa.cobertura >= minCob && pb.cobertura >= minCob;
   const periodo = {
     ...P, dias: pa.dias, comparable, compFuera, corte: cfg.corte,
     mesCompleto: desde.endsWith('-01') && sumarDias(hasta, 1).endsWith('-01') && desde.slice(0, 7) === hasta.slice(0, 7),
@@ -121,7 +119,7 @@ export function armarVista(data, filtros, estado = {}) {
     busquedas = {
       estado: 'ok', universo: 'Interés relativo de 0 a 100 en Google Trends (no es volumen)', semanas: semPer.length,
       demanda: prom(g, semPer), demandaPrevia: semComp.length ? prom(g, semComp) : null,
-      cambio: semComp.length ? cambioPct(prom(g, semPer), prom(g, semComp)) : null,
+      cambio: semComp.length && P.conComparacion ? cambioPct(prom(g, semPer), prom(g, semComp)) : null,
       serie: fin52.map((s) => ({ fecha: s, valor: g.semanas.find((x) => x.semana === s).indice })),
       seriePrevia: fin52.map((s) => { const f = sumarDias(s, -364); const x = g.semanas.find((y) => y.semana === f); return { fecha: f, valor: x ? x.indice : null }; }),
       terminos: data.busquedas.map((b) => ({ id: b.id, nombre: b.termino, propia: b.propia, actual: prom(b, semPer), previo: semComp.length ? prom(b, semComp) : null })),
@@ -248,7 +246,7 @@ export function armarVista(data, filtros, estado = {}) {
   const indiceVista = { ...indice, previo: previo?.valor ?? null, fechaPrevio, cambio: previo?.valor != null && indice.valor != null ? indice.valor - previo.valor : null, historia, banda: bandaDe(indice.valor, cfg.metodo.bandasIndice) };
 
   const sugerencias = [
-    rendimiento.estado === 'ok' && rendimiento.cohorteCerrada ? reasignacion(cfg, canales) : null,
+    rendimiento.estado === 'ok' && rendimiento.cohorteCerrada ? reasignacion(cfg, canales, P) : null,
     crm.estado === 'ok' ? agendamiento(cfg, { cerrada, etapas: crm.etapas, exclusivas: crm.exclusivas }) : null,
     estadoGrupo('pauta') === 'ok' ? fatigaCreativa(data, hasta) : null,
     temporada(cfg, hasta),

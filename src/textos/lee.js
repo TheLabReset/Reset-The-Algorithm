@@ -1,7 +1,7 @@
 // Lecturas de cada fuente por separado (Captura, Activación y Rendimiento). Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
 import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo, fecha } from '../sistema/formato.js';
-import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto } from './comun.js';
+import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto, enElPeriodo, delPeriodo } from './comun.js';
 import { CLIENTE } from '../cliente.js';
 
 const P = (v) => v.periodo;
@@ -28,7 +28,7 @@ export function plataformasLectura(v) {
   const titulo = 'Costo por lead contra el objetivo';
   if (!sobre.length) {
     const justa = [...ps].filter((p) => p.cpl != null && p.objetivo).sort((a, b) => b.cpl / b.objetivo - a.cpl / a.objetivo)[0];
-    return { titulo, lectura: `Las ${enLetras(ps.length, true)} plataformas quedan bajo su objetivo en el mes. ${justa.nombre} es la más ajustada: ${dolares(justa.cpl, 2)} con un objetivo de ${dolares(justa.objetivo, 2)}.` };
+    return { titulo, lectura: `Las ${enLetras(ps.length, true)} plataformas quedan bajo su objetivo ${enElPeriodo(P(v))}. ${justa.nombre} es la más ajustada: ${dolares(justa.cpl, 2)} con un objetivo de ${dolares(justa.objetivo, 2)}.` };
   }
   return { titulo, lectura: `${lista(sobre.map((p) => p.nombre))} ${sobre.length === 1 ? 'paga' : 'pagan'} más por lead que su objetivo en ${periodoTexto(P(v))}.` };
 }
@@ -39,7 +39,7 @@ export function campanasLectura(v) {
   const sin = todas.filter((c) => c.leads === 0 && c.inversion > 0);
   const barata = [...conLeads].sort((a, b) => a.cpl - b.cpl)[0];
   let lectura = barata ? `La campaña con el lead más barato es «${barata.nombre}», a ${dolares(barata.cpl, 2)}.` : 'Ninguna campaña reportó leads.';
-  if (sin.length) lectura += ` ${capital(enLetras(sin.length, true))} ${sin.length === 1 ? 'campaña es' : 'campañas son'} de alcance y no ${sin.length === 1 ? 'busca' : 'buscan'} leads: ${dolares(sin.reduce((s, c) => s + c.inversion, 0))} en el mes.`;
+  if (sin.length) lectura += ` ${capital(enLetras(sin.length, true))} ${sin.length === 1 ? 'campaña es' : 'campañas son'} de alcance y no ${sin.length === 1 ? 'busca' : 'buscan'} leads: ${dolares(sin.reduce((s, c) => s + c.inversion, 0))} ${enElPeriodo(P(v))}.`;
   return { titulo: 'Campañas con gasto en el período', lectura };
 }
 
@@ -47,7 +47,7 @@ export function palabrasLectura(v) {
   const k = v.lee.plataformas.palabras;
   const titulo = 'Palabras clave en Google Ads';
   if (!k.sinConversion.length) return { titulo, lectura: 'Todas las palabras con gasto trajeron leads en una proporción parecida a la del resto.' };
-  return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${dolares(k.gastoSinConversion)} en el mes y casi no ${k.sinConversion.length === 1 ? 'trajo' : 'trajeron'} leads.` };
+  return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${dolares(k.gastoSinConversion)} ${enElPeriodo(P(v))} y casi no ${k.sinConversion.length === 1 ? 'trajo' : 'trajeron'} leads.` };
 }
 
 export function terminosLectura(v) {
@@ -96,7 +96,7 @@ export function crmDescarte(v) {
 
 export function busquedasLectura(v) {
   const b = v.lee.busquedas;
-  const base = `El interés por «${CLIENTE.busqueda}» promedia ${numero(b.demanda)} de 100 en las semanas de ${periodoTexto(P(v))}.`;
+  const base = `El interés por «${CLIENTE.busqueda}» promedia ${numero(b.demanda)} de 100 en ${b.semanas === 1 ? 'la semana' : `las ${numero(b.semanas)} semanas`} ${delPeriodo(P(v))}.`;
   return { titulo: 'Interés de búsqueda en el último año', lectura: b.cambio == null ? base : `${base} Es ${frente(b.cambio, P(v))}.` };
 }
 

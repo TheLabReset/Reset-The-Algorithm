@@ -1,11 +1,35 @@
 // Piezas de texto comunes. Puras: reciben datos ya calculados y devuelven frases en español peruano.
-import { mesLargo, variacion, numero } from '../sistema/formato.js';
+import { mesLargo, mesCorto, variacion, numero } from '../sistema/formato.js';
 
 export const mesTexto = (aaaamm) => `${mesLargo(+aaaamm.slice(5, 7))} de ${aaaamm.slice(0, 4)}`;
-export const periodoTexto = (P) => mesTexto(P.desde.slice(0, 7));
-export const comparacionTexto = (P) => mesTexto(P.compararDesde.slice(0, 7));
-// «contra setiembre de 2025» o «contra agosto de 2026»
+// El período elegido: «setiembre de 2026», «lo que va de octubre», «los días del 19 al 25 de octubre», «el día 25 de octubre»
+export const periodoTexto = (P) => (P.tramo || !P.mes ? (P.desde === P.hasta ? `el día ${tramoFechas(P.desde, P.hasta).replace(/^el /, '')}` : `los días ${tramoFechas(P.desde, P.hasta)}`)
+  : !P.parcial ? mesTexto(P.mes) : P.enCurso ? `lo que va de ${mesLargo(+P.mes.slice(5, 7))}` : `${mesLargo(+P.mes.slice(5, 7))} desde el ${Number(P.desde.slice(8, 10))}`);
+// La comparación: el mes anterior, el mismo tramo del mes anterior, los mismos días justo antes o un año antes
+export function comparacionTexto(P) {
+  if (P.comparar === 'anio') return P.mes && !P.parcial ? mesTexto(P.compararDesde.slice(0, 7)) : `los mismos días de ${P.compararDesde.slice(0, 4)}`;
+  if (P.tramo) return P.dias === 1 ? 'el día anterior' : `los ${numero(P.dias)} días anteriores`;
+  if (P.mes && P.parcial) return `el mismo tramo de ${mesLargo(+P.compararDesde.slice(5, 7))}`;
+  return mesTexto(P.compararDesde.slice(0, 7));
+}
+// «frente al mismo tramo de setiembre», «frente a los 7 días anteriores»: la contracción del artículo
+export const frenteATexto = (P) => { const c = comparacionTexto(P); return c.startsWith('el ') ? `al ${c.slice(3)}` : `a ${c}`; };
+// «contra setiembre de 2025», «contra el mismo tramo de setiembre»
 export const contra = (P) => `contra ${comparacionTexto(P)}`;
+// La ventana del período para el rótulo de cada tarjeta: «1 al 30 de setiembre», «25 de octubre»
+export const ventanaTexto = (desde, hasta) => tramoFechas(desde, hasta).replace(/^(del|el) /, '');
+// El mes que lee una fuente mensual: «octubre de 2026», o «lo que va de octubre» si el mes no terminó
+export const mesFuenteTexto = (mes, parcial) => (parcial ? `lo que va de ${mesLargo(+mes.slice(5, 7))}` : mesTexto(mes));
+// «del mes» o «del período», para rótulos cortos
+export const delPeriodo = (P) => (P.mes && !P.parcial ? 'del mes' : 'del período');
+// «en el mes» si el período es un mes entero; si no, «en el período»
+export const enElPeriodo = (P) => (P.mes && !P.parcial ? 'en el mes' : 'en el período');
+// El título del resumen de cada capa: «Resumen de setiembre de 2026», «Resumen del 19 al 25 de octubre»
+export const resumenTitulo = (P) => (P.tramo || !P.mes ? `Resumen ${tramoFechas(P.desde, P.hasta).replace(/^el /, 'del ')}` : `Resumen de ${periodoTexto(P)}`);
+// Fechas cortas para un rótulo: «19 al 25 oct», «28 set al 4 oct», «25 oct»
+export const fechasCortas = (a, b) => (a === b ? `${Number(a.slice(8))} ${mesCorto(+a.slice(5, 7))}` : a.slice(0, 7) === b.slice(0, 7) ? `${Number(a.slice(8))} al ${Number(b.slice(8))} ${mesCorto(+b.slice(5, 7))}` : `${Number(a.slice(8))} ${mesCorto(+a.slice(5, 7))} al ${Number(b.slice(8))} ${mesCorto(+b.slice(5, 7))}`);
+// La comparación en corto, para una cifra del resumen: «set 2025» si es un mes entero; si no, sus fechas
+export const comparacionCorta = (P) => (P.mes && !P.parcial ? `${mesCorto(+P.compararDesde.slice(5, 7))} ${P.compararDesde.slice(0, 4)}` : `${fechasCortas(P.compararDesde, P.compararHasta)}${P.comparar === 'anio' ? ` ${P.compararDesde.slice(0, 4)}` : ''}`);
 
 // «3 % más que en setiembre de 2025», «igual que en setiembre de 2025»
 export function frente(cambio, P, decimales = 0) {
@@ -53,9 +77,10 @@ export function variacionFrase(sujeto, cambio, P) {
   return `${sujeto} ${cambio > 0 ? 'suben' : 'bajan'} ${numero(r)} % frente a ${comparacionTexto(P)}`;
 }
 
-// «del 24 al 30 de setiembre» si es el mismo mes; si no, cada fecha completa
+// «del 24 al 30 de setiembre» si es el mismo mes; si no, cada fecha completa; un solo día, «el 25 de octubre»
 export function tramoFechas(desde, hasta) {
   const d = desde.slice(8, 10), h = hasta.slice(8, 10);
+  if (desde === hasta) return `el ${Number(d)} de ${mesLargo(+hasta.slice(5, 7))}`;
   if (desde.slice(0, 7) === hasta.slice(0, 7)) return `del ${Number(d)} al ${Number(h)} de ${mesLargo(+hasta.slice(5, 7))}`;
   return `del ${Number(d)} de ${mesLargo(+desde.slice(5, 7))} al ${Number(h)} de ${mesLargo(+hasta.slice(5, 7))}`;
 }

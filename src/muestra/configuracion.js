@@ -67,7 +67,7 @@ export const BASE = {
 
   // asumo, en dólares. Con 24 000 (y TikTok al 35 %), TikTok junta más de 30 inscripciones al mes en cualquier mes del año:
   // así la historia de la demo se sostiene con casos suficientes en el mes que el panel abre (pruebas/fecha-movil.test.mjs)
-  presupuestoMensual: 24000,
+  presupuestoMensual: 26000,
   pesoPresupuestoMes: [1.3, 1.15, 1.0, 0.9, 0.9, 0.85, 0.95, 1.05, 1.0, 0.95, 0.95, 1.0], // asumo: la inversión sigue a la demanda
   presionSubasta: [1.15, 1.0, 1.0, 1.0, 1.0, 1.0, 1.05, 1.0, 1.0, 1.0, 1.12, 1.18], // asumo: CPM más caro en enero y fin de año
 
@@ -300,7 +300,7 @@ export const BASE = {
   // Escenario de la demo, para que el modelo proponga mover inversión con sus reglas de siempre: desde la segunda
   // quincena del mes anterior (así la cohorte del CRM ya lo ve) la subasta de TikTok se encarece (pasa su objetivo de costo por lead) y sus leads se inscriben menos que los de
   // las otras plataformas (calidad.alta), así el CRM confirma que es la que más cuesta por inscripción.
-  cambiosCosto: [{ canal: 'tiktok', desde: '2026-08-16', factor: 1.7 }],
+  cambiosCosto: [{ canal: 'tiktok', desde: '2026-08-16', factor: 1.85 }],
   cambiosInteraccion: [{ fuente: 'redesPagadas', desde: '2026-09-08', factor: 0.62, texto: 'las piezas nuevas de Meta llevan a /promo-setiembre' }],
   // Vistas de página por sesión, por página (asumo)
   vistasPorSesion: 2.1,

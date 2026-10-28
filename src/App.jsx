@@ -3,11 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Moon, Sun, Presentation } from 'lucide-react';
 import { CONFIG } from './muestra/configuracion.js';
 import { generar } from './muestra/generador.js';
-import { armarVista, mesesDisponibles } from './calculo/vista.js';
+import { armarVista } from './calculo/vista.js';
+import { ATAJOS, ATAJO_INICIAL, COMPARAR, COMPARAR_INICIAL } from './calculo/periodo.js';
 import { CAPAS } from './capas/estructura.js';
-import { fechaSinAnio } from './sistema/formato.js';
-import { mesTexto } from './textos/comun.js';
-import { NavegacionCapas, Selector, Grupo, SelloMuestra, BarraDemo, CargandoContexto } from './sistema/Componentes.jsx';
+import { fechaSinAnio, fecha } from './sistema/formato.js';
+import { ventanaTexto, comparacionTexto } from './textos/comun.js';
+import { NavegacionCapas, SelectorPeriodo, Grupo, SelloMuestra, BarraDemo, CargandoContexto } from './sistema/Componentes.jsx';
 import logoCliente from '../public/marca/logo-barra.svg?raw'; // logo del cliente en negativo, sobre la barra oscura
 import Senales from './pantallas/Senales.jsx';
 import Inteligencia from './pantallas/Inteligencia.jsx';
@@ -35,9 +36,9 @@ const capaDeLaUrl = () => capaDeAncla(ancla()) || INICIO;
 
 export default function App() {
   const data = useMemo(() => generar(CONFIG), []);
-  const meses = useMemo(() => mesesDisponibles(CONFIG), []);
-  const [mes, setMes] = useState(meses.at(-1));
-  const [comparar, setComparar] = useState('anio');
+  // El período: un atajo («Últimos 7 días» al abrir) o dos fechas; y con qué se compara
+  const [filtros, setFiltros] = useState({ atajo: ATAJO_INICIAL });
+  const [comparar, setComparar] = useState(COMPARAR_INICIAL);
   const [capa, setCapa] = useState(capaDeLaUrl);
   // Claro por defecto (se proyecta); solo se recuerda lo que el visitante eligió con el botón
   const [tema, setTema] = useState(() => leerPref('tema-elegido', 'light'));
@@ -76,7 +77,8 @@ export default function App() {
   }, []);
   const irACapa = (id) => { setCapa(id); history.replaceState(null, '', '#' + id); window.scrollTo({ top: 0 }); };
 
-  const vista = useMemo(() => armarVista(data, { mes, comparar }, demo === 'crm' ? { fuentesCaidas: ['crm'] } : demo === 'ga4' ? { fuentesCaidas: ['web'] } : {}), [data, mes, comparar, demo]);
+  const vista = useMemo(() => armarVista(data, { ...filtros, comparar }, demo === 'crm' ? { fuentesCaidas: ['crm'] } : demo === 'ga4' ? { fuentesCaidas: ['web'] } : {}), [data, filtros, comparar, demo]);
+  const P = vista.periodo;
   const actual = CAPAS.find((c) => c.id === capa);
   const Pantalla = PANTALLAS[capa];
 
@@ -104,9 +106,12 @@ export default function App() {
         <div className="q-envoltura q-filtros-fila">
           <NavegacionCapas capas={CAPAS} activa={capa} onCambiar={irACapa} />
           <div className="q-filtros-controles">
-            <Selector etiqueta="Mes" valor={mes} onCambiar={setMes} opciones={[...meses].reverse().map((m) => ({ valor: m, texto: mesTexto(m) }))} />
+            <SelectorPeriodo texto={ventanaTexto(P.desde, P.hasta)} atajo={P.atajo} atajos={ATAJOS} desde={P.desde} hasta={P.hasta} min={CONFIG.desde} max={CONFIG.corte}
+              comparacion={P.compFuera ? 'Sin días antes con qué comparar.' : `Se compara con ${comparacionTexto(P)}: ${ventanaTexto(P.compararDesde, P.compararHasta)}${P.comparar === 'anio' || P.compararDesde.slice(0, 4) !== P.desde.slice(0, 4) ? ` de ${P.compararDesde.slice(0, 4)}` : ''}.`}
+              aviso={`Elige fechas entre el ${fecha(CONFIG.desde)} y el ${fecha(CONFIG.corte)}, con «desde» antes de «hasta».`}
+              onAtajo={(atajo) => setFiltros({ atajo })} onRango={(desde, hasta) => setFiltros({ desde, hasta })} />
             <div className="q-control"><span>Comparar con</span>
-              <Grupo etiqueta="Comparar con" valor={comparar} onCambiar={setComparar} opciones={[{ valor: 'anio', texto: 'Un año antes' }, { valor: 'anterior', texto: 'Mes anterior' }]} />
+              <Grupo etiqueta="Comparar con" valor={comparar} onCambiar={setComparar} opciones={COMPARAR.map((c) => ({ valor: c.id, texto: c.nombre }))} />
             </div>
           </div>
         </div>

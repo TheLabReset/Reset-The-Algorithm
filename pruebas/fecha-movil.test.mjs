@@ -1,14 +1,14 @@
 // Fecha móvil de la maqueta (src/muestra/fechaMovil.js, docs/fecha-movil.md): la muestra corta ayer en Lima y su
 // historia se mueve con el corte. Estas pruebas fijan el «hoy» para ser reproducibles y verifican cuatro cosas: que en
 // la fecha de referencia todo queda como se escribió, que el calendario cae donde debe, que lo ya mostrado no cambia
-// al pasar un día, y que la historia de la demo aparece en el mes que el panel abre, cualquier mes de dos años.
+// al pasar un día, y que la historia de la demo aparece al abrir el panel y en el último mes cerrado, cualquier día de dos años.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { BASE } from '../src/muestra/configuracion.js';
 import { muestraAl, hoyEnLima, feriadosDe, ultimoMesCerrado, correrMeses } from '../src/muestra/fechaMovil.js';
 import { generar } from '../src/muestra/generador.js';
 import { detallar } from '../src/muestra/detalle.js';
-import { armarVista, mesesDisponibles } from '../src/calculo/vista.js';
+import { armarVista } from '../src/calculo/vista.js';
 import { sumarDias } from '../src/muestra/calendario.js';
 
 test('fecha móvil: en la fecha de referencia, las fechas son las que se escribieron', () => {
@@ -87,24 +87,30 @@ test('fecha móvil: lo que ya se mostró no cambia al pasar un día', () => {
   assert.equal(i, -1, `cambió la fila ${i} del CRM`);
 });
 
-test('fecha móvil: la historia de la demo aparece en el mes que el panel abre, cualquier mes de dos años', () => {
+test('fecha móvil: la historia de la demo aparece al abrir el panel y en el último mes cerrado, cualquier día de dos años', () => {
   const cortes = [];
   for (let a = 2026; a <= 2028; a++) for (let m = 1; m <= 12; m++) {
     const mm = String(m).padStart(2, '0'), fin = new Date(Date.UTC(a, m, 0)).getUTCDate();
-    for (const dia of [15, fin]) { const c = `${a}-${mm}-${String(dia).padStart(2, '0')}`; if (c >= '2026-10-01') cortes.push(c); }
+    for (const dia of [1, 3, 10, 15, 20, fin]) { const c = `${a}-${mm}-${String(dia).padStart(2, '0')}`; if (c >= '2026-10-01') cortes.push(c); }
   }
   for (const corte of cortes) {
-    const cfg = muestraAl(BASE, corte), d = generar(cfg), meses = mesesDisponibles(cfg);
-    for (const comparar of ['anio', 'anterior']) {
-      const v = armarVista(d, { mes: meses.at(-1), comparar });
-      const texto = JSON.stringify(v);
-      assert.ok(!/NaN|undefined|Infinity/.test(texto), `${corte} ${comparar}: valor roto`);
-      if (comparar !== 'anio') continue;
-      const s = v.sugiere.sugerencias;
-      const r = s.find((x) => x.id === 'reasignar');
-      // TikTok pasa su objetivo y el CRM confirma que es la que más cuesta por inscripción, con casos suficientes
-      assert.ok(r && r.desde.id === 'tiktok' && r.desde.cpl > r.desde.metaCpl && !r.desde.cohorte.pocosCasos, `${corte}: sin la propuesta de reparto`);
-      assert.ok(s.some((x) => x.id === 'renovar'), `${corte}: sin la lectura de las piezas nuevas de Meta`);
-    }
+    const cfg = muestraAl(BASE, corte), d = generar(cfg);
+    const finDeMes = +corte.slice(8) === new Date(Date.UTC(+corte.slice(0, 4), +corte.slice(5, 7), 0)).getUTCDate();
+    // al abrir (últimos 7 días contra los 7 anteriores): TikTok pasa su objetivo y el CRM confirma que es la que más
+    // cuesta por inscripción, con casos suficientes. La propuesta aparece salvo que ninguna otra plataforma quede bajo su
+    // objetivo (la subasta de diciembre encarece a todas): entonces el modelo dice por qué no propone
+    const v = armarVista(d, {});
+    assert.ok(!/NaN|undefined|Infinity/.test(JSON.stringify(v)), `${corte} al abrir: valor roto`);
+    const c = v.analiza.rendimiento.canales, tk = c.find((x) => x.id === 'tiktok');
+    const peor = [...c].filter((x) => x.cohorte?.cpa != null).sort((x, y) => y.cohorte.cpa - x.cohorte.cpa)[0];
+    assert.ok(tk.cpl > tk.metaCpl && peor.id === 'tiktok' && !tk.cohorte.pocosCasos, `${corte} al abrir: sin la señal de TikTok`);
+    const hayDestino = c.some((x) => x.id !== 'tiktok' && x.cpl <= x.metaCpl);
+    assert.equal(v.sugiere.sugerencias.some((x) => x.id === 'reasignar'), hayDestino, `${corte} al abrir: la propuesta no sigue su regla`);
+    // el último mes cerrado (el mes pasado o, si el corte es fin de mes, este mes) contra un año antes: la historia entera
+    const m = armarVista(d, { atajo: finDeMes ? 'mes' : 'mes-pasado', comparar: 'anio' });
+    assert.ok(!/NaN|undefined|Infinity/.test(JSON.stringify(m)), `${corte} mes cerrado: valor roto`);
+    const r = m.sugiere.sugerencias.find((x) => x.id === 'reasignar');
+    assert.ok(r && r.desde.id === 'tiktok' && !r.desde.cohorte.pocosCasos, `${corte} mes cerrado: sin la propuesta de reparto`);
+    assert.ok(m.sugiere.sugerencias.some((x) => x.id === 'renovar'), `${corte} mes cerrado: sin la lectura de las piezas nuevas de Meta`);
   }
 });

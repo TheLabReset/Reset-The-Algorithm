@@ -4,7 +4,7 @@ import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
   Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
   Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
-  ExternalLink, Play,
+  ExternalLink, Play, Check, PanelRightOpen,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
 
@@ -471,6 +471,73 @@ export function Selector({ etiqueta, opciones, valor, onCambiar }) {
   );
 }
 
+// ── Selector de período: el botón dice el tramo y el atajo; el panel lleva los atajos, dos fechas y con qué se compara.
+// Una fecha fuera de la data o un «desde» después del «hasta» no cambia el período: se marca el campo y se dice por qué ──
+export function SelectorPeriodo({ texto, atajo, atajos, desde, hasta, min, max, comparacion, aviso, onAtajo, onRango }) {
+  const [abierto, setAbierto] = useState(false);
+  const [borrador, setBorrador] = useState({ desde, hasta });
+  const id = useId();
+  const ref = useRef(null), panel = useRef(null);
+  useEffect(() => { setBorrador({ desde, hasta }); }, [desde, hasta]);
+  useLayoutEffect(() => {
+    const g = panel.current;
+    if (!abierto || !g) return undefined;
+    // el panel no se sale de la pantalla en un teléfono: se corre lo justo
+    const ubicar = () => {
+      g.style.transform = '';
+      const r = g.getBoundingClientRect(), m = 16, ancho = document.documentElement.clientWidth;
+      const dx = r.left < m ? m - r.left : r.right > ancho - m ? ancho - m - r.right : 0;
+      if (dx) g.style.transform = `translateX(${Math.round(dx)}px)`;
+    };
+    ubicar();
+    window.addEventListener('resize', ubicar);
+    return () => window.removeEventListener('resize', ubicar);
+  }, [abierto]);
+  useEffect(() => {
+    if (!abierto) return undefined;
+    const fuera = (e) => { if (!ref.current?.contains(e.target)) setAbierto(false); };
+    const tecla = (e) => { if (e.key === 'Escape') setAbierto(false); };
+    document.addEventListener('pointerdown', fuera);
+    document.addEventListener('keydown', tecla);
+    return () => { document.removeEventListener('pointerdown', fuera); document.removeEventListener('keydown', tecla); };
+  }, [abierto]);
+  const valida = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d || '') && d >= min && d <= max;
+  const aplicar = (b) => { if (valida(b.desde) && valida(b.hasta) && b.desde <= b.hasta) onRango(b.desde, b.hasta); };
+  const malDesde = !valida(borrador.desde) || (valida(borrador.hasta) && borrador.desde > borrador.hasta), malHasta = !valida(borrador.hasta);
+  const nombre = atajos.find((a) => a.id === atajo)?.nombre;
+  return (
+    <div className="q-periodo" ref={ref}>
+      <button type="button" className="q-periodo-boton" aria-haspopup="dialog" aria-expanded={abierto} aria-controls={id} onClick={() => setAbierto((a) => !a)}>
+        <Calendar size={16} aria-hidden="true" /><span>{texto}</span>{nombre && <small>{nombre}</small>}<ChevronDown size={16} aria-hidden="true" />
+      </button>
+      <div id={id} ref={panel} className="q-periodo-panel" role="dialog" aria-label="Elegir período" hidden={!abierto}>
+        <p className="q-periodo-titulo">Atajos</p>
+        <div className="q-periodo-atajos">
+          {atajos.map((a) => (
+            <button key={a.id} type="button" aria-pressed={a.id === atajo} onClick={() => { onAtajo(a.id); setAbierto(false); }}>
+              <span>{a.nombre}</span>{a.id === atajo && <Check size={16} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+        <p className="q-periodo-titulo">Fechas</p>
+        <div className="q-periodo-rango">
+          <label>Desde<input type="date" value={borrador.desde} min={min} max={valida(borrador.hasta) ? borrador.hasta : max} aria-invalid={malDesde} onChange={(e) => { const b = { ...borrador, desde: e.target.value }; setBorrador(b); aplicar(b); }} /></label>
+          <label>Hasta<input type="date" value={borrador.hasta} min={valida(borrador.desde) ? borrador.desde : min} max={max} aria-invalid={malHasta} onChange={(e) => { const b = { ...borrador, hasta: e.target.value }; setBorrador(b); aplicar(b); }} /></label>
+        </div>
+        {(malDesde || malHasta) && aviso && <p className="q-periodo-error" role="alert">{aviso}</p>}
+        {comparacion && <p className="q-periodo-nota">{comparacion}</p>}
+      </div>
+    </div>
+  );
+}
+
+// ── Insignia: un estado en su pastilla, con icono y palabra; el color nunca va solo ──
+export function Insignia({ tono = 'neutro', icono: Icono, children }) {
+  return <span className={`q-insignia q-insignia-${tono}`}>{Icono && <Icono size={13} aria-hidden="true" strokeWidth={2.4} />}{children}</span>;
+}
+// ── Sello de lo nuevo: lo que empezó dentro del período; va primero en su lista ──
+export const SelloNuevo = ({ texto = 'Nuevo', className = '' }) => <span className={`q-sello-nuevo ${className}`}>{texto}</span>;
+
 // ── Tabla: números a la derecha, primera columna como encabezado de fila ──
 // barra: { columna, valores } pone una barra delgada junto a la cifra de esa columna (magnitud de un vistazo).
 // Una celda puede ser texto o { texto, sub, tono }: sub va debajo en gris; tono 'empeora' o 'mejora' colorea la cifra.
@@ -508,24 +575,65 @@ export function Datos({ pares }) {
 }
 
 // ── Panel lateral (Qué se monitorea): se abre desde la cabecera de la capa; Esc o la X lo cierran ──
-export function PanelLateral({ titulo, bajada, abierto, onCerrar, children }) {
+export function PanelLateral({ titulo, bajada, abierto, onCerrar, children, className = '' }) {
   const ref = useRef(null);
+  const tituloId = useId();
   useEffect(() => {
     const d = ref.current;
-    if (!d) return;
+    if (!d) return undefined;
     if (abierto && !d.open) d.showModal();
     if (!abierto && d.open) d.close();
+    // con el panel abierto, la rueda no mueve la página de atrás
+    if (!abierto) return undefined;
+    document.documentElement.classList.add('q-sin-desplazar');
+    return () => document.documentElement.classList.remove('q-sin-desplazar');
   }, [abierto]);
   return (
-    <dialog ref={ref} className="q-panel" aria-labelledby="panel-t" onClose={onCerrar} onClick={(e) => { if (e.target === ref.current) onCerrar(); }}>
+    <dialog ref={ref} className={`q-panel ${className}`} aria-labelledby={tituloId} onClose={onCerrar} onClick={(e) => { if (e.target === ref.current) onCerrar(); }}>
       <div className="q-panel-cuerpo">
         <header className="q-panel-cab">
-          <div><h2 id="panel-t">{titulo}</h2>{bajada && <p>{bajada}</p>}</div>
+          <div><h2 id={tituloId}>{titulo}</h2>{bajada && <p>{bajada}</p>}</div>
           <button type="button" className="q-boton q-boton-quieto" onClick={onCerrar} aria-label="Cerrar"><X size={18} aria-hidden="true" /></button>
         </header>
         {children}
       </div>
     </dialog>
+  );
+}
+
+// ── Detalle de un capítulo: la vista general lleva tres tarjetas como máximo; lo minucioso va aquí, en el panel de
+// la derecha. El botón dice qué hay adentro. Un ancla «#detalle-…» lo abre (las alertas apuntan así a su dato) ──
+export const DetallesAbiertos = createContext(false); // la prueba de render los abre todos
+export function Detalle({ id, titulo, bajada, vistas, children }) {
+  const [abierto, setAbierto] = useState(useContext(DetallesAbiertos));
+  useEffect(() => {
+    // el ancla lo abre; si el ancla cambia (el botón Atrás), lo cierra. Abierto con clic no tiene ancla propia
+    let porAncla = false;
+    const mirar = () => {
+      if (location.hash === '#' + id) { porAncla = true; setAbierto(true); }
+      else if (porAncla) { porAncla = false; setAbierto(false); }
+    };
+    mirar();
+    window.addEventListener('hashchange', mirar);
+    return () => window.removeEventListener('hashchange', mirar);
+  }, [id]);
+  const boton = useRef(null);
+  const cerrar = () => {
+    setAbierto(false);
+    // el ancla que lo abrió vuelve a ser la del capítulo: pedir el detalle otra vez lo abre
+    if (location.hash === '#' + id) history.replaceState(null, '', `${location.pathname}${location.search}#${id.replace(/^detalle-/, '')}`);
+    setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) boton.current?.focus(); }, 60);
+  };
+  return (
+    <div className="q-detalle" id={id}>
+      <button ref={boton} type="button" className="q-boton q-detalle-boton" aria-haspopup="dialog" aria-expanded={abierto} onClick={() => setAbierto(true)}>
+        <PanelRightOpen size={16} aria-hidden="true" />
+        <span>Ver el detalle<span className="q-detalle-vistas">: {vistas.length > 1 ? `${vistas.slice(0, -1).join(', ')} y ${vistas.at(-1)}` : vistas[0]}</span></span>
+      </button>
+      <PanelLateral titulo={titulo} bajada={bajada} abierto={abierto} onCerrar={cerrar} className="q-panel-detalle">
+        {abierto && <div className="q-detalle-cuerpo">{children}</div>}
+      </PanelLateral>
+    </div>
   );
 }
 

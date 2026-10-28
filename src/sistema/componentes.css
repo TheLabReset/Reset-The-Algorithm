@@ -482,3 +482,46 @@
 .q-anuncio-meta { margin-top: auto; font-size: var(--t-13); color: var(--texto-3); }
 .q-anuncio-enlace { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-14); font-weight: var(--peso-rotulo); color: var(--texto-1); }
 .q-ficha .q-boton { margin-top: var(--e-2); }
+
+/* Selector de período: el botón dice el tramo y el atajo; el panel lleva los atajos, dos fechas y la comparación */
+.q-periodo { position: relative; }
+.q-periodo-boton { display: inline-flex; align-items: center; gap: var(--e-2); min-height: 40px; padding: var(--e-1) var(--e-3); border: 1px solid var(--borde-control); border-radius: var(--r-control); background: var(--superficie); color: var(--texto-1); font: inherit; font-size: var(--t-14); cursor: pointer; }
+.q-periodo-boton small { font-size: var(--t-13); color: var(--texto-3); }
+.q-periodo-boton:hover, .q-periodo-boton[aria-expanded="true"] { border-color: var(--texto-3); }
+.q-periodo-boton:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.q-periodo-panel {
+  position: absolute; left: 0; right: auto; top: calc(100% + var(--e-2)); z-index: 30; width: min(340px, calc(100vw - 2 * var(--e-4)));
+  display: grid; gap: var(--e-2); padding: var(--e-4); border-radius: var(--r-bloque);
+  background: var(--elevada); border: 1px solid var(--borde); box-shadow: var(--sombra-flota);
+}
+.q-periodo-titulo { font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--texto-3); }
+.q-periodo-atajos { display: grid; gap: 2px; }
+.q-periodo-atajos button { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: var(--e-2) var(--e-3); border: 0; border-radius: var(--r-control); background: transparent; color: var(--texto-1); font: inherit; font-size: var(--t-14); text-align: left; cursor: pointer; }
+.q-periodo-atajos button:hover, .q-periodo-atajos button[aria-pressed="true"] { background: var(--superficie-capitulo); }
+.q-periodo-atajos button:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.q-periodo-rango { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.q-periodo-rango label { display: grid; gap: var(--e-1); font-size: var(--t-13); color: var(--texto-2); }
+.q-periodo-rango input { min-height: 40px; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--r-control); background: var(--superficie); color: var(--texto-1); font: inherit; font-size: var(--t-14); min-width: 0; }
+.q-periodo-rango input[aria-invalid="true"] { border-color: var(--texto-1); }
+.q-periodo-nota { font-size: var(--t-13); color: var(--texto-3); }
+.q-periodo-error { font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--texto-1); }
+@media (max-width: 640px) { .q-periodo-boton small { display: none; } }
+
+/* Detalle de un capítulo: el botón al pie del capítulo y el panel ancho, con las tarjetas una debajo de otra */
+.q-detalle { grid-column: 1 / -1; display: flex; }
+.q-detalle-boton { gap: var(--e-2); text-align: left; }
+.q-detalle-vistas { color: var(--texto-2); font-weight: var(--peso-lectura); }
+.q-panel-detalle { width: min(48rem, 100vw); }
+.q-detalle-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-5); }
+.q-detalle-cuerpo > .q-bloque { grid-column: 1 / -1; }
+
+/* Insignia de estado: icono y palabra sobre su fondo */
+.q-insignia { display: inline-flex; align-items: center; gap: var(--e-1); padding: 2px var(--e-2); border-radius: var(--r-control); font-size: var(--t-13); font-weight: var(--peso-rotulo); white-space: nowrap; background: var(--superficie-capitulo); color: var(--texto-2); }
+.q-insignia-grave { background: var(--empeora); color: var(--superficie); }
+.q-insignia-alerta { background: var(--empeora-suave); color: var(--empeora); }
+.q-insignia-tinta { background: var(--atencion); color: var(--superficie); }
+.q-insignia-bien { background: var(--mejora-suave); color: var(--mejora); }
+
+/* Sello de lo nuevo: tinta llena, en mayúsculas cortas */
+.q-sello-nuevo { display: inline-flex; align-items: center; margin-left: var(--e-2); padding: 1px var(--e-2); border-radius: var(--r-control); background: var(--texto-1); color: var(--superficie); font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo); text-transform: uppercase; letter-spacing: 0.06em; vertical-align: middle; }
+.q-sello-nuevo-carta { position: absolute; z-index: 5; top: var(--e-2); left: var(--e-2); margin: 0; }

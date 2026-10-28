@@ -176,6 +176,20 @@ export function detallar(data) {
     r.palabras = cfg.redesMarcas[i].palabras;
   });
 
+  // El mes en curso trae lo que va: las cifras que se acumulan (publicaciones, vistas, interacciones, comentarios) se
+  // escalan por los días que van del mes. Los anuncios activos son un conteo del momento y no se escalan. Sin azar
+  // nuevo, para que nada más se mueva
+  const ultimoMes = meses.at(-1), vanDias = dias.filter((d) => mesDe(d) === ultimoMes).length;
+  const diasDelUltimo = new Date(Date.UTC(+ultimoMes.slice(0, 4), +ultimoMes.slice(5, 7), 0)).getUTCDate();
+  if (vanDias < diasDelUltimo) {
+    const f = vanDias / diasDelUltimo, esc = (n) => Math.round(n * f);
+    for (const h of hashtags) { const x = h.meses.at(-1); Object.assign(x, { publicaciones: esc(x.publicaciones), vistas: esc(x.vistas), interacciones: esc(x.interacciones) }); }
+    for (const r of redes) {
+      const x = r.meses.at(-1), t = x.sentimiento;
+      Object.assign(x, { publicaciones: esc(x.publicaciones), interacciones: esc(x.interacciones), sentimiento: { positivos: esc(t.positivos), neutros: esc(t.neutros), negativos: esc(t.negativos) } });
+    }
+  }
+
   // ── Búsquedas por región, lectura mensual: índice relativo a la región con más búsqueda (= 100) ──
   const azG = crearAzar(semillaDe(cfg.semilla, 'regiones'));
   const regiones = cfg.busquedas.map((b) => ({

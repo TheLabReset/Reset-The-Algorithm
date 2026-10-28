@@ -7,6 +7,12 @@ import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarM
 import { agruparAnuncios, anuncioDeMuestra } from './anuncios.js';
 
 
+// Una variación se publica con días suficientes y la comparación dentro de la muestra (src/calculo/periodo.js); un
+// período armado a mano, sin esa marca, solo pide que la comparación esté dentro
+const compara = (P, cfg) => P.conComparacion ?? P.compararDesde >= cfg.desde;
+// Las fuentes que se leen por mes: el mes en que termina el período
+const mesDe = (P) => P.mesFuente ?? P.hasta.slice(0, 7);
+
 const cache = new WeakMap();
 export const detalleDe = (data) => { if (!cache.has(data)) cache.set(data, detallar(data)); return cache.get(data); };
 
@@ -39,7 +45,7 @@ export function leePlataformas(data, P) {
     return {
       id: pl.id, nombre: pl.nombre, canales: pl.canales, inversion, leads, cpl: razon(inversion, leads), ctr: razon(tot(actual, 'clics'), tot(actual, 'impresiones')),
       cplPrevio: medidosPrevio ? razon(invPrevio, leadsPrevio) : null,
-      cambioCpl: medidosPrevio && P.compararDesde >= cfg.desde ? cambioPct(razon(inversion, leads), razon(invPrevio, leadsPrevio)) : null,
+      cambioCpl: medidosPrevio && compara(P, cfg) ? cambioPct(razon(inversion, leads), razon(invPrevio, leadsPrevio)) : null,
       objetivo: objetivoPlataforma(cfg, pl, invCanal),
       difObjetivo: razon(inversion, leads) != null ? razon(inversion, leads) - objetivoPlataforma(cfg, pl, invCanal) : null, // + paga más que su objetivo
       diasSinDato: Math.max(...actual.map((a) => a.sinDato)), medidos,
@@ -155,7 +161,7 @@ export function leeCrmDetalle(data, P) {
 
   return {
     serie, seriePrevia, acumulado, total, totalPrevio,
-    cambio: totalPrevio != null && P.compararDesde >= cfg.desde ? cambioPct(total, totalPrevio) : null,
+    cambio: totalPrevio != null && compara(P, cfg) ? cambioPct(total, totalPrevio) : null,
     fuentes: fuentes.map((f, i) => ({ ...f, pct: pctFuentes[i] })),
     etapas, salidas: { inscritos: co.altas, descartados },
     abierta: diasEntre(P.hasta, cfg.corte) < Math.max(...c.plazoAbierto),
@@ -177,7 +183,7 @@ export function leeBusquedasDetalle(data, P) {
   const atras = (s) => sumarDias(s, -91);
   const prom = (b, ss) => (ss.length ? suma(ss, (s) => b.semanas.find((x) => x.semana === s)?.indice ?? 0) / ss.length : null);
   const semAtras = semPer.map(atras).filter((s) => data.semanas.includes(s));
-  const mes = P.hasta.slice(0, 7);
+  const mes = mesDe(P);
   return {
     palabras: data.busquedas.map((b) => {
       const actual = prom(b, semPer), antes = semAtras.length === semPer.length ? prom(b, semAtras) : null;
@@ -195,12 +201,12 @@ export function leeBusquedasDetalle(data, P) {
 // ══════════ 1.4 Redes: hashtags del rubro en TikTok ══════════
 export function leeRedes(data, P) {
   const det = detalleDe(data);
-  const mes = P.hasta.slice(0, 7), mesComp = P.compararHasta.slice(0, 7);
+  const mes = mesDe(P), mesComp = P.mesFuenteComparar ?? P.compararHasta.slice(0, 7);
   const hashtags = det.hashtags.map((h) => {
     const m = h.meses.find((x) => x.mes === mes), c = h.meses.find((x) => x.mes === mesComp);
     return { tag: h.tag, propia: h.propia, ...m, interaccion: razon(m.interacciones, m.vistas), interaccionPrevia: c ? razon(c.interacciones, c.vistas) : null };
   }).sort((a, b) => b.interaccion - a.interaccion);
-  return { mes, hashtags };
+  return { mes, parcial: !!P.mesFuenteParcial, hashtags };
 }
 
 // ══════════ 1.5 Competencia: lectura del mes, sin comparación ══════════
@@ -216,7 +222,7 @@ function sentimientoDe({ positivos, neutros, negativos }) {
 
 export function leeCompetencia(data, P) {
   const det = detalleDe(data);
-  const mes = P.hasta.slice(0, 7);
+  const mes = mesDe(P);
   const marcas = det.redes.map((r) => {
     const m = r.meses.find((x) => x.mes === mes);
     return {
@@ -224,12 +230,12 @@ export function leeCompetencia(data, P) {
       porPublicacion: razon(m.interacciones, m.publicaciones), anuncios: m.anuncios, formatos: m.formatos, sentimiento: sentimientoDe(m.sentimiento), palabras: r.palabras,
     };
   }).sort((a, b) => b.interacciones - a.interacciones);
-  return { mes, formatos: data.config.formatosAnuncio.map((f) => f.nombre), marcas };
+  return { mes, parcial: !!P.mesFuenteParcial, formatos: data.config.formatosAnuncio.map((f) => f.nombre), marcas };
 }
 
 // Anuncios activos de cada marca en el mes de la lectura, agrupados (la muestra no trae piezas: solo tema y formato)
 export function leeAnuncios(data, P) {
-  const mes = P.hasta.slice(0, 7);
+  const mes = mesDe(P);
   const m = detalleDe(data).anuncios.find((x) => x.mes === mes);
   if (!m) return null;
   return { mes, ...agruparAnuncios(m.marcas.map((x) => ({ nombre: x.nombre, propia: x.propia, anuncios: x.anuncios.map(anuncioDeMuestra) }))) };
@@ -281,8 +287,8 @@ export function leeGa4(data, P) {
   const desfase = diasEntre(P.compararDesde, P.desde);
   return {
     sesiones: a.sesiones, usuariosPorDia: porDia(a, 'usuarios'), usuariosPorDiaPrevio: porDia(b, 'usuarios'),
-    cambioUsuarios: cambioPct(porDia(a, 'usuarios'), porDia(b, 'usuarios')), cambioSesiones: cambioPct(porDia(a, 'sesiones'), porDia(b, 'sesiones')),
-    conInteraccion: a.conInteraccion, tasaInteraccion: razon(a.conInteraccion, a.sesiones), tasaInteraccionPrevia: razon(b.conInteraccion, b.sesiones),
+    cambioUsuarios: compara(P, cfg) ? cambioPct(porDia(a, 'usuarios'), porDia(b, 'usuarios')) : null, cambioSesiones: compara(P, cfg) ? cambioPct(porDia(a, 'sesiones'), porDia(b, 'sesiones')) : null,
+    conInteraccion: a.conInteraccion, tasaInteraccion: razon(a.conInteraccion, a.sesiones), tasaInteraccionPrevia: compara(P, cfg) ? razon(b.conInteraccion, b.sesiones) : null,
     segundosMedios: razon(a.segundos, a.conInteraccion), movil: razon(a.movil, a.sesiones),
     vistas: totalVistas, canales, paginas, porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: diaDestacado(porDiaSemana, cfg.metodo.margenParecido),
     serie: fechas.map((d) => ({ fecha: d, valor: usuariosDia(d) })),

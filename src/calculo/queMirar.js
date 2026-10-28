@@ -7,14 +7,15 @@
 import { rango, sumarDias, diasEntre } from '../muestra/calendario.js';
 import { suma, razon, cuantil, indices, sumarMeses, finDeMes, plataformaDe } from './base.js';
 import { leeCrmDetalle, interaccionCanal } from './produccion.js';
+import { DIAS_MINIMOS } from './periodo.js';
 
 export const UMBRALES = {
   sinConversion: 0.08, // gasto en palabras casi sin conversiones, sobre el gasto de Search
-  caidaContactoEnElDia: 5, // puntos menos de leads con primer contacto en menos de 24 horas, contra el mes anterior
+  caidaContactoEnElDia: 5, // puntos menos de leads con primer contacto en menos de 24 horas, contra el mes anterior al período
   finDeSemanaEspera: 0.25, // más de un cuarto de los leads del fin de semana espera más de un día por su primer contacto
   llegaAlCrm: 0.85, // de cada lead reportado, cuántos llegan al CRM
   subeBusqueda: 50, // % de subida en tres meses
-  caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior
+  caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior al período
   diaBajo: 0.5, // un día con menos de la mitad de la inversión mediana del período
   cierraCampana: 31, // días: una campaña del CRM que cierra dentro del mes siguiente al período
 };
@@ -40,14 +41,15 @@ export function queMirar(data, P, v) {
     }
     const k = pl.palabras;
     const pct = razon(k.gastoSinConversion, k.inversionSearch);
-    if (pct >= UMBRALES.sinConversion) add({ id: 'palabras-sin-conversion', nivel: 'revisar', fuente: 'Google Ads', sostiene: '3.2', datos: { palabras: k.sinConversion.map((x) => x.texto), monto: k.gastoSinConversion, pct } });
+    if (pct >= UMBRALES.sinConversion) add({ id: 'palabras-sin-conversion', nivel: 'revisar', fuente: 'Google Ads', sostiene: '3.2', datos: { palabras: k.sinConversion.map((x) => x.texto), monto: k.gastoSinConversion, pct, mesEntero: !!P.mes && !P.parcial } });
   }
 
   const cd = v.lee.crmDetalle;
   if (cd.estado === 'ok') {
-    // contacto rápido contra el mes anterior (regla operativa: siempre contra el mes previo)
-    const mesAnt = sumarMeses(P.hasta.slice(0, 7), -1);
-    if (mesAnt + '-01' >= cfg.desde) {
+    // contacto rápido contra el mes anterior al período (regla operativa: siempre contra un mes entero que no se pisa
+    // con el período), solo con días suficientes para que un día raro no mande
+    const mesAnt = sumarMeses(P.desde.slice(0, 7), -1);
+    if (mesAnt + '-01' >= cfg.desde && P.dias >= DIAS_MINIMOS) {
       const ant = leeCrmDetalle(data, { ...P, desde: mesAnt + '-01', hasta: finDeMes(mesAnt), compararDesde: P.compararDesde, compararHasta: P.compararHasta });
       const caida = (ant.atencion.enElDia - cd.atencion.enElDia) * 100;
       if (caida >= UMBRALES.caidaContactoEnElDia) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '4.3', datos: { ahora: cd.atencion.enElDia, antes: ant.atencion.enElDia, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null, causaDesde: cd.atencion.cambioDesde?.desde || null } });
@@ -74,11 +76,11 @@ export function queMirar(data, P, v) {
   const bu = v.lee.busquedas;
   if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'oportunidad', fuente: 'Google Trends', sostiene: '1.1', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });
 
-  // GA4: un canal pagado cuyas sesiones interactúan bastante menos que el mes anterior (el clic se paga igual).
+  // GA4: un canal pagado cuyas sesiones interactúan bastante menos que el mes anterior al período (el clic se paga igual).
   // Si en el período hay un evento anotado en una plataforma de ese canal, se cita como coincidencia, no como causa.
   if (v.lee.web.estado === 'ok') {
-    const mesAnt = sumarMeses(P.hasta.slice(0, 7), -1);
-    if (mesAnt + '-01' >= cfg.desde) for (const f of cfg.web.fuentes.filter((x) => x.deClics)) {
+    const mesAnt = sumarMeses(P.desde.slice(0, 7), -1);
+    if (mesAnt + '-01' >= cfg.desde && P.dias >= DIAS_MINIMOS) for (const f of cfg.web.fuentes.filter((x) => x.deClics)) {
       const ahora = interaccionCanal(data, f.id, P.desde, P.hasta), antes = interaccionCanal(data, f.id, mesAnt + '-01', finDeMes(mesAnt));
       if (ahora.sesiones < 300 || !antes.tasa) continue;
       const caida = ((antes.tasa - ahora.tasa) / antes.tasa) * 100;

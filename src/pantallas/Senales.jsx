@@ -5,7 +5,7 @@ import { Bloque, Cifra, Tabla, Resumen, Abanico } from '../sistema/Componentes.j
 import { Linea, Barras, Franja } from '../sistema/graficos/Graficos.jsx';
 import { numero, porcentaje, compacto, variacion } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, sinDato, deltaCorto, partesConResto } from './comun.jsx';
-import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
+import { periodoTexto, comparacionTexto, mesTexto, mesFuenteTexto, resumenTitulo, enElPeriodo } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import { bandaTexto, anunciosLectura, textosDelAbanico } from '../textos/capas.js';
 import { CLIENTE } from '../cliente.js';
@@ -17,7 +17,7 @@ export default function Senales({ capa, vista: v }) {
   const ok = (x) => x.estado === 'ok';
   return (
     <MarcoCapa capa={capa} vista={v}>
-      <Resumen titulo={`Resumen de ${periodoTexto(v.periodo)}`}
+      <Resumen titulo={resumenTitulo(v.periodo)}
         pie={<span>Cada variación compara {periodoTexto(v.periodo)} con {comparacionTexto(v.periodo)}. Búsquedas, redes y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
         items={[
           { rotulo: 'Índice de oportunidad', universo: 'modelo', ir: 's-2-1', irTexto: 'Lo que lee el modelo', valor: ix.valor == null ? null : `${numero(Math.round(ix.valor))}`, nota: ix.valor == null ? null : `de 100 · ${bandaTexto(ix.banda).toLowerCase()}` },
@@ -41,7 +41,7 @@ export default function Senales({ capa, vista: v }) {
           </Bloque>
         </>}
         {!ok(r) ? <Bloque titulo="TikTok" universo="conversacion" estado={sinDato(r.estado)} /> : (
-          <Bloque universo="conversacion" {...L.redesTiktok(v)} alcance={`lectura de ${mesTexto(r.mes)}`} pie={<span>Interacción: reacciones, comentarios y compartidos sobre las vistas.</span>}>
+          <Bloque universo="conversacion" {...L.redesTiktok(v)} alcance={`lectura de ${mesFuenteTexto(r.mes, r.parcial)}`} pie={<span>Interacción: reacciones, comentarios y compartidos sobre las vistas.</span>}>
             <Tabla etiqueta="Hashtags de TikTok" numericas={[1, 2, 3]} barra={{ columna: 1, valores: r.hashtags.map((h) => h.interaccion) }}
               destacada={r.hashtags.findIndex((h) => h.propia)}
               columnas={['Hashtag', 'Interacción', 'Vistas', 'Publicaciones']}
@@ -64,7 +64,7 @@ export default function Senales({ capa, vista: v }) {
             ayuda={<p>Usuarios activos: personas distintas con al menos una sesión en el día, según GA4. Sesión con interacción: dura más de 10 segundos, ve dos páginas o más, o completa un evento clave. GA4 mide tráfico; los leads del sitio están en el CRM.</p>}
             pie={<span>Promedio de usuarios activos al día · GA4</span>}>
             <div className="q-cifras">
-              <Cifra valor={compacto(w.sesiones)} rotulo="sesiones en el mes" tamano="chica" />
+              <Cifra valor={compacto(w.sesiones)}  rotulo={`sesiones ${enElPeriodo(v.periodo)}`} tamano="chica" />
               <Cifra valor={porcentaje(w.tasaInteraccion * 100)} rotulo="sesiones con interacción" tamano="chica" />
               <Cifra valor={`${numero(Math.floor(w.segundosMedios / 60))} min ${numero(Math.round(w.segundosMedios % 60))} s`} rotulo="de interacción por sesión" tamano="chica" />
               <Cifra valor={porcentaje(w.movil * 100)} rotulo="desde el celular" tamano="chica" />

@@ -23,7 +23,7 @@ const ALERTAS = {
   }),
   'palabras-sin-conversion': (d) => ({
     titulo: `${d.palabras.length === 1 ? 'Una palabra clave gasta' : `${capital(enLetras(d.palabras.length, true))} palabras clave gastan`} y casi no trae${d.palabras.length === 1 ? '' : 'n'} leads`,
-    dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} en el mes, ${pct(d.pct)} de la inversión en Search.`,
+    dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} ${d.mesEntero ? 'en el mes' : 'en el período'}, ${pct(d.pct)} de la inversión en Search.`,
     mirar: `Si esas búsquedas corresponden a lo que ofrece ${CLIENTE.nombre}. Si no, se pueden pausar o agregar como negativas en Search.`,
   }),
   'contacto-lento': (d) => ({
@@ -117,10 +117,10 @@ export function sinReasignar(r, periodo) {
   if (r.crmEstado === 'no-cargo') return { titulo: `${base}: el CRM no cargó y sin él no se sabe cuánto cuesta cada inscripción.` };
   if (!r.cohorteCerrada) return { titulo: `${base}: la cohorte que mide el costo por inscripción todavía no cierra.` };
   const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
-  const detalle = !a ? null : !b ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción todavía no hay casos suficientes.`
-    : r.cpaParecido ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)} (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
-    : a.id === b.id ? `${capital(periodo)}. ${a.nombre} consigue el lead y la inscripción más baratos.`
-    : `${capital(periodo)}. Por lo que reporta la plataforma, ${a.nombre} consigue el lead más barato; por inscripción en el CRM, ${b.nombre}.`;
+  const detalle = !a ? null : !b ? `En ${periodo}, ${a.nombre} consigue el lead más barato; por inscripción todavía no hay casos suficientes.`
+    : r.cpaParecido ? `En ${periodo}, ${a.nombre} consigue el lead más barato; por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)} (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
+    : a.id === b.id ? `En ${periodo}, ${a.nombre} consigue el lead y la inscripción más baratos.`
+    : `En ${periodo}, por lo que reporta la plataforma, ${a.nombre} consigue el lead más barato; por inscripción en el CRM, ${b.nombre}.`;
   if (!r.sobreMeta.length) return { titulo: `${base}: las ${enLetras(r.canales.length, true)} plataformas quedan bajo su objetivo de costo por lead.`, detalle };
   return { titulo: `${base}: la plataforma que pasa su objetivo no es la que más cuesta por inscripción.`, detalle };
 }
