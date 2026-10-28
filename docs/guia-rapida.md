@@ -32,10 +32,10 @@ Toda etiqueta chica (un estado, una fuente, un sello, el nivel de una alerta) es
 
 Reglas:
 
-- **El color nunca va solo:** una etiqueta con juicio lleva icono y palabra. La palabra vive en `src/textos`; el icono, en el catálogo.
-- **Un estado nuevo se agrega al catálogo**, con su tono y su icono, y su palabra en `src/textos`. Un estado que no está en el catálogo rompe el render a propósito (`estadoDe` lo avisa con el nombre del archivo).
+- **El color nunca va solo:** una etiqueta con juicio lleva `estado` (que pone el icono) y palabra. La palabra vive en `src/textos`, salvo la de los niveles de alerta, que está en `NIVELES` de `Componentes.jsx`; el icono, en el catálogo. `tono` suelto es para lo que no juzga (un universo, la barra); `barra` va solo en la variante `texto`.
+- **Un estado nuevo se agrega al catálogo**, con su tono y su icono, y su palabra en `src/textos`. Un estado que no está en el catálogo rompe el render a propósito (`estadoDe` lo avisa con el nombre del archivo): las pruebas lo atrapan antes de publicar.
 - **Dónde va no es cómo se ve.** Las clases de ubicación (`q-junto` junto a un nombre, `q-sobre-carta` sobre un mazo, `q-nivel` en una alerta) solo ubican; el aspecto es siempre el de la variante.
-- **Ninguna pantalla arma su pastilla.** `npm run sistema` rechaza una regla de CSS con letra chica, radio y fondo o borde fuera de `.q-etiqueta`, y cualquier clase llamada chip, badge, insignia, pastilla, pill o tag.
+- **Ninguna pantalla arma su pastilla.** `npm run sistema` rechaza una regla de CSS con letra de 12 o 13 px, relleno, radio y fondo o borde fuera de `.q-etiqueta` (un botón, un campo, lo que flota o lo que tiene medida fija no cuenta), y una clase de `src` con un tramo llamado chip, badge, insignia, pastilla, pill o tag en cualquier texto entre comillas. Es una red, no un candado: una pastilla escrita en un `style` o con otro tamaño se le escapa, y por eso esta guía va primero.
 
 ## 2. Piezas de pantalla
 
@@ -54,7 +54,7 @@ Reglas:
 
 ## 3. Formatos de cifras y fechas
 
-De `src/sistema/formato.js`. Ninguna pantalla formatea a mano.
+De `src/sistema/formato.js`. Ninguna pantalla formatea a mano. Los espacios de los ejemplos son duros (U+00A0) y el menos es tipográfico (U+2212): en una prueba se compara con la salida de la función, no con el texto copiado de aquí.
 
 | Qué | Función | Sale |
 |---|---|---|
@@ -64,7 +64,7 @@ De `src/sistema/formato.js`. Ninguna pantalla formatea a mano.
 | Porcentaje | `porcentaje(p, dec)`, con `p` en puntos (34, no 0,34) | 34 % |
 | Variación | `variacion(p, dec)`, en puntos | +12 % · −3 % (menos tipográfico; el cero sin signo) |
 | Fechas | `fecha`, `fechaCorta`, `fechaSinAnio`, `rangoFechas`, `mesAnio` | 3 de octubre de 2026 · 3 oct |
-| Sin medición | `NO_MEDIDO` | sin dato (lo devuelve cualquier formato con un valor que no es número) |
+| Sin medición | `NO_MEDIDO` | sin dato (lo devuelven los formatos de cifras con un valor que no es número; los de fecha esperan una fecha válida) |
 
 ## 4. Textos que se repiten
 

@@ -40,13 +40,26 @@ test('atrapa franjas de resalte y deja pasar bordes finos', () => {
   assert.deepEqual(conAdemas({ 'src/a.css': '.a { border-left: 2px solid var(--texto-1); border: 1px solid var(--borde); }' }).errores, []);
 });
 
-test('atrapa una pastilla armada fuera de Etiqueta y deja pasar la de Quincha', () => {
+test('atrapa una pastilla armada fuera de Etiqueta y deja pasar la de Quincha, los botones y lo que flota', () => {
   const r = (extra) => conAdemas(extra).errores.join('\n');
   assert.match(r({ 'src/a.css': '.q-palabras li { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde); }' }), /arma una pastilla/);
   assert.match(r({ 'src/a.css': '.q-chip-nuevo { color: var(--texto-1); }' }), /clase de pastilla propia/);
   assert.match(r({ 'src/A.jsx': '<span className="q-badge">Nuevo</span>' }), /clase de pastilla propia/);
   assert.match(r({ 'src/A.jsx': '<span className={`q-insignia q-insignia-${e}`}>x</span>' }), /clase de pastilla propia/);
-  assert.equal(r({ 'src/a.css': '.q-etiqueta-borde { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde); } .q-boton { font-size: var(--t-13); border-radius: var(--r-control); } .q-aviso { position: fixed; font-size: var(--t-13); border-radius: var(--r-control); background: var(--superficie); }' }), '');
+  // cualquier texto entre comillas, no solo className="…"; y un selector compuesto no se salva por llevar .q-etiqueta
+  assert.match(r({ 'src/A.jsx': "<span className={x ? 'q-pill' : ''}>x</span>" }), /clase de pastilla propia/);
+  assert.match(r({ 'src/a.js': "const CLASE = 'q-tag-marca';" }), /clase de pastilla propia/);
+  assert.match(r({ 'src/a.css': '.q-etiqueta, .q-mia { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); }' }), /arma una pastilla/);
+  // un tramo entero: q-stag o q-etiquetado no son pastillas por su nombre; ni un ancho flexible salva a una pastilla
+  assert.equal(r({ 'src/a.css': '.q-stag { color: var(--texto-1); }', 'src/A.jsx': '<div className="q-stag q-pillar" />' }), '');
+  assert.match(r({ 'src/a.css': '.q-banda { width: fit-content; font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); }' }), /arma una pastilla/);
+  assert.equal(r({ 'src/a.css': [
+    '.q-etiqueta-borde { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde); }',
+    '.q-boton-filtro { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); }',
+    '.q-pista { font-size: var(--t-13); padding: var(--e-2); border-radius: var(--r-control); background: var(--superficie); box-shadow: var(--sombra-flota); }',
+    '.q-aviso { position: fixed; font-size: var(--t-13); padding: var(--e-2); border-radius: var(--r-control); background: var(--superficie); }',
+    '.q-marca-redonda { font-size: var(--t-13); padding: 0; width: 22px; height: 22px; border-radius: var(--r-control); background: var(--superficie); }',
+  ].join(' ') }), '');
 });
 
 test('atrapa primitivos usados en componentes y tokens sin declarar', () => {

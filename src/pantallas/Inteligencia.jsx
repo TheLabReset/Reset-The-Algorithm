@@ -1,6 +1,6 @@
 // Capa 2 · Inteligencia de mercado: lo que lee el modelo. El índice, qué mirar (y qué va bien), la temporada y el
 // escenario si nada cambia. No calcula: pinta las salidas de src/calculo y los textos de src/textos.
-import { Bloque, ListaAlertas } from '../sistema/Componentes.jsx';
+import { Bloque, ListaAlertas, Etiqueta } from '../sistema/Componentes.jsx';
 import { Linea, Barras, DosLineas, Proyeccion } from '../sistema/graficos/Graficos.jsx';
 import { numero, fechaSinAnio } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, sinDato, alertasDe, buenasDe } from './comun.jsx';
@@ -34,7 +34,7 @@ export default function Inteligencia({ capa, vista: v }) {
           <div className="q-oport">
             <div className="q-oport-cifra">
               <span className="q-cifra-valor">{ix.valor == null ? 'sin dato' : numero(Math.round(ix.valor))}</span><span className="q-oport-de">de 100</span>
-              {ix.banda && <span className="q-oport-banda">{bandaTexto(ix.banda)}</span>}
+              {ix.banda && <Etiqueta variante="llena" tono="bien" icono={null} className="q-oport-banda">{bandaTexto(ix.banda)}</Etiqueta>}
             </div>
             <div>
               <h4 className="q-subtitulo">Cómo viene, cierre de cada mes</h4>

@@ -125,8 +125,7 @@ Reglas de forma:
 2. Tamaños de letra, espacios, radios, sombras y duraciones salen de tokens. Ningún borde pasa de 2 px (sin franjas de resalte).
 3. **Nada huérfano:** todo primitivo lo usa un semántico, todo semántico lo usa un componente, y ningún componente usa un primitivo o un token que no existe.
 4. El oscuro por preferencia del sistema y el oscuro por botón son idénticos.
-5. **Una sola etiqueta:** ninguna regla fuera de `.q-etiqueta` arma una pastilla (letra chica, radio y fondo o borde) y ninguna clase se llama chip, badge, insignia, pastilla, pill o tag.
-6. **Contraste medido**, en los dos temas:
+5. **Contraste medido**, en los dos temas:
 
 | Qué | Mínimo |
 |---|---|
@@ -136,6 +135,8 @@ Reglas de forma:
 | La serie frente a su comparación | 2:1 |
 | El color de datos frente al gris del resto | 2:1 |
 | Dos escalones vecinos de una rampa | 1,2:1 |
+
+6. **Una sola etiqueta:** ninguna regla fuera de `.q-etiqueta` arma una pastilla (letra de 12 o 13 px, relleno, radio y fondo o borde) y ninguna clase se llama chip, badge, insignia, pastilla, pill o tag. Un botón, un campo y lo que flota no cuentan.
 
 La última fila es la regla de la casa: **nunca dos grises vecinos que se confundan**. Nació de una corrección real, porque los dos últimos grises de un gráfico no se distinguían.
 
