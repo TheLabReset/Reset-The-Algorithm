@@ -11,7 +11,7 @@ import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
 import { queMirar, queVaBien } from './queMirar.js';
 import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeAnuncios, leeGa4, analizaReparto, analizaPautaCrm } from './produccion.js';
-import { periodoDe } from './periodo.js';
+import { periodoDe, diasAlineados, DIAS_MINIMOS } from './periodo.js';
 import { leerPiezas } from './piezas.js';
 import { CLIENTE } from '../cliente.js';
 
@@ -57,7 +57,6 @@ export function armarVista(data, filtros, estado = {}) {
 
   // ══════════════ CAPA 1 · LEE ══════════════
   const fechas = rango(desde, hasta);
-  const desfase = diasEntre(compararDesde, desde);
   const pauta = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : {
     estado: 'ok', universo: 'Leads que reporta cada plataforma de pauta',
     leads: pa.leads, leadsPrevio: pb.leads, inversion: pa.inversion, cpl: pa.cpl, cplPrevio: pb.cpl,
@@ -65,7 +64,7 @@ export function armarVista(data, filtros, estado = {}) {
     cambioCpl: comparable ? cambioPct(pa.cpl, pb.cpl) : null,
     diasParciales: pa.parciales,
     serie: fechas.map((d) => ({ fecha: d, valor: leadsPautaDia(data, d) })),
-    seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: dentro(data, f) ? leadsPautaDia(data, f) : null }; }),
+    seriePrevia: diasAlineados(P).map((f) => ({ fecha: f, valor: f && dentro(data, f) ? leadsPautaDia(data, f) : null })),
     eventos: cfg.eventos.filter((e) => e.fecha >= desde && e.fecha <= hasta),
     // Inversión total por día: un día con una plataforma sin dato queda como hueco, no como cero
     serieInversion: fechas.map((d) => {
@@ -175,7 +174,7 @@ export function armarVista(data, filtros, estado = {}) {
     const o = coCanal ? pl.canales.reduce((t, id) => { const x = coCanal.porOrigen[id] || {}; return { leads: t.leads + (x.leads || 0), altas: t.altas + (x.altas || 0) }; }, { leads: 0, altas: 0 }) : null;
     const invCanal = (id) => suma(diasComunes, (d) => ix.pautaDia[id].get(d).inversion);
     return {
-      id: pl.id, nombre: pl.nombre, inversion: a.inversion, leads: a.leads, cpl: a.cpl, metaCpl: objetivoPlataforma(cfg, pl, invCanal), sinDato: a.sinDato,
+      id: pl.id, nombre: pl.nombre, inversion: a.inversion, leads: a.leads, cpl: a.cpl, metaCpl: objetivoPlataforma(cfg, pl, invCanal), sinDato: a.sinDato, medidos: a.medidos,
       pctInversion: pctInv[i], pctLeads: pctLeads[i],
       cohorte: o ? { leads: o.leads, altas: o.altas, tasaAlta: razon(o.altas, o.leads), cpa: razon(invCoh.inversion, o.altas), pocosCasos: o.altas < cfg.metodo.casosMinimos, cobertura: invCoh.cobertura } : null,
     };
@@ -215,7 +214,7 @@ export function armarVista(data, filtros, estado = {}) {
   // Los leads se suman: el total de un día es la suma de sus horas
   const horas = porHoraDelDia(sumaHD, veces);
   const porDiaSemana = sumaHD.map((f, i) => (veces[i] ? suma(f, (v) => v) / veces[i] : null));
-  const horaDia = estadoGrupo('crm') !== 'ok' ? { estado: estadoGrupo('crm') } : { estado: 'ok', universo: 'Leads del CRM por hora de entrada', porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: diaDestacado(porDiaSemana, cfg.metodo.margenParecido), veces };
+  const horaDia = estadoGrupo('crm') !== 'ok' ? { estado: estadoGrupo('crm') } : { estado: 'ok', universo: 'Leads del CRM por hora de entrada', porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: veces.every((n) => n > 0) ? diaDestacado(porDiaSemana, cfg.metodo.margenParecido) : null, semanaCompleta: veces.every((n) => n > 0), veces };
 
   // Sedes: leads del CRM del período contra la comparación (por día), y tasa de inscripción de 3 cohortes cerradas
   const tres = [sumarMeses(cohorteDesde.slice(0, 7), -2) + '-01', cohorteHasta];
@@ -244,13 +243,16 @@ export function armarVista(data, filtros, estado = {}) {
 
   // ══════════════ CAPA 3 · SUGIERE ══════════════
   const indice = calcularIndice(data, hasta);
-  const fechaPrevio = sumarDias(desde, -1);
-  const previo = fechaPrevio >= cfg.desde ? calcularIndice(data, fechaPrevio) : null;
+  // la variación del índice: contra el último día de la comparación elegida (el día antes del período, el mismo día del
+  // mes anterior o de un año antes), y solo con días suficientes
+  const fechaPrevio = P.compararHasta;
+  const previo = P.conComparacion && fechaPrevio >= cfg.desde ? calcularIndice(data, fechaPrevio) : null;
   const historia = Array.from({ length: 12 }, (_, k) => finDeMes(sumarMeses(hasta.slice(0, 7), k - 11))).filter((f) => f >= cfg.desde && f <= cfg.corte).map((f) => { const i = calcularIndice(data, f); return { fecha: f, valor: i.completo ? i.valor : null }; });
   const indiceVista = { ...indice, previo: previo?.valor ?? null, fechaPrevio, cambio: previo?.valor != null && indice.valor != null ? indice.valor - previo.valor : null, historia, banda: bandaDe(indice.valor, cfg.metodo.bandasIndice) };
 
   const sugerencias = [
-    rendimiento.estado === 'ok' && rendimiento.cohorteCerrada ? reasignacion(cfg, canales, P) : null,
+    // mover inversión es una decisión de dinero: con menos de DIAS_MINIMOS días no se propone
+    rendimiento.estado === 'ok' && rendimiento.cohorteCerrada && P.dias >= DIAS_MINIMOS ? reasignacion(cfg, canales, P) : null,
     crm.estado === 'ok' ? agendamiento(cfg, { cerrada, etapas: crm.etapas, exclusivas: crm.exclusivas }) : null,
     estadoGrupo('pauta') === 'ok' ? fatigaCreativa(data, hasta) : null,
     temporada(cfg, hasta),
@@ -279,7 +281,9 @@ export function armarVista(data, filtros, estado = {}) {
     analiza: { rendimiento, reparto, pautaCrm, demandaRespuesta, horaDia, sedes },
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };
-  vista.sugiere.queMirar = fuera ? [] : queMirar(data, P, vista);
-  vista.sugiere.queVaBien = fuera ? [] : queVaBien(data, P, vista);
+  // las alertas leen reglas con umbrales: con menos de DIAS_MINIMOS días un día raro mandaría, y no se leen
+  vista.sugiere.pocosDias = P.dias < DIAS_MINIMOS;
+  vista.sugiere.queMirar = fuera || vista.sugiere.pocosDias ? [] : queMirar(data, P, vista);
+  vista.sugiere.queVaBien = fuera || vista.sugiere.pocosDias ? [] : queVaBien(data, P, vista);
   return vista;
 }

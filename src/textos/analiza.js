@@ -58,7 +58,7 @@ export function demanda(v) {
 
 export function hora(v) {
   const h = v.analiza.horaDia;
-  return { titulo: 'Cuándo entran los leads', lectura: `Entran más leads ${horasTexto(h.horasAltas)}. ${diasTexto(h.porDiaSemana, h.diaMayor, 'leads al día', (n) => numero(Math.round(n)))}` };
+  return { titulo: 'Cuándo entran los leads', lectura: `Entran más leads ${horasTexto(h.horasAltas)}. ${diasTexto(h.porDiaSemana, h.diaMayor, 'leads al día', (n) => numero(Math.round(n)), h.semanaCompleta)}` };
 }
 
 export function sedes(v) {

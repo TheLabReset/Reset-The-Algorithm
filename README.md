@@ -31,7 +31,7 @@ Necesita Node 18 o más nuevo.
 ```bash
 npm ci
 npm run dev                          # http://localhost:3000
-npm run prueba                       # reglas de cálculo, anclas y marca en un solo archivo
+npm run prueba                       # cálculo, período, piezas, fecha móvil, render de cada capa y marca en un solo archivo
 npm run sistema                      # tokens, contraste y espacios de Quincha
 npm run build                        # build de producción en dist/
 npm run artefacto -- salida.html     # la app en un solo HTML, para publicarla sin servidor

@@ -31,8 +31,9 @@ function correrMeses(iso, k) {
 // El día después del mismo día seis meses antes: del 25 de octubre, el 26 de abril
 const seisMesesAntes = (iso) => sumarDias(correrMeses(iso, -6), 1);
 
-// Un mes, entero o en curso (del 1 al corte)
-function delMes(cfg, mes) {
+// Un mes, entero o en curso (del 1 al corte). Un mes fuera de la data se lleva al primero o al último que hay
+function delMes(cfg, mes0) {
+  const mes = mes0 > cfg.corte.slice(0, 7) ? cfg.corte.slice(0, 7) : mes0 < cfg.desde.slice(0, 7) ? cfg.desde.slice(0, 7) : mes0;
   const desde = `${mes}-01` < cfg.desde ? cfg.desde : `${mes}-01`;
   const fin = finDeMes(mes), hasta = fin > cfg.corte ? cfg.corte : fin;
   return { desde, hasta, mes, tramo: false, parcial: hasta < fin || desde > `${mes}-01`, enCurso: hasta < fin };
@@ -101,6 +102,18 @@ export function periodoDe(cfg, filtros = {}) {
     // una variación se publica solo con días suficientes y con la comparación dentro de la muestra
     conComparacion: !compFuera && dias >= DIAS_MINIMOS,
     ...cohorteDe(cfg, base.hasta),
-    mesFuente, mesFuenteParcial: base.hasta < finDeMes(mesFuente), mesFuenteComparar: sumarMeses(mesFuente, comparar === 'anio' ? -12 : -1),
+    // lo que va de un mes solo existe en el mes del corte: un mes pasado se lee entero aunque el período termine antes
+    mesFuente, mesFuenteParcial: mesFuente === cfg.corte.slice(0, 7) && cfg.corte < finDeMes(mesFuente), mesFuenteComparar: sumarMeses(mesFuente, comparar === 'anio' ? -12 : -1),
   };
+}
+
+// Los días de la comparación, alineados con los del período por su posición: el primero con el primero. Si la
+// comparación es más corta (febrero frente a marzo), los últimos días del período no tienen par (null): la serie gris
+// termina antes y nunca toma días de afuera de la comparación declarada
+export function diasAlineados(P) {
+  const comp = [];
+  for (let d = P.compararDesde; d <= P.compararHasta; d = sumarDias(d, 1)) comp.push(d);
+  const out = [];
+  for (let i = 0, d = P.desde; d <= P.hasta; i++, d = sumarDias(d, 1)) out.push(comp[i] ?? null);
+  return out;
 }

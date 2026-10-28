@@ -5,6 +5,8 @@ import { rango, sumarDias, diaSemana, diasEntre } from '../muestra/calendario.js
 import { detallar } from '../muestra/detalle.js';
 import { suma, razon, cambioPct, mayorResto, indices, dentro, ventanaCrm, sumarMeses, semanaEn, ETAPAS, plataformaDe, objetivoPlataforma, porHoraDelDia, diaDestacado } from './base.js';
 import { agruparAnuncios, anuncioDeMuestra } from './anuncios.js';
+import { diasAlineados } from './periodo.js';
+import { nuevoDesde } from './piezas.js';
 
 
 // Una variación se publica con días suficientes y la comparación dentro de la muestra (src/calculo/periodo.js); un
@@ -44,7 +46,7 @@ export function leePlataformas(data, P) {
     const invCanal = (id) => suma(actual[pl.canales.indexOf(id)].campanas, (c) => c.inversion);
     return {
       id: pl.id, nombre: pl.nombre, canales: pl.canales, inversion, leads, cpl: razon(inversion, leads), ctr: razon(tot(actual, 'clics'), tot(actual, 'impresiones')),
-      cplPrevio: medidosPrevio ? razon(invPrevio, leadsPrevio) : null,
+      cplPrevio: medidosPrevio && compara(P, cfg) ? razon(invPrevio, leadsPrevio) : null,
       cambioCpl: medidosPrevio && compara(P, cfg) ? cambioPct(razon(inversion, leads), razon(invPrevio, leadsPrevio)) : null,
       objetivo: objetivoPlataforma(cfg, pl, invCanal),
       difObjetivo: razon(inversion, leads) != null ? razon(inversion, leads) - objetivoPlataforma(cfg, pl, invCanal) : null, // + paga más que su objetivo
@@ -94,14 +96,15 @@ export function leeCrmDetalle(data, P) {
   const cfg = data.config, det = detalleDe(data), ix = indices(data);
   const c = cfg.crm;
   const fechas = rango(P.desde, P.hasta);
-  const desfase = diasEntre(P.compararDesde, P.desde);
-  const leadsDia = (d) => (dentro(data, d) ? suma(Object.values(ix.crmDia.get(d) || {}), (v) => v.leads) : null);
+  const leadsDia = (d) => (d && dentro(data, d) ? suma(Object.values(ix.crmDia.get(d) || {}), (v) => v.leads) : null);
   const serie = fechas.map((d) => ({ fecha: d, valor: leadsDia(d) }));
-  const seriePrevia = fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: leadsDia(f) }; });
+  // la comparación, día por día alineada con el período; el total es el de la comparación declarada, entera
+  const seriePrevia = diasAlineados(P).map((f) => ({ fecha: f, valor: leadsDia(f) }));
+  const diasPrevios = rango(P.compararDesde, P.compararHasta);
   let a = 0, b = 0;
   const acumulado = serie.map((p, i) => { a += p.valor ?? 0; b += seriePrevia[i].valor ?? 0; return { fecha: p.fecha, valor: a, previo: seriePrevia[i].valor == null ? null : b }; });
   const total = suma(serie, (p) => p.valor ?? 0);
-  const totalPrevio = seriePrevia.every((p) => p.valor != null) ? suma(seriePrevia, (p) => p.valor) : null;
+  const totalPrevio = diasPrevios.every((d) => leadsDia(d) != null) ? suma(diasPrevios, leadsDia) : null;
 
   // De dónde llegan: último clic (pauta por plataforma; el sitio por su fuente)
   // det.crm[i] detalla a data.cohortes[i] (mismo orden, que no es por fecha)
@@ -161,7 +164,9 @@ export function leeCrmDetalle(data, P) {
 
   return {
     serie, seriePrevia, acumulado, total, totalPrevio,
-    cambio: totalPrevio != null && compara(P, cfg) ? cambioPct(total, totalPrevio) : null,
+    // por día: la comparación puede tener otro largo (setiembre frente a octubre)
+    cambio: totalPrevio != null && compara(P, cfg) ? cambioPct(total / fechas.length, totalPrevio / diasPrevios.length) : null,
+    totalPrevio: compara(P, cfg) ? totalPrevio : null, diasPrevios: diasPrevios.length,
     fuentes: fuentes.map((f, i) => ({ ...f, pct: pctFuentes[i] })),
     etapas, salidas: { inscritos: co.altas, descartados },
     abierta: diasEntre(P.hasta, cfg.corte) < Math.max(...c.plazoAbierto),
@@ -239,12 +244,18 @@ export function leeAnuncios(data, P) {
   const m = detalleDe(data).anuncios.find((x) => x.mes === mes);
   if (!m) return null;
   const lista = agruparAnuncios(m.marcas.map((x) => ({ nombre: x.nombre, propia: x.propia, anuncios: x.anuncios.map(anuncioDeMuestra) })));
-  // nuevo: empezó dentro del período. Ya van primero en su mazo (del más reciente al más antiguo)
+  // la biblioteca es del mes: los que empezaron después del período no estaban activos en él y no se muestran.
+  // Nuevo: empezó en el período (en sus últimos 30 días si es más largo), y va primero en su mazo
+  const desdeNuevo = nuevoDesde(P);
   for (const g of [lista.propio, ...lista.grupos].filter(Boolean)) {
-    g.anuncios = g.anuncios.map((a) => ({ ...a, nuevo: !!a.desde && a.desde >= P.desde && a.desde <= P.hasta && a.desde > data.config.desde }));
+    g.anuncios = g.anuncios.filter((a) => !a.desde || a.desde <= P.hasta)
+      .map((a) => ({ ...a, nuevo: !!a.desde && a.desde >= desdeNuevo && a.desde > data.config.desde }))
+      .sort((a, b) => (b.nuevo === true) - (a.nuevo === true));
     g.nuevos = g.anuncios.filter((a) => a.nuevo).length;
   }
-  return { mes, ...lista, nuevos: lista.grupos.reduce((s, g) => s + g.nuevos, 0) };
+  lista.grupos = lista.grupos.filter((g) => g.anuncios.length);
+  if (lista.propio && !lista.propio.anuncios.length) lista.propio = null;
+  return { mes, ...lista, total: lista.grupos.reduce((s, g) => s + g.anuncios.length, 0), nuevos: lista.grupos.reduce((s, g) => s + g.nuevos, 0), nuevoDesde: desdeNuevo, largo: P.dias > 30 };
 }
 
 // ══════════ 1.6 Sitio (GA4): tráfico, sin leads ══════════
@@ -290,15 +301,15 @@ export function leeGa4(data, P) {
   const usuariosDia = (d) => { const x = detDia.get(d); return x ? suma(ids, (id) => x.usuarios[id]) : null; };
   const horas = porHoraDelDia(matriz, veces);
   const porDiaSemana = Array.from({ length: 7 }, (_, w) => { const ds = fechas.filter((d) => diaSemana(d) === w && usuariosDia(d) != null); return ds.length ? suma(ds, usuariosDia) / ds.length : null; });
-  const desfase = diasEntre(P.compararDesde, P.desde);
+  const semanaCompleta = Array.from({ length: 7 }, (_, w) => fechas.some((d) => diaSemana(d) === w && usuariosDia(d) != null)).every(Boolean);
   return {
     sesiones: a.sesiones, usuariosPorDia: porDia(a, 'usuarios'), usuariosPorDiaPrevio: porDia(b, 'usuarios'),
     cambioUsuarios: compara(P, cfg) ? cambioPct(porDia(a, 'usuarios'), porDia(b, 'usuarios')) : null, cambioSesiones: compara(P, cfg) ? cambioPct(porDia(a, 'sesiones'), porDia(b, 'sesiones')) : null,
     conInteraccion: a.conInteraccion, tasaInteraccion: razon(a.conInteraccion, a.sesiones), tasaInteraccionPrevia: compara(P, cfg) ? razon(b.conInteraccion, b.sesiones) : null,
     segundosMedios: razon(a.segundos, a.conInteraccion), movil: razon(a.movil, a.sesiones),
-    vistas: totalVistas, canales, paginas, porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: diaDestacado(porDiaSemana, cfg.metodo.margenParecido),
+    vistas: totalVistas, canales, paginas, porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: semanaCompleta ? diaDestacado(porDiaSemana, cfg.metodo.margenParecido) : null, semanaCompleta,
     serie: fechas.map((d) => ({ fecha: d, valor: usuariosDia(d) })),
-    seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: usuariosDia(f) }; }),
+    seriePrevia: diasAlineados(P).map((f) => ({ fecha: f, valor: f ? usuariosDia(f) : null })),
   };
 }
 

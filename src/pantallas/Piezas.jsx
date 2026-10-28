@@ -63,7 +63,7 @@ function TablaArbol({ x }) {
 export function PiezasCapitulo({ def, x, estado }) {
   const [plat, setPlat] = useState('todas');
   if (!x) return <Bloque titulo="Piezas y campañas" universo="pauta" estado={sinDato(estado === 'ok' ? 'sin-datos' : estado)} />;
-  const opciones = [{ valor: 'todas', texto: 'Todas' }, ...x.bases.map((b) => ({ valor: b.id, texto: b.nombre }))];
+  const opciones = [{ valor: 'todas', texto: 'Todas' }, ...x.plataformas.map((b) => ({ valor: b.id, texto: b.nombre }))];
   const plataforma = opciones.some((o) => o.valor === plat) && plat !== 'todas' ? plat : null;
   const de = (lista) => lista.filter((f) => !plataforma || f.plataforma === plataforma);
   const sub = { ...x, piezas: de(x.piezas), conjuntos: de(x.conjuntos), campanas: de(x.campanas) };
@@ -75,7 +75,8 @@ export function PiezasCapitulo({ def, x, estado }) {
       <Bloque universo="pauta" titulo={textos.titulo} lectura={textos.lectura}
         ayuda={<p>{piezasAyuda(UMBRALES_PIEZAS)}</p>} pie={<span>{pie}</span>}>
         <div className="q-control q-control-tarjeta"><span>Plataforma</span><Grupo etiqueta="Plataforma" valor={plataforma ?? 'todas'} onCambiar={setPlat} opciones={opciones} /></div>
-        <TablaArbol key={plataforma ?? 'todas'} x={sub} />
+        {/* con otro período u otra plataforma, la tabla vuelve a abrir las campañas con algo que mirar */}
+        <TablaArbol key={`${plataforma ?? 'todas'}-${x.desde}-${x.hasta}`} x={sub} />
       </Bloque>
       <Detalle id={`detalle-${def.id}`} titulo="Detalle de las piezas" bajada="Cada pieza con gasto en el período, con su estado y sus cifras." vistas={['cada pieza con su estado y sus cifras']}>
         <Bloque universo="pauta" titulo="Todas las piezas del período" pie={<span>{pie}</span>}>

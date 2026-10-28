@@ -65,8 +65,8 @@ export const BASE = {
   // Leads que llegan por el sitio sin pauta: entran al CRM pero no son leads de pauta (asumo: convierten un poco más)
   organico: { id: 'organico', nombre: 'Sitio sin pauta', calidad: { cita: 1.1, alta: 1.1 } },
 
-  // asumo, en dólares. Con 24 000 (y TikTok al 35 %), TikTok junta más de 30 inscripciones al mes en cualquier mes del año:
-  // así la historia de la demo se sostiene con casos suficientes en el mes que el panel abre (pruebas/fecha-movil.test.mjs)
+  // asumo, en dólares. Con 26 000 (y TikTok al 35 %), TikTok junta más de 30 inscripciones en cualquier cohorte del año:
+  // así la historia de la demo se sostiene con casos suficientes al abrir y en el último mes cerrado (pruebas/fecha-movil.test.mjs)
   presupuestoMensual: 26000,
   pesoPresupuestoMes: [1.3, 1.15, 1.0, 0.9, 0.9, 0.85, 0.95, 1.05, 1.0, 0.95, 0.95, 1.0], // asumo: la inversión sigue a la demanda
   presionSubasta: [1.15, 1.0, 1.0, 1.0, 1.0, 1.0, 1.05, 1.0, 1.0, 1.0, 1.12, 1.18], // asumo: CPM más caro en enero y fin de año

@@ -5,7 +5,7 @@ import { Bloque, Tabla, Resumen, Flujo, Detalle } from '../sistema/Componentes.j
 import { Linea, Barras, Etapas, Reticula, Histograma, Columnas, Acumulado } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, variacion, rangoFechas, fecha } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, HorasYDias, Competencia, sinDato, deltaCorto } from './comun.jsx';
-import { periodoTexto, comparacionTexto, mesTexto, mesFuenteTexto, resumenTitulo, enElPeriodo, delPeriodo, capital } from '../textos/comun.js';
+import { periodoTexto, comparacionTexto, mesTexto, mesFuenteTexto, resumenTitulo, enElPeriodo, delPeriodo, capital, pieComparacion } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import * as A from '../textos/analiza.js';
 import { embudoFuente, acumuladoLectura, textosDelAbanico, verSusAnuncios } from '../textos/capas.js';
@@ -19,7 +19,7 @@ export default function Rendimiento({ capa, vista: v }) {
   return (
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={resumenTitulo(v.periodo)}
-        pie={<span>Leads del CRM del período, contra {comparacionTexto(v.periodo)}. Inscripciones y su costo, de la {cohorte || 'última cohorte cerrada'}: un lead tarda en inscribirse.</span>}
+        pie={<span>Leads del CRM del período. {pieComparacion(v.periodo)} Inscripciones y su costo, de la {cohorte || 'última cohorte cerrada'}: un lead tarda en inscribirse.</span>}
         items={[
           { rotulo: 'Leads en el CRM', universo: 'crm', ir: s41.id, irTexto: s41.titulo, valor: ok(cr) ? numero(cr.total) : null, delta: ok(cr) ? deltaCorto(cr.cambio, 'sube', v) : null, dataClave: 'crm-total' },
           { rotulo: 'Inscripciones', universo: 'crm', ir: s43.id, irTexto: s43.titulo, valor: altas == null ? null : numero(altas), nota: cohorte },
@@ -40,7 +40,7 @@ export default function Rendimiento({ capa, vista: v }) {
           </Bloque>
         </>}
         {!ok(pa) ? <Bloque titulo="Inversión y resultados por día" universo="pauta" estado={sinDato(pa.estado)} /> : (
-          <Bloque universo="pauta" titulo="Inversión y resultados por día" lectura={`${L.pautaResumen(v).lectura} ${L.inversionDia(v).lectura}`}
+          <Bloque universo="pauta" titulo="Inversión y resultados por día" lectura={L.pautaResumen(v).lectura}
             ayuda={<p>Lo que reporta cada plataforma. Un día en que alguna no entregó datos queda como hueco, no como cero, y la comparación se hace por día medido.</p>}
             pie={<><span>Google Ads, Meta Ads y TikTok Ads juntos.</span>{pa.diasParciales.length > 0 && <span>{numero(pa.diasParciales.length)} {pa.diasParciales.length === 1 ? 'día' : 'días'} con una plataforma sin dato: {pa.diasParciales.map(fecha).join(', ')}</span>}</>}>
             <div className="q-dos-columnas">
@@ -176,7 +176,7 @@ export default function Rendimiento({ capa, vista: v }) {
               nota={v.lee.anuncios.estado === 'ok' ? `anuncios activos en ${mesTexto(v.lee.anuncios.mes)}` : null} />
           </Bloque>
           <Bloque universo="conversacion" {...L.competenciaAnuncios(v)} alcance={`anuncios activos en ${mesTexto(v.lee.competencia.mes)}`}
-            pie={<span>Anuncios activos el último día del período, por formato.</span>}>
+            pie={<span>Anuncios activos en {mesTexto(v.lee.competencia.mes)}, por formato.</span>}>
             {(() => {
               const marcas = [...v.lee.competencia.marcas].sort((a, b) => b.anuncios - a.anuncios);
               return (

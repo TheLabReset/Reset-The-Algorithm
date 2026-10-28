@@ -2,6 +2,7 @@
 // es el juicio y la frase dice qué pasó, con sus cifras.
 import { numero, dolares, porcentaje, fechaCorta } from '../sistema/formato.js';
 import { capital, lista, enLetras } from './comun.js';
+import { DIAS_NUEVO } from '../calculo/piezas.js';
 
 export const ESTADO_PIEZA = {
   'sin-leads': 'Sin leads', costosa: 'Costosa', saturada: 'Saturada', rinde: 'Rinde', aprendizaje: 'Aprendizaje', 'poca-data': 'Poca inversión',
@@ -20,15 +21,17 @@ const partesPiezas = (cuenta, sujeto, fem = true) => {
 // Por qué tiene su estado, en una frase con sus cifras
 export function piezaDato(f) {
   const propia = (() => {
+    // un grupo que toma el estado de sus piezas: lo dice con la parte de su inversión
+    if (f.mayoria) return `Más de la mitad de su inversión (${dolares(f.mayoria.inversion)} de ${dolares(f.inversion)}) está en piezas que piden mirarse.`;
     switch (f.estado) {
       case 'sin-leads': return f.nivel === 'pieza' ? `Gastó ${dolares(f.inversion)} en ${dias(f.diasConGasto)} y no trajo leads.` : `Gastó ${dolares(f.inversion)} y no trajo leads.`;
       case 'saturada': return `Su lead costaba ${cpl(f.saturacion.antes)}; en la última semana, ${cpl(f.saturacion.ahora)}.`;
-      case 'aprendizaje': return f.nivel !== 'pieza' ? 'Todas sus piezas llevan menos de una semana publicadas.' : f.alAire === false ? `Estuvo ${dias(f.edad)} publicada.` : `Lleva ${dias(f.edad)} publicada.`;
+      case 'aprendizaje': return f.nivel !== 'pieza' ? 'Ninguna de sus piezas se puede juzgar todavía: llevan menos de una semana publicadas o gastaron poco.' : f.alAire === false ? `Estuvo ${dias(f.edad)} publicada.` : `Lleva ${dias(f.edad)} publicada.`;
       case 'poca-data': return f.nivel === 'conjunto' ? `Gastó ${dolares(f.inversion)}: todavía es poco para juzgarlo.` : `Gastó ${dolares(f.inversion)}: todavía es poco para juzgarla.`;
-      default: return `Cada lead costó ${cpl(f.cpl)}; el promedio de ${f.plataformaNombre} fue ${cpl(f.base)}.`;
+      default: return `Cada lead costó ${cpl(f.cpl)}; el promedio de las campañas de leads de ${f.baseNombre} fue ${cpl(f.base)}.`;
     }
   })();
-  const piezas = f.nivel !== 'pieza' && f.cuenta && !['sin-leads', 'aprendizaje', 'poca-data'].includes(f.estado) ? partesPiezas(f.cuenta, () => ' de sus piezas') : null;
+  const piezas = f.nivel !== 'pieza' && f.cuenta && (f.mayoria || !['sin-leads', 'aprendizaje', 'poca-data'].includes(f.estado)) ? partesPiezas(f.cuenta, () => ' de sus piezas') : null;
   return piezas ? `${propia} ${capital(piezas)}.` : propia;
 }
 // Debajo del nombre: si ya no está activa; si es un conjunto con el aprendizaje limitado
@@ -53,8 +56,9 @@ export function piezasLectura(x, nivel = 'pieza') {
 }
 
 export function piezasAyuda(U) {
-  return `Leads de la plataforma, no del CRM: a este nivel no hay inscripciones. Cada fila se compara con el costo por lead de su plataforma en el período, sin las campañas de alcance. `
-    + `Aprendizaje: menos de ${U.diasAprendizaje} días publicada, todavía no se juzga (TikTok lo pide en su guía). Saturada: su lead de los últimos ${U.diasReciente} días cuesta ${numero(U.vecesSaturada)} veces el de antes (el criterio de fatiga de Meta). `
-    + `Aprendizaje limitado: un conjunto de Meta o TikTok con menos de ${U.resultadosSemana} leads en ${U.diasReciente} días (Meta y TikTok). `
-    + `Por costumbre de la industria, no de las plataformas: se juzga recién cuando gastó ${U.vecesGasto} veces el costo por lead de su plataforma. Si hasta ahí no trajo leads, va Sin leads; si su lead cuesta ${numero(U.vecesCostosa, 1)} veces el promedio o más, Costosa; por debajo, Rinde.`;
+  return `Leads de la plataforma, no del CRM: a este nivel no hay inscripciones. Cada fila se compara con el costo por lead de las campañas de leads de su canal (Search, Display, Meta Ads o TikTok Ads) en el período; las de alcance no entran. `
+    + `Aprendizaje: menos de ${U.diasAprendizaje} días publicada, todavía no se juzga (TikTok lo pide en su guía). Saturada, solo en Meta y TikTok: su lead de los últimos ${U.diasReciente} días cuesta ${numero(U.vecesSaturada)} veces el de antes, con al menos ${U.leadsRecientes} leads esa semana y ${U.leadsAntes} antes (el criterio de fatiga de Meta). `
+    + `Aprendizaje limitado: un conjunto de Meta o TikTok con menos de ${U.resultadosSemana} leads en ${U.diasReciente} días. `
+    + `Por costumbre de la industria, no de las plataformas: se juzga recién cuando gastó ${U.vecesGasto} veces el costo por lead de su canal. Si hasta ahí no trajo leads, va Sin leads; si su lead cuesta ${numero(U.vecesCostosa, 1)} veces el promedio o más, Costosa; por debajo, Rinde. `
+    + `Una campaña o un conjunto con más de la mitad de su inversión en piezas que piden mirarse toma el estado de esas piezas. Nuevo: empezó en el período (si el período pasa de ${DIAS_NUEVO} días, en sus últimos ${DIAS_NUEVO}).`;
 }

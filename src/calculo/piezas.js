@@ -20,6 +20,13 @@ export const UMBRALES_PIEZAS = {
 };
 // el orden en que se leen: primero lo que pide mirar
 export const ESTADOS = ['sin-leads', 'costosa', 'saturada', 'rinde', 'aprendizaje', 'poca-data'];
+// lo nuevo: lo que empezó dentro del período y, si el período es largo, en sus últimos 30 días (en seis meses casi todo
+// sería «nuevo» y el sello no diría nada)
+export const DIAS_NUEVO = 30;
+export const nuevoDesde = (P) => (P.dias > DIAS_NUEVO ? sumarDias(P.hasta, -(DIAS_NUEVO - 1)) : P.desde);
+// la base de cada fila: el costo por lead de las campañas de leads de su mismo canal (Search y Display se comparan por
+// separado: cuestan distinto por naturaleza)
+const NOMBRE_BASE = { search: 'Search', display: 'Display', meta: 'Meta Ads', tiktok: 'TikTok Ads' };
 export const PARA_REVISAR = ['sin-leads', 'costosa', 'saturada'];
 // la fatiga creativa es una regla oficial de Meta y también se mira en TikTok; en Google no se publica
 const CON_FATIGA = ['meta', 'tiktok'];
@@ -50,6 +57,7 @@ export function leerPiezas(data, P) {
   const nombrePlataforma = Object.fromEntries(cfg.plataformas.map((p) => [p.id, p.nombre]));
   const conjuntoDe = Object.fromEntries(datos.conjuntos.map((c) => [c.id, c]));
   const recienteDesde = sumarDias(P.hasta, -(U.diasReciente - 1));
+  const desdeNuevo = nuevoDesde(P);
 
   // las piezas con inversión en el período
   const piezas = datos.piezas.map((p) => {
@@ -63,33 +71,38 @@ export function leerPiezas(data, P) {
     const c = conjuntoDe[p.conjunto];
     return {
       ...p, nivel: 'pieza', plataformaNombre: nombrePlataforma[p.plataforma], conjuntoNombre: c.nombre, campanaNombre: c.campanaNombre, ...ahora,
-      edad: diasEntre(p.inicio, ultimo) + 1, diasConGasto, alAire: !p.fin || p.fin >= P.hasta,
-      // nueva: empezó dentro del período (y el período no es el primero de la muestra)
-      nueva: p.inicio >= P.desde && p.inicio > cfg.desde,
+      // la edad no se conoce si la pieza ya corría cuando empieza la data: no se toma como recién publicada
+      edad: p.inicio > cfg.desde ? diasEntre(p.inicio, ultimo) + 1 : null, diasConGasto, alAire: !p.fin || p.fin >= P.hasta,
+      nueva: p.inicio >= desdeNuevo && p.inicio > cfg.desde,
       fatiga: CON_FATIGA.includes(p.plataforma) ? fatiga : null, saturacion: fatiga == null ? null : { antes: antes.cpl, ahora: reciente.cpl },
     };
   }).filter(Boolean);
   if (!piezas.length) return null;
 
-  // la base de cada plataforma: su costo por lead en el período, con lo que reporta ella misma (campañas que buscan leads)
-  const bases = Object.fromEntries(cfg.plataformas.map((pl) => [pl.id, { id: pl.id, nombre: pl.nombre, ...cifras(piezas.filter((p) => p.plataforma === pl.id)) }]));
-  for (const p of piezas) { p.base = bases[p.plataforma].cpl; p.estado = estadoDe(p, p.base, { edad: p.edad, fatiga: p.fatiga }); }
+  // la base de cada canal: su costo por lead en el período, con lo que reporta la plataforma (campañas que buscan leads)
+  const bases = Object.fromEntries(cfg.canales.map((c) => [c.id, { id: c.id, nombre: NOMBRE_BASE[c.id] ?? c.nombre, ...cifras(piezas.filter((p) => p.canal === c.id)) }]));
+  for (const p of piezas) { p.base = bases[p.canal].cpl; p.baseNombre = bases[p.canal].nombre; p.estado = estadoDe(p, p.base, { edad: p.edad, fatiga: p.fatiga }); }
 
   // conjuntos y campañas: la suma de sus piezas; un conjunto de Meta o TikTok activo con menos de 50 leads en 7 días
   // tiene el aprendizaje limitado (Google no publica ese umbral)
   const agrupar = (clave, nivel, nombre) => [...new Set(piezas.map((p) => p[clave]))].map((id) => {
     const de = piezas.filter((p) => p[clave] === id), p0 = de[0];
-    const c = cifras(de), base = bases[p0.plataforma].cpl;
+    const c = cifras(de), base = bases[p0.canal].cpl;
     const semana = cifras(de.flatMap((p) => filas(p.id, recienteDesde, P.hasta)));
     const alAire = de.some((p) => p.alAire);
     const limitado = nivel === 'conjunto' && alAire && CON_FATIGA.includes(p0.plataforma) && semana.leads < U.resultadosSemana;
     const cuenta = Object.fromEntries(ESTADOS.map((e) => [e, de.filter((p) => p.estado === e).length]));
-    // un grupo se juzga solo si alguna de sus piezas ya se puede juzgar; si no, toma el estado de ellas
+    // un grupo se juzga solo si alguna de sus piezas ya se puede juzgar; si no, toma el estado de ellas. Si más de la
+    // mitad de su inversión está en piezas que piden mirarse, toma el estado de las que más se llevaron: un grupo no
+    // dice «rinde» cuando lo que más gasta no rinde
     const juzgadas = de.filter((p) => !['aprendizaje', 'poca-data'].includes(p.estado));
-    const estado = juzgadas.length ? estadoDe(c, base) : de.some((p) => p.estado === 'aprendizaje') ? 'aprendizaje' : 'poca-data';
+    const porEstado = PARA_REVISAR.map((e) => [e, de.filter((p) => p.estado === e).reduce((t, p) => t + p.inversion, 0)]).sort((a, b) => b[1] - a[1]);
+    const enRevisar = porEstado.reduce((t, [, v]) => t + v, 0);
+    const mayoria = juzgadas.length && enRevisar > c.inversion / 2 ? { estado: porEstado[0][0], inversion: enRevisar } : null;
+    const estado = mayoria ? mayoria.estado : juzgadas.length ? estadoDe(c, base) : de.some((p) => p.estado === 'aprendizaje') ? 'aprendizaje' : 'poca-data';
     return {
-      id, nivel, nombre: nombre(p0), alAire, plataforma: p0.plataforma, plataformaNombre: p0.plataformaNombre, campana: p0.campana, ...c, base,
-      estado, limitado, leadsSemana: semana.leads, piezas: de.length, nuevas: de.filter((p) => p.nueva).length, cuenta, edad: Math.min(...de.map((p) => p.edad)),
+      id, nivel, nombre: nombre(p0), alAire, plataforma: p0.plataforma, plataformaNombre: p0.plataformaNombre, campana: p0.campana, canal: p0.canal, ...c, base, baseNombre: p0.baseNombre,
+      estado, mayoria, mixto: new Set(de.map((p) => p.canal)).size > 1, limitado, leadsSemana: semana.leads, piezas: de.length, nuevas: de.filter((p) => p.nueva).length, cuenta, edad: de.some((p) => p.edad == null) ? null : Math.min(...de.map((p) => p.edad)),
     };
   });
   const conjuntos = agrupar('conjunto', 'conjunto', (p) => p.conjuntoNombre);
@@ -105,7 +118,9 @@ export function leerPiezas(data, P) {
   const porEstado = Object.fromEntries(ESTADOS.map((e) => { const de = piezas.filter((p) => p.estado === e); return [e, { n: de.length, inversion: suma(de.map((p) => p.inversion)) }]; }));
   const revisar = piezas.filter((p) => PARA_REVISAR.includes(p.estado));
   return {
-    bases: cfg.plataformas.map((pl) => bases[pl.id]).filter((b) => b.inversion > 0), total,
+    desde: P.desde, hasta: P.hasta, nuevoDesde: desdeNuevo,
+    plataformas: cfg.plataformas.filter((pl) => piezas.some((p) => p.plataforma === pl.id)).map((pl) => ({ id: pl.id, nombre: pl.nombre })),
+    bases: cfg.canales.map((c) => bases[c.id]).filter((b) => b.inversion > 0), total,
     piezas: piezas.sort(orden), conjuntos: conjuntos.sort(ordenGrupo), campanas: campanas.sort(ordenGrupo),
     porEstado, revisar: { n: revisar.length, inversion: suma(revisar.map((p) => p.inversion)) },
     alAire: piezas.filter((p) => p.alAire).length, nuevas: piezas.filter((p) => p.nueva).length,

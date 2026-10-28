@@ -125,3 +125,72 @@ test('período: cada atajo y cada comparación arman una vista sin valores rotos
     assert.ok(!/NaN|Infinity/.test(JSON.stringify(v)), `${atajo} ${comparar}`);
   }
 });
+
+// ── Lo que encontraron los verificadores, para que no vuelva ──
+import { notaComparacion } from '../src/textos/comun.js';
+import { diasAlineados } from '../src/calculo/periodo.js';
+import { alerta, bien } from '../src/textos/sugiere.js';
+
+test('período: la nota del selector dice las fechas de la comparación con su año, aunque crucen de año', () => {
+  assert.equal(notaComparacion(P({}), DIAS_MINIMOS), 'Se compara con los 7 días anteriores: 12 al 18 de octubre.');
+  assert.equal(notaComparacion(P({ atajo: '6m' }), DIAS_MINIMOS), 'Se compara con los 183 días anteriores: 25 de octubre de 2025 al 25 de abril de 2026.');
+  assert.equal(notaComparacion(P({ comparar: 'anio' }), DIAS_MINIMOS), 'Se compara con los mismos días de 2025: 19 al 25 de octubre de 2025.');
+  assert.equal(notaComparacion(P({ desde: cfg.corte, hasta: cfg.corte }), DIAS_MINIMOS), 'Con menos de 7 días no se muestran variaciones.');
+});
+
+test('período: la serie gris y el total de la comparación son los de la comparación declarada', () => {
+  const d = generar(cfg);
+  for (const f of [{ atajo: 'mes' }, { desde: '2026-03-01', hasta: '2026-03-31' }, { desde: '2026-02-01', hasta: '2026-02-28' }, {}]) {
+    const v = armarVista(d, f), Pv = v.periodo, c = v.lee.crmDetalle;
+    const al = diasAlineados(Pv);
+    assert.ok(al.every((x) => x == null || (x >= Pv.compararDesde && x <= Pv.compararHasta)), `${JSON.stringify(f)}: la serie gris toma días fuera de la comparación`);
+    assert.ok(v.lee.pauta.seriePrevia.every((x) => x.fecha == null || (x.fecha >= Pv.compararDesde && x.fecha <= Pv.compararHasta)));
+    // el total previo es la suma entera de la ventana declarada
+    const enVentana = d.cohortes.filter((x) => x.fecha >= Pv.compararDesde && x.fecha <= Pv.compararHasta).reduce((s, x) => s + x.leads, 0);
+    assert.equal(c.totalPrevio, enVentana, `${JSON.stringify(f)}: total previo`);
+  }
+});
+
+test('período: con menos de 7 días no hay variaciones, ni propuesta de reparto, ni alertas', () => {
+  const d = generar(cfg);
+  for (const dias of [1, 3, 6]) {
+    const v = armarVista(d, { desde: sumar(cfg.corte, -(dias - 1)), hasta: cfg.corte });
+    assert.equal(v.lee.crmDetalle.totalPrevio, null);
+    assert.equal(v.sugiere.indice.cambio, null);
+    assert.ok(!v.sugiere.sugerencias.some((s) => s.id === 'reasignar'), `${dias} días: propone mover inversión`);
+    assert.deepEqual([v.sugiere.queMirar.length, v.sugiere.queVaBien.length], [0, 0]);
+    assert.ok(v.lee.plataformas.plataformas.every((p) => p.cplPrevio == null));
+  }
+});
+
+test('período: «un año antes» solo cuando se compara con un año antes', () => {
+  const d = generar(cfg);
+  for (const f of [{}, { atajo: '30d' }, { atajo: 'mes' }]) {
+    const textos = armarVista(d, f).sugiere.queVaBien.map(bien).map((b) => `${b.titulo} ${b.dato}`).join(' ');
+    assert.doesNotMatch(textos, /año antes|hace un año/, JSON.stringify(f));
+  }
+});
+
+test('período: la alerta de la última semana mide esos 7 días, y la de una campaña que cierra cuenta desde hoy', () => {
+  const d = generar(cfg);
+  const corto = armarVista(d, { desde: '2026-10-24', hasta: cfg.corte });
+  const siete = armarVista(d, {});
+  void corto;
+  const a7 = siete.sugiere.queMirar.find((a) => a.id === 'cpl-objetivo');
+  if (a7) {
+    const pl = cfg.plataformas.find((p) => p.nombre === a7.datos.plataforma);
+    let inv = 0, leads = 0;
+    for (const c of pl.canales) for (const x of d.pauta[c]) if (x.fecha >= a7.datos.desde && x.fecha <= a7.datos.hasta) { inv += x.inversion; leads += x.leads; }
+    assert.equal(a7.datos.leads, leads);
+    assert.ok(Math.abs(a7.datos.cpl - inv / leads) < 1e-9);
+  }
+  const pasado = armarVista(d, { desde: '2026-03-01', hasta: '2026-03-31' });
+  assert.ok(!pasado.sugiere.queMirar.some((a) => a.id === 'cierra-campana'), 'un período pasado avisa que cierra una campaña');
+});
+
+test('período: un mes pasado se lee entero, aunque el período termine a mitad de mes', () => {
+  const p = P({ desde: '2026-03-01', hasta: '2026-03-15' });
+  assert.deepEqual([p.mesFuente, p.mesFuenteParcial], ['2026-03', false]);
+  assert.equal(P({ mes: '2026-11' }).mes, '2026-10', 'un mes después de la data se lleva al último');
+});
+const sumar = (iso, n) => { const t = new Date(`${iso}T00:00:00Z`); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };

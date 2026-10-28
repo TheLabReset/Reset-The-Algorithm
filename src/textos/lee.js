@@ -9,17 +9,8 @@ const P = (v) => v.periodo;
 export function pautaResumen(v) {
   const p = v.lee.pauta;
   const titulo = 'Leads que reportan las plataformas';
-  if (p.cambio == null) return { titulo, lectura: `Un lead cada ${dolares(p.cpl, 2)}. No hay días medidos suficientes para comparar con ${comparacionTexto(P(v))}.` };
+  if (p.cambio == null) return { titulo, lectura: `Un lead cada ${dolares(p.cpl, 2)}.${P(v).conComparacion ? ` No hay días medidos suficientes para comparar con ${comparacionTexto(P(v))}.` : ''}` };
   return { titulo, lectura: `${variacionFrase('Los leads por día', p.cambio, P(v))}. Cada lead costó ${dolares(p.cpl, 2)}.` };
-}
-
-export function inversionDia(v) {
-  const s = v.lee.pauta.serieInversion.filter((p) => p.valor != null);
-  const titulo = 'Inversión por día';
-  if (!s.length) return { titulo, lectura: 'Ningún día del período tiene el dato de las tres plataformas.' };
-  const prom = s.reduce((t, p) => t + p.valor, 0) / s.length;
-  const alto = s.reduce((a, p) => (p.valor > a.valor ? p : a));
-  return { titulo, lectura: `Unos ${dolares(Math.round(prom))} al día. El más alto fue el ${fecha(alto.fecha).replace(/ de \d{4}$/, '')}, con ${dolares(Math.round(alto.valor))}.` };
 }
 
 export function plataformasLectura(v) {
@@ -91,6 +82,7 @@ export function crmAtencion(v) {
 export function crmDescarte(v) {
   const d = v.lee.crmDetalle.descarte;
   const top = d.motivos[0];
+  if (!d.total) return { titulo: 'Por qué se descartan', lectura: 'Ningún lead del período se descartó todavía.' };
   return { titulo: 'Por qué se descartan', lectura: `${capital(numero(d.total))} leads del período se descartaron. El motivo más frecuente: «${top.nombre.toLowerCase()}», ${numero(Math.round((top.valor / d.total) * 100))} de cada 100.` };
 }
 
@@ -148,5 +140,5 @@ export function webPaginas(v) {
 
 export function webHoras(v) {
   const w = v.lee.web;
-  return { titulo: 'Cuándo están activos', lectura: `Hay más usuarios activos ${horasTexto(w.horasAltas)}. ${diasTexto(w.porDiaSemana, w.diaMayor, 'usuarios activos al día', (n) => numero(Math.round(n)))}` };
+  return { titulo: 'Cuándo están activos', lectura: `Hay más usuarios activos ${horasTexto(w.horasAltas)}. ${diasTexto(w.porDiaSemana, w.diaMayor, 'usuarios activos al día', (n) => numero(Math.round(n)), w.semanaCompleta)}` };
 }

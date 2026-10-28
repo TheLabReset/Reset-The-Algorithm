@@ -1,6 +1,6 @@
 // Lecturas que nacen con las cuatro capas: la ficha de cada plataforma, el embudo por fuente, el acumulado,
 // el índice y los resúmenes. Observan, no ordenan; dos frases como máximo; las comparaciones dicen frente a qué.
-import { numero, dolares, fechaCorta, fechaSinAnio } from '../sistema/formato.js';
+import { numero, dolares, fechaCorta, fechaSinAnio, fecha } from '../sistema/formato.js';
 import { comparacionTexto, enLetras, capital, enElPeriodo, delPeriodo } from './comun.js';
 import { CLIENTE } from '../cliente.js';
 
@@ -25,7 +25,7 @@ export function embudoFuente(v) {
 export function acumuladoLectura(v) {
   const c = v.lee.crmDetalle;
   const titulo = `Acumulado ${delPeriodo(v.periodo)}`;
-  if (c.totalPrevio == null) return { titulo, lectura: `${numero(c.total)} leads en el CRM ${enElPeriodo(v.periodo)}. No hay dato completo de ${comparacionTexto(v.periodo)} para comparar.` };
+  if (c.totalPrevio == null) return { titulo, lectura: `${numero(c.total)} leads en el CRM ${enElPeriodo(v.periodo)}.${v.periodo.conComparacion ? ` No hay dato completo de ${comparacionTexto(v.periodo)} para comparar.` : ''}` };
   return { titulo, lectura: `${numero(c.total)} leads en el CRM, frente a ${numero(c.totalPrevio)} en ${comparacionTexto(v.periodo)}.` };
 }
 
@@ -33,9 +33,9 @@ export function acumuladoLectura(v) {
 export function indiceLectura(ix) {
   const titulo = 'Índice de oportunidad';
   if (ix.valor == null) return { titulo, lectura: 'Falta algún componente para calcularlo en esta fecha.' };
-  // la comparación es el día antes del período: «frente al 18 de octubre»
-  const antes = `el ${fechaSinAnio(ix.fechaPrevio)}`;
-  const mov = ix.cambio == null ? '' : Math.round(ix.cambio) === 0 ? ` Igual que ${antes}.` : ` ${Math.round(ix.cambio) > 0 ? 'Sube' : 'Baja'} ${numero(Math.abs(Math.round(ix.cambio)))} ${Math.abs(Math.round(ix.cambio)) === 1 ? 'punto' : 'puntos'} frente al ${fechaSinAnio(ix.fechaPrevio)}.`;
+  // la comparación es el último día de la comparación elegida: «frente al 19 de octubre», «frente al 26 de octubre de 2025»
+  const dia = ix.fechaPrevio.slice(0, 4) === ix.fecha.slice(0, 4) ? fechaSinAnio(ix.fechaPrevio) : fecha(ix.fechaPrevio);
+  const mov = ix.cambio == null ? '' : Math.round(ix.cambio) === 0 ? ` Igual que el ${dia}.` : ` ${Math.round(ix.cambio) > 0 ? 'Sube' : 'Baja'} ${numero(Math.abs(Math.round(ix.cambio)))} ${Math.abs(Math.round(ix.cambio)) === 1 ? 'punto' : 'puntos'} frente al ${dia}.`;
   return { titulo, lectura: `Qué tan favorable está el mercado para captar ${CLIENTE.clientes}, de 0 a 100.${mov}` };
 }
 

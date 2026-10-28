@@ -5,7 +5,7 @@ import { Bloque, Cifra, Tabla, Resumen, Abanico, Detalle } from '../sistema/Comp
 import { Linea, Barras, Franja } from '../sistema/graficos/Graficos.jsx';
 import { numero, porcentaje, compacto, variacion } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, sinDato, deltaCorto, partesConResto } from './comun.jsx';
-import { periodoTexto, comparacionTexto, mesTexto, mesFuenteTexto, resumenTitulo, enElPeriodo } from '../textos/comun.js';
+import { periodoTexto, comparacionTexto, mesTexto, mesFuenteTexto, resumenTitulo, enElPeriodo, pieComparacion } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import { bandaTexto, anunciosLectura, textosDelAbanico } from '../textos/capas.js';
 import { CLIENTE } from '../cliente.js';
@@ -18,7 +18,7 @@ export default function Senales({ capa, vista: v }) {
   return (
     <MarcoCapa capa={capa} vista={v}>
       <Resumen titulo={resumenTitulo(v.periodo)}
-        pie={<span>Cada variación compara {periodoTexto(v.periodo)} con {comparacionTexto(v.periodo)}. Búsquedas, redes y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
+        pie={<span>{pieComparacion(v.periodo)} Búsquedas, redes y sitio cuentan cosas distintas: se leen lado a lado, no se suman.</span>}
         items={[
           { rotulo: 'Índice de oportunidad', universo: 'modelo', ir: 's-2-1', irTexto: 'Lo que lee el modelo', valor: ix.valor == null ? null : `${numero(Math.round(ix.valor))}`, nota: ix.valor == null ? null : `de 100 · ${bandaTexto(ix.banda).toLowerCase()}` },
           { rotulo: `Interés por «${CLIENTE.busqueda}»`, universo: 'busquedas', ir: s11.id, irTexto: 'Búsquedas', valor: ok(b) ? numero(Math.round(b.demanda)) : null, delta: ok(b) ? deltaCorto(b.cambio, 'sube', v) : null },

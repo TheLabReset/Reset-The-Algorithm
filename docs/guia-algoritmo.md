@@ -95,7 +95,7 @@ Antes de cualquier decisión, la pregunta es la misma: **¿esto lo vamos a poder
 
 ## 8. Glosario de medios
 
-Cada palabra tiene que ser cierta para el medio del que se habla. La prueba de render revisa todo el texto que se pinta en cada capa y falla si aparece una de estas. Si se agrega una fila aquí, se agrega su chequeo en `GLOSARIO` de [`pruebas/revisar.mjs`](../pruebas/revisar.mjs), y al revés.
+Cada palabra tiene que ser cierta para el medio del que se habla. La prueba de render revisa el texto de las cuatro capas, con sus detalles abiertos, en cada atajo y comparación, y falla si aparece una de estas. Las filas de «paneles» y «al aire» valen para un cliente sin OOH, TV ni radio, como Fit Lab: para uno con esos medios se acotan a su contexto en `GLOSARIO`, no se borran. Si se agrega una fila aquí, se agrega su chequeo en `GLOSARIO` de [`pruebas/revisar.mjs`](../pruebas/revisar.mjs), y al revés.
 
 | No se dice | Se dice | Por qué |
 |---|---|---|

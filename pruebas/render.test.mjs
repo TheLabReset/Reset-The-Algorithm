@@ -42,7 +42,7 @@ test('render: cada atajo, cada comparación, tramos libres y fuentes caídas, si
     { desde: cfg.corte, hasta: cfg.corte }, { desde: cfg.desde, hasta: cfg.desde }, { desde: '2026-02-20', hasta: '2026-03-10' }, { desde: '2025-12-20', hasta: '2026-01-10' }];
   for (const filtros of periodos) for (const comparar of ['anterior', 'anio']) {
     const v = armarVista(d, { ...filtros, comparar });
-    for (const id of IDS) for (const m of textoRoto(textoDe(pintar(id, v)))) malos.add(`${id} ${JSON.stringify(filtros)} ${comparar}: ${m}`);
+    for (const id of IDS) for (const m of textoRoto(textoDe(pintar(id, v)), v.periodo)) malos.add(`${id} ${JSON.stringify(filtros)} ${comparar}: ${m}`);
   }
   for (const caida of ['crm', 'web']) {
     const v = armarVista(d, {}, { fuentesCaidas: [caida] });
@@ -60,7 +60,8 @@ test('vista general: tres tarjetas como máximo por capítulo; lo minucioso va a
       // con los detalles cerrados, lo que se pinta es la vista general
       for (const sec of pintar(id, v, { detalles: false }).split('<section class="q-capitulo"').slice(1)) {
         const num = sec.match(/data-seccion="([\d.]+)"/)[1];
-        const tarjetas = (sec.match(/<article /g) || []).length;
+        // una tarjeta es un <article> o un bloque armado con otro elemento (Qué mirar es un div.q-bloque)
+        const tarjetas = (sec.match(/<article |<div class="q-bloque[ "]/g) || []).length;
         assert.ok(tarjetas <= 3, `${num}: ${tarjetas} tarjetas en la vista general`);
       }
     }

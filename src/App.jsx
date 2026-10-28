@@ -4,10 +4,10 @@ import { Moon, Sun, Presentation } from 'lucide-react';
 import { CONFIG } from './muestra/configuracion.js';
 import { generar } from './muestra/generador.js';
 import { armarVista } from './calculo/vista.js';
-import { ATAJOS, ATAJO_INICIAL, COMPARAR, COMPARAR_INICIAL } from './calculo/periodo.js';
+import { ATAJOS, ATAJO_INICIAL, COMPARAR, COMPARAR_INICIAL, DIAS_MINIMOS } from './calculo/periodo.js';
 import { CAPAS } from './capas/estructura.js';
 import { fechaSinAnio, fecha } from './sistema/formato.js';
-import { ventanaTexto, comparacionTexto } from './textos/comun.js';
+import { ventanaTexto, notaComparacion } from './textos/comun.js';
 import { NavegacionCapas, SelectorPeriodo, Grupo, SelloMuestra, BarraDemo, CargandoContexto } from './sistema/Componentes.jsx';
 import logoCliente from '../public/marca/logo-barra.svg?raw'; // logo del cliente en negativo, sobre la barra oscura
 import Senales from './pantallas/Senales.jsx';
@@ -107,7 +107,7 @@ export default function App() {
           <NavegacionCapas capas={CAPAS} activa={capa} onCambiar={irACapa} />
           <div className="q-filtros-controles">
             <SelectorPeriodo texto={ventanaTexto(P.desde, P.hasta)} atajo={P.atajo} atajos={ATAJOS} desde={P.desde} hasta={P.hasta} min={CONFIG.desde} max={CONFIG.corte}
-              comparacion={P.compFuera ? 'Sin días antes con qué comparar.' : `Se compara con ${comparacionTexto(P)}: ${ventanaTexto(P.compararDesde, P.compararHasta)}${P.comparar === 'anio' || P.compararDesde.slice(0, 4) !== P.desde.slice(0, 4) ? ` de ${P.compararDesde.slice(0, 4)}` : ''}.`}
+              comparacion={notaComparacion(P, DIAS_MINIMOS)}
               aviso={`Elige fechas entre el ${fecha(CONFIG.desde)} y el ${fecha(CONFIG.corte)}, con «desde» antes de «hasta».`}
               onAtajo={(atajo) => setFiltros({ atajo })} onRango={(desde, hasta) => setFiltros({ desde, hasta })} />
             <div className="q-control"><span>Comparar con</span>

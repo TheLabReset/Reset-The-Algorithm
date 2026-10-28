@@ -224,7 +224,8 @@ export function detallar(data) {
   // con el formato ya repartido. Azar propio: no mueve ninguna otra serie. Sin imagen ni enlace: es muestra.
   const azA = crearAzar(semillaDe(cfg.semilla, 'anuncios'));
   const elegir = (items) => { let r = azA.u() * items.reduce((t, x) => t + x.peso, 0); for (const x of items) { r -= x.peso; if (r < 0) return x; } return items.at(-1); };
-  const finDe = Object.fromEntries(meses.map((m) => [m, dias.filter((d) => mesDe(d) === m).at(-1)]));
+  // el ancla es el fin del mes calendario (no el corte): así la fecha de un anuncio no se corre al pasar un día
+  const finDe = Object.fromEntries(meses.map((m) => [m, new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10)]));
   const temas = cfg.temasAnuncio.map((t) => ({ t, peso: 1 }));
   const anuncios = meses.map((m) => ({
     mes: m,
@@ -240,7 +241,14 @@ export function detallar(data) {
           });
         }
       });
-      return { id: r.id, nombre: r.nombre, propia: r.propia, anuncios: lista };
+      // en el mes en curso solo están los que ya empezaron al corte; el conteo de «anuncios activos» de la marca sigue
+      // a la lista, sin azar nuevo (el resto no se mueve)
+      const visibles = lista.filter((a) => a.desde <= cfg.corte);
+      if (visibles.length < lista.length) {
+        mm.anuncios = visibles.length;
+        mm.formatos = cfg.formatosAnuncio.map((f) => visibles.filter((a) => a.formato === f.nombre).length);
+      }
+      return { id: r.id, nombre: r.nombre, propia: r.propia, anuncios: visibles };
     }),
   }));
 

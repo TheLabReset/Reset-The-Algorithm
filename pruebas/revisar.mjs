@@ -22,13 +22,18 @@ export const GLOSARIO = [
   { no: /—/, se: 'punto, coma, dos puntos o paréntesis', por: 'raya larga' },
 ];
 
-// Lo que se ve en pantalla: sin cálculos rotos, sin relleno y sin palabras vetadas. Devuelve cada problema con su contexto
-export function textoRoto(t) {
+// Lo que se ve en pantalla: sin cálculos rotos (también los que un formateador escondió como «sin dato»), sin relleno,
+// sin palabras vetadas y sin «a el» ni «de el». Con un período que no es un mes entero, nada que hable de «este mes» o
+// del «cierre de mes». Devuelve cada problema con su contexto
+export function textoRoto(t, P = null) {
   const out = [];
   const contexto = (i, largo) => t.slice(Math.max(0, i - 40), i + largo + 40).replace(/\s+/g, ' ').trim();
   const reglas = [
     [/undefined|NaN|\bnull\b|Infinity|\[object|Invalid Date/g, 'cálculo roto'],
     [/\d %/g, 'espacio que corta la cifra de su «%»'],
+    [/sin dato de cada|de sin dato|sin dato %|sin dato leads/gi, 'cálculo roto que un formateador escribió como «sin dato»'],
+    [/\b(?:a|de) el (?![A-ZÁÉÍÓÚ])/g, 'gramática: «a el» o «de el» (va «al» o «del»)'],
+    ...(P && !(P.mes && !P.parcial) ? [[/\beste mes\b|\bcierre de(?:l)? mes\b/gi, 'habla del mes cuando el período no es un mes']] : []),
     ...RELLENO.map(([r, por]) => [new RegExp(r.source, 'gi'), por]),
     ...GLOSARIO.map((g) => [new RegExp(g.no.source, 'gi'), `glosario: se dice ${g.se} (${g.por})`]),
   ];

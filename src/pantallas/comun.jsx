@@ -119,7 +119,6 @@ export function Competencia({ marcas, numero, anuncios, t, verSus, nota }) {
           formatoX={compacto} notas={{ neutro: 'neutro', arriba: 'positivo', abajo: 'negativo' }}
           puntos={marcas.map((x) => ({ id: x.id, nombre: x.nombre, propia: x.propia, x: x.interacciones, y: x.sentimiento.indice }))}
           elegido={m.id} onElegir={setElegida} />
-        <p className="q-nota-bloque">Elige un punto para ver el detalle de cada marca.</p>
       </div>
       <aside className="q-ficha" aria-live="polite" aria-label={`Detalle de ${m.nombre}`}>
         <h4>{m.nombre}</h4>

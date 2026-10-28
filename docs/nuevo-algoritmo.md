@@ -31,7 +31,7 @@ git checkout -b claude/algoritmo-<cliente>
 
 # 3. Confirmar que todo pasa antes de cambiar nada
 npm ci
-npm run prueba      # reglas de cálculo, anclas y que la marca viva en un solo archivo
+npm run prueba      # cálculo, período, piezas, fecha móvil, render de cada capa y que la marca viva en un solo archivo
 npm run sistema     # tokens, contraste y espacios
 npm run dev         # http://localhost:3000
 ```
@@ -125,7 +125,7 @@ Los archivos van en este orden. Después de cada uno se corre `npm run prueba`.
 
 Las reglas no cambian con el cliente:
 
-- Español peruano, con el [glosario de medios](guia-algoritmo.md#8-glosario-de-medios): sin «plata», «gente», «paneles» en OOH ni «al aire» fuera de TV y radio, entre otras. La prueba de render lo revisa en todo lo que se pinta.
+- Español peruano, con el [glosario de medios](guia-algoritmo.md#8-glosario-de-medios): sin «plata», «gente», «paneles» en OOH ni «al aire» fuera de TV y radio, entre otras. La prueba de render lo revisa en el texto de las cuatro capas, con sus detalles abiertos (la barra superior y las ventanas de anuncios se revisan a ojo).
 - **Observan, no ordenan.** Nunca «se recomienda» ni un verbo en infinitivo como orden («Aumentar», «Reducir»). Lo que se puede hacer se dice como algo que se puede mirar o conversar con el cliente («Si esas búsquedas corresponden a lo que ofrece la marca. Si no, se pueden pausar.»).
 - Dos frases como máximo por lectura. Cada comparación dice frente a qué.
 - Las cifras chicas al inicio de una frase van en letras.

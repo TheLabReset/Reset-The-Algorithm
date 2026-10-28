@@ -11,8 +11,9 @@ const curva = (L, I, Inuevo, beta) => (I > 0 ? L * (Inuevo / I) ** beta : 0);
 // La propuesta va «al mes»: si el período no es un mes entero, la inversión y los leads del período se llevan a un ritmo
 // de 30 días (las tasas y los costos no cambian). Un mes entero se usa tal cual
 export function reasignacion(cfg, canales, P = null) {
-  const k = !P || (P.mes && !P.parcial) ? 1 : 30 / P.dias;
-  if (k !== 1) canales = canales.map((c) => ({ ...c, inversion: c.inversion * k, leads: c.leads * k }));
+  // cada plataforma con sus días medidos: un día sin dato no le resta
+  const k = !P || (P.mes && !P.parcial) ? 1 : 30;
+  if (k !== 1) canales = canales.map((c) => ({ ...c, inversion: (c.inversion / (c.medidos || P.dias)) * 30, leads: (c.leads / (c.medidos || P.dias)) * 30 }));
   const sobre = canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl).sort((a, b) => b.cpl / b.metaCpl - a.cpl / a.metaCpl)[0];
   if (!sobre) return null;
   // de dónde sacar: solo si la plataforma (CPL) y el CRM (costo por inscripción) coinciden en que es el más caro
