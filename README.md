@@ -4,18 +4,19 @@ Panel de inteligencia de marketing de The Lab. Junta la pauta, el CRM, las búsq
 
 ## Las cuatro capas
 
-Van en el orden en que trabaja la agencia: escuchar el mercado, leer lo que dice el modelo, activar la pauta y medir el resultado.
+Van en el orden en que trabaja la agencia: escuchar el mercado, leer lo que dice el modelo, activar la pauta y medir el resultado. Todo se mueve con el período (atajos o dos fechas, contra el período anterior o un año antes), con la data por día. Cada capítulo lleva tres tarjetas como máximo; lo minucioso va en su detalle.
 
 1. **Captura de señales:** qué se busca (Google Trends), qué se publica en el rubro (TikTok) y quién entra al sitio (GA4).
 2. **Inteligencia de mercado:** índice de oportunidad con su historia, qué mirar (alertas y lo que va bien), temporada y escenario si nada cambia.
-3. **Activación estratégica:** reparto de la inversión por plataforma y producto, sugerencia del modelo, cada plataforma (Google Ads, Meta Ads, TikTok Ads) con sus campañas y las horas del sitio.
-4. **Rendimiento y optimización:** leads y acumulado del mes, de la pauta al CRM, el CRM por dentro, cuándo y dónde entran los leads, y la competencia.
+3. **Activación estratégica:** reparto de la inversión por plataforma y producto, sugerencia del modelo, cada plataforma (Google Ads, Meta Ads, TikTok Ads) con sus campañas, las piezas y campañas con su estado, y las horas del sitio.
+4. **Rendimiento y optimización:** leads y acumulado del período, de la pauta al CRM, el CRM por dentro, cuándo y dónde entran los leads, y la competencia.
 
 ## Documentación
 
 | Documento | Para qué |
 |---|---|
-| [`docs/guia-algoritmo.md`](docs/guia-algoritmo.md) | Cómo se diseña un algoritmo: capas, navegación, tarjeta, gráficos, datos honestos y lo que dice el modelo |
+| [`docs/guia-algoritmo.md`](docs/guia-algoritmo.md) | Cómo se diseña un algoritmo: capas, navegación, período, tarjeta, gráficos, datos honestos, glosario de medios y lo que dice el modelo |
+| [`docs/fecha-movil.md`](docs/fecha-movil.md) | La maqueta al día: corta ayer en Lima; cómo funciona y cómo se apaga |
 | [`docs/quincha.md`](docs/quincha.md) | El sistema de diseño: tokens, tipografía, componentes, gráficos y el chequeo |
 | [`docs/abanico.md`](docs/abanico.md) | Cómo se muestran las artes: el abanico de anuncios y su ventana |
 | [`docs/nuevo-algoritmo.md`](docs/nuevo-algoritmo.md) | **Duplicar el repo para otra marca**, paso a paso, y cómo conectar data real |
@@ -51,7 +52,7 @@ src/
 ├── capas/            Las cuatro capas y sus capítulos
 ├── pantallas/        Una pantalla por capa; solo pintan
 └── sistema/          Quincha: tokens, componentes, gráficos SVG propios y formato de cifras
-pruebas/              Pruebas de cálculo y del chequeo de Quincha (node --test)
+pruebas/              Pruebas de cálculo, período, piezas, fecha móvil, render de cada capa (texto, glosario, tres tarjetas por capítulo) y del chequeo de Quincha (node --test)
 herramientas/         El chequeo del sistema y el armado del artefacto
 public/marca/         favicon.svg y logo-barra.svg del cliente
 ```

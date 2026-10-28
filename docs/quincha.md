@@ -28,7 +28,7 @@ Los semánticos se agrupan por función:
 - **Superficies:** `--fondo` (la página), `--superficie-capitulo` (el panel que agrupa), `--superficie` (la tarjeta) y `--barra` (la barra superior).
 - **Texto:** `--texto-1` (cifras y títulos), `--texto-2` (lectura) y `--texto-3` (notas y ejes).
 - **Acento:** `--acento` y `--acento-texto`, el rojo de la marca. Es identidad (la capa activa, el número de capítulo), nunca dato.
-- **Estado:** `--mejora`, `--empeora` y `--atencion`. Siempre van con flecha, signo o ícono, para que el color nunca vaya solo.
+- **Estado:** `--mejora`, `--empeora` y `--atencion`, y sus fondos `--mejora-suave` y `--empeora-suave` (las pastillas «Rinde» y «Costosa»). Siempre van con flecha, signo o ícono, para que el color nunca vaya solo.
 - **Datos:**
   - `--serie-1`: barras y líneas, en el color de datos de la marca;
   - `--serie-resto`: el resto, cuando hay un resalte;
@@ -81,7 +81,11 @@ Están en `src/sistema/Componentes.jsx`. No calculan: reciben cifras ya armadas 
 | `Flujo` | Una fila por plataforma, un paso por columna (de la inversión a la inscripción) |
 | `ListaAlertas` | Qué mirar: lista numerada por nivel, cada fila se abre con el detalle |
 | `SugerenciaModelo` | La propuesta del modelo, con robot y una columna por plataforma |
-| `PanelLateral`, `Monitoreo` | Qué se monitorea |
+| `SelectorPeriodo` | El período: el tramo y el atajo en el botón; adentro, los atajos, dos fechas (una fecha fuera de la data se marca y se dice por qué) y con qué se compara |
+| `PanelLateral`, `Monitoreo` | El panel de la derecha (cada uno con su propio título accesible; la página de atrás no se desplaza) y Qué se monitorea |
+| `Detalle`, `DetallesAbiertos` | El detalle de un capítulo: el botón al pie, «Ver el detalle: …», y el panel ancho con lo minucioso. Un ancla `#detalle-s-x-y` lo abre. La prueba de render los abre todos con `DetallesAbiertos` |
+| `Insignia` | Un estado en su pastilla, con icono y palabra: `grave`, `alerta`, `tinta`, `bien` o `neutro` |
+| `SelloNuevo` | «Nuevo», en tinta llena: lo que empezó en el período. Con `q-sello-nuevo-carta`, sobre un mazo |
 | `Abanico`, `VentanaAnuncios`, `ArteMuestra` | Las artes agrupadas por dueño: un mazo que se abre en abanico y una ventana con todas las piezas. Detalle en [abanico.md](abanico.md) |
 | `Dialogo` | La ventana modal genérica (`<dialog>` nativo): foco atrapado, solo se desplaza su cuerpo, el foco vuelve a quien la abrió |
 | `BarraDemo` | Los estados de la demo |

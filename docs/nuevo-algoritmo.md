@@ -114,8 +114,9 @@ Los archivos van en este orden. Después de cada uno se corre `npm run prueba`.
 - `busquedas`: la primera es la búsqueda principal y su `id` es el mismo de `CLIENTE.busqueda`. La de marca lleva `propia: true`.
 - `conversacion` y `redesMarcas`: la competencia. Solo lo publicado, sin sentimiento inventado ni participación de mercado.
 - `hashtags`, `palabrasClave`, `terminosBusqueda`, `campanas`, `productos`.
+- `piezas`: los conjuntos de cada campaña que busca leads, los formatos por canal, los temas y el orden de comportamientos por tanda. Se ajusta hasta que la vista que abre el panel tenga de todo (rinde, costosa, aprendizaje, y sin leads o saturada): lo revisa `pruebas/piezas.test.mjs`. Con data real, las piezas llegan del administrador de anuncios de cada plataforma, por día.
 - `eventos`: los días en que una fuente no cargó, para que la demo muestre un hueco y no un cero.
-- `cambiosCosto` y la `calidad` de cada canal: el escenario forzado que hace que el modelo proponga mover inversión en el último mes. Se ajusta hasta que la prueba «el último mes de la muestra trae una propuesta de reparto» pase, sin tocar el modelo.
+- `cambiosCosto` y la `calidad` de cada canal: el escenario forzado que hace que el modelo proponga mover inversión al abrir (últimos 7 días) y en el último mes cerrado. Se ajusta hasta que pasen «el último mes de la muestra trae una propuesta de reparto» y el barrido de la fecha móvil, sin tocar el modelo.
 - `fechaMovil`: la maqueta corta ayer y su historia se mueve con el corte. Cada fecha que se agregue a la configuración es de rango, de calendario o de historia, y se suma a `muestraAl()` según su clase. Se ajusta el escenario hasta que pase el barrido de `pruebas/fecha-movil.test.mjs`. Todo está en [fecha-movil.md](fecha-movil.md).
 
 **No se tocan** `src/sistema/` (los componentes de Quincha) ni `src/calculo/` (las reglas). Si un cliente de verdad necesita otra regla, se cambia con su prueba y se anota en la guía.
@@ -124,7 +125,7 @@ Los archivos van en este orden. Después de cada uno se corre `npm run prueba`.
 
 Las reglas no cambian con el cliente:
 
-- Español peruano. Sin rayas largas y sin «gente».
+- Español peruano, con el [glosario de medios](guia-algoritmo.md#8-glosario-de-medios): sin «plata», «gente», «paneles» en OOH ni «al aire» fuera de TV y radio, entre otras. La prueba de render lo revisa en todo lo que se pinta.
 - **Observan, no ordenan.** Nunca «se recomienda» ni un verbo en infinitivo como orden («Aumentar», «Reducir»). Lo que se puede hacer se dice como algo que se puede mirar o conversar con el cliente («Si esas búsquedas corresponden a lo que ofrece la marca. Si no, se pueden pausar.»).
 - Dos frases como máximo por lectura. Cada comparación dice frente a qué.
 - Las cifras chicas al inicio de una frase van en letras.
@@ -151,6 +152,9 @@ Las reglas no cambian con el cliente:
 - [ ] La búsqueda de fugas no encuentra cifras ni nombres de clientes reales en lo agregado.
 - [ ] Ninguna mención al cliente anterior: `git grep -i` con su nombre, su rubro y sus productos.
 - [ ] Captura de cada capa a 1440 y a 390 de ancho, en claro y en oscuro, revisada a ojo. Sin scroll horizontal.
+- [ ] El período: cada atajo, un día suelto y un tramo que cruza meses, con «período anterior» y con «un año antes». Ninguna variación con menos de 7 días.
+- [ ] Cada capítulo con tres tarjetas como máximo en la vista general; lo minucioso en su detalle (lo revisa la prueba de render).
+- [ ] Lo nuevo del período (piezas, anuncios) con su sello y primero.
 - [ ] La barra de la demo: con datos, cargando, el CRM no cargó y GA4 no cargó. Cada tarjeta dice lo que falta en vez de dibujar ceros.
 - [ ] El índice «En esta capa» marca Resumen arriba de todo, sigue la lectura al bajar y un clic no cambia de capa.
 - [ ] El modelo muestra una propuesta en Activación estratégica (el escenario forzado funciona).
@@ -175,7 +179,9 @@ Hoy toda cifra sale del generador. Para conectar data real se reemplaza la fuent
 | `busquedas[]` | `{id, termino, propia, semanas: [{semana, indice}]}` | Google Trends |
 | `conversacion[]` | `{id, nombre, propia, semanas: [{semana, menciones}]}` | Escucha social |
 
-El detalle (campañas, palabras clave, términos, CRM por lead, hashtags, redes, regiones y GA4 por hora) lo arma `detallar()` en `src/muestra/detalle.js`. **Esta es la primera costura que hay que abrir:** hoy `src/calculo/produccion.js` llama a `detallar()` directo. Un lector de data real tiene que devolver el detalle con la misma forma y entrar por ese mismo punto.
+Los `filtros` son el período: `{ atajo }` (`7d`, `30d`, `mes`, `mes-pasado`, `6m`), `{ desde, hasta }` o `{ mes }`, más `comparar` (`anterior` o `anio`). Las reglas viven en `src/calculo/periodo.js`; la data real tiene que llegar **por día** siempre que la fuente lo permita, para que cualquier tramo se pueda filtrar.
+
+El detalle (campañas, palabras clave, términos, CRM por lead, hashtags, redes, regiones, GA4 por hora y las piezas: `{conjuntos, piezas, dias: [{fecha, [idPieza]: {inversion, impresiones, clics, leads}}]}`) lo arma `detallar()` en `src/muestra/detalle.js`. **Esta es la primera costura que hay que abrir:** hoy `src/calculo/produccion.js` llama a `detallar()` directo. Un lector de data real tiene que devolver el detalle con la misma forma y entrar por ese mismo punto.
 
 **Antes de pasar a producción** se lee [produccion-actions.md](produccion-actions.md): cómo cobra GitHub los workflows, lo que ya nos pasó y la lista de lo que tiene que estar listo, incluido que el repo sea privado.
 
