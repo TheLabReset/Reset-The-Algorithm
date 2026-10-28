@@ -1,11 +1,12 @@
 // Capa 3 · Activación estratégica: dónde está la inversión y a qué costo. El reparto con la sugerencia del modelo,
 // una tarjeta por plataforma y las horas del sitio. No calcula: pinta la vista y las lecturas de src/textos.
 import { ArrowUpRight } from 'lucide-react';
-import { Bloque, Tabla, Resumen, SugerenciaModelo } from '../sistema/Componentes.jsx';
+import { Bloque, Tabla, Resumen, SugerenciaModelo, Detalle } from '../sistema/Componentes.jsx';
+import { PiezasCapitulo } from './Piezas.jsx';
 import { Linea, Franja } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, fecha } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, HorasYDias, sinDato, deltaCorto } from './comun.jsx';
-import { periodoTexto, comparacionTexto, mesTexto } from '../textos/comun.js';
+import { periodoTexto, comparacionTexto, mesTexto, resumenTitulo, pieComparacion, dePeriodo } from '../textos/comun.js';
 import * as L from '../textos/lee.js';
 import * as A from '../textos/analiza.js';
 import { sugerencia, sinReasignar } from '../textos/sugiere.js';
@@ -18,7 +19,7 @@ const PRODUCTO = { marca: 'Marca', membresias: 'Membresías' };
 const cplCampana = (c, objetivo) => (!c.leads ? { texto: 'sin leads' } : { texto: dolares(c.cpl, 2), tono: c.cpl > objetivo ? 'empeora' : 'mejora' });
 
 export default function Activacion({ capa, vista: v }) {
-  const [s31, s32, s33] = capa.secciones;
+  const [s31, s32, s33, s34] = capa.secciones;
   const pa = v.lee.pauta, pl = v.lee.plataformas, w = v.lee.web, r = v.analiza.rendimiento;
   const ok = (x) => x.estado === 'ok';
   const sugerencias = v.sugiere.sugerencias.map(sugerencia).filter(Boolean);
@@ -29,9 +30,9 @@ export default function Activacion({ capa, vista: v }) {
   }));
   return (
     <MarcoCapa capa={capa} vista={v}>
-      <Resumen titulo={`Resumen de ${periodoTexto(v.periodo)}`}
+      <Resumen titulo={resumenTitulo(v.periodo)}
         frases={ok(pl) ? pl.plataformas.map((p, i) => ({ serie: i, segmentos: objetivoFrase(p) })) : []}
-        pie={<span>Lo que reporta cada plataforma. Cada variación compara {periodoTexto(v.periodo)} con {comparacionTexto(v.periodo)}.</span>}
+        pie={<span>Lo que reporta cada plataforma. {pieComparacion(v.periodo)}</span>}
         items={[
           { rotulo: 'Inversión total', universo: 'pauta', ir: s31.id, irTexto: s31.titulo, valor: ok(pa) ? dolares(pa.inversion) : null, nota: ok(pl) ? `en ${numero(pl.plataformas.length)} plataformas` : null },
           ...(ok(pl) ? pl.plataformas.map((p, i) => ({
@@ -65,7 +66,7 @@ export default function Activacion({ capa, vista: v }) {
           </Bloque>
           {sugerencias.length === 0 && <SugerenciaModelo {...sinReasignar(r, periodoTexto(v.periodo))} columnas={columnas}
             ayuda={<p>Solo propone mover inversión cuando una plataforma pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción.</p>}
-            pie={<span>Inversión de {periodoTexto(v.periodo)}{r.cohorteCerrada ? ` · inscripciones de la cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}` : ''}</span>} />}
+            pie={<span>Inversión {dePeriodo(v.periodo)}{r.cohorteCerrada ? ` · inscripciones de la cohorte de ${mesTexto(r.cohorteDesde.slice(0, 7))}` : ''}</span>} />}
           {sugerencias.map((s) => (
             <SugerenciaModelo key={s.titulo} titulo={s.titulo} detalle={`${s.dato} ${s.estimacion}`} columnas={columnas}
               ayuda={<><p>{s.sostiene}</p><ul>{s.supuestos.map((x) => <li key={x}>{x}</li>)}</ul></>}
@@ -76,16 +77,35 @@ export default function Activacion({ capa, vista: v }) {
 
       {/* ───── 3.2 Cada plataforma ───── */}
       <SeccionDe def={s32} vista={v}>
-        {!ok(pl) ? <Bloque titulo="Cada plataforma" universo="pauta" estado={sinDato(pl.estado)} /> : pl.plataformas.map((p) => (
-          <PlataformaBloques key={p.id} p={p} pl={pl} v={v} />
-        ))}
+        {!ok(pl) ? <Bloque titulo="Cada plataforma" universo="pauta" estado={sinDato(pl.estado)} /> : <>
+          {pl.plataformas.map((p) => <PlataformaBloque key={p.id} p={p} />)}
+          <Detalle id={`detalle-${s32.id}`} titulo="Google Ads por dentro" bajada="Las palabras clave que pagan los clics y lo que el público escribió antes de ver el anuncio."
+            vistas={['palabras clave', 'términos de búsqueda']}>
+            <Bloque universo="pauta" {...L.palabrasLectura(v)}>
+              <Tabla etiqueta="Palabras clave con más gasto" numericas={[1, 2, 3, 4]} barra={{ columna: 1, valores: pl.palabras.nombradas.map((k) => k.inversion) }}
+                columnas={['Palabra clave', 'Gasto', 'Clics', 'Leads', 'Costo por clic']}
+                filas={pl.palabras.nombradas.map((k) => [k.texto, dolares(k.inversion), numero(k.clics), { texto: numero(k.leads), tono: pl.palabras.sinConversion.includes(k) ? 'empeora' : null }, dolares(k.cpc, 2)])} />
+            </Bloque>
+            <Bloque universo="pauta" {...L.terminosLectura(v)}
+              pie={<span>Otros términos: {numero(pl.terminosResto?.clics ?? 0)} clics repartidos en búsquedas que se hicieron pocas veces.</span>}>
+              <Tabla etiqueta="Términos de búsqueda con más clics" numericas={[1, 2]} barra={{ columna: 1, valores: pl.terminos.map((t) => t.clics) }}
+                columnas={['Término que se buscó', 'Clics', 'Leads']}
+                filas={pl.terminos.map((t) => [t.texto, numero(t.clics), numero(t.leads)])} />
+            </Bloque>
+          </Detalle>
+        </>}
       </SeccionDe>
 
-      {/* ───── 3.3 Cuándo se visita el sitio ───── */}
+      {/* ───── 3.3 Piezas y campañas ───── */}
       <SeccionDe def={s33} vista={v}>
+        <PiezasCapitulo def={s33} x={ok(v.lee.piezas) ? v.lee.piezas : null} estado={v.lee.piezas.estado} />
+      </SeccionDe>
+
+      {/* ───── 3.4 Cuándo se visita el sitio ───── */}
+      <SeccionDe def={s34} vista={v}>
         {!ok(w) ? <Bloque titulo="Cuándo se visita el sitio" universo="web" estado={sinDato(w.estado)} /> : (
           <Bloque universo="web" {...L.webHoras(v)}
-            pie={<span>GA4 entrega la hora y el día por separado. Por hora: usuarios activos en esa hora, promedio de los días del mes. Por día: usuarios activos al día, promedio de ese día de la semana.</span>}>
+            pie={<span>GA4 entrega la hora y el día por separado. Por hora: usuarios activos en esa hora, promedio de los días del período. Por día: usuarios activos al día, promedio de ese día de la semana.</span>}>
             <HorasYDias porHora={w.porHora} horasAltas={w.horasAltas} porDiaSemana={w.porDiaSemana} diaMayor={w.diaMayor} que="Usuarios activos" formato={(n) => (n == null ? 'sin dato' : numero(Math.round(n)))} />
           </Bloque>
         )}
@@ -94,32 +114,17 @@ export default function Activacion({ capa, vista: v }) {
   );
 }
 
-// Una plataforma: inversión por día y sus campañas; en Google Ads, además, palabras clave y términos de búsqueda
-function PlataformaBloques({ p, pl, v }) {
+// Una plataforma: inversión por día y sus campañas. Las palabras clave y los términos de Google van al detalle
+function PlataformaBloque({ p }) {
   const sinDia = p.porDia.filter((d) => d.inversion == null).map((d) => d.fecha);
   return (
-    <>
-      <Bloque id={'p-' + p.id} universo="pauta" {...plataformaLectura(p)}
-        pie={sinDia.length > 0 && <span>{numero(sinDia.length)} {sinDia.length === 1 ? 'día' : 'días'} sin dato: {sinDia.map(fecha).join(', ')}</span>}>
-        <h4 className="q-subtitulo">Inversión por día</h4>
-        <Linea serie={p.porDia.map((d) => ({ fecha: d.fecha, valor: d.inversion }))} alto={190} formato={(n) => (n == null ? 'sin dato' : dolares(n))} etiqueta={`Inversión de ${p.nombre} por día, en dólares`} />
-        <Tabla etiqueta={`Campañas de ${p.nombre} con gasto`} numericas={[1, 2, 3, 4]} barra={{ columna: 1, valores: p.campanas.map((c) => c.inversion) }}
-          columnas={['Campaña', 'Inversión', 'Clics', 'Leads', 'Costo por lead']}
-          filas={p.campanas.map((c) => [{ texto: c.nombre, sub: [TIPO[c.canal], PRODUCTO[c.producto]].filter(Boolean).join(' · ') }, dolares(c.inversion), numero(c.clics), numero(c.leads), cplCampana(c, p.objetivo)])} />
-      </Bloque>
-      {p.id === 'google' && <>
-        <Bloque universo="pauta" ancho="mitad" {...L.palabrasLectura(v)}>
-          <Tabla etiqueta="Palabras clave con más gasto" numericas={[1, 2, 3, 4]} barra={{ columna: 1, valores: pl.palabras.nombradas.map((k) => k.inversion) }}
-            columnas={['Palabra clave', 'Gasto', 'Clics', 'Leads', 'Costo por clic']}
-            filas={pl.palabras.nombradas.map((k) => [k.texto, dolares(k.inversion), numero(k.clics), { texto: numero(k.leads), tono: pl.palabras.sinConversion.includes(k) ? 'empeora' : null }, dolares(k.cpc, 2)])} />
-        </Bloque>
-        <Bloque universo="pauta" ancho="mitad" {...L.terminosLectura(v)}
-          pie={<span>Otros términos: {numero(pl.terminosResto?.clics ?? 0)} clics repartidos en búsquedas que se hicieron pocas veces.</span>}>
-          <Tabla etiqueta="Términos de búsqueda con más clics" numericas={[1, 2]} barra={{ columna: 1, valores: pl.terminos.map((t) => t.clics) }}
-            columnas={['Término que se buscó', 'Clics', 'Leads']}
-            filas={pl.terminos.map((t) => [t.texto, numero(t.clics), numero(t.leads)])} />
-        </Bloque>
-      </>}
-    </>
+    <Bloque id={'p-' + p.id} universo="pauta" {...plataformaLectura(p)}
+      pie={sinDia.length > 0 && <span>{numero(sinDia.length)} {sinDia.length === 1 ? 'día' : 'días'} sin dato: {sinDia.map(fecha).join(', ')}</span>}>
+      <h4 className="q-subtitulo">Inversión por día</h4>
+      <Linea serie={p.porDia.map((d) => ({ fecha: d.fecha, valor: d.inversion }))} alto={190} formato={(n) => (n == null ? 'sin dato' : dolares(n))} etiqueta={`Inversión de ${p.nombre} por día, en dólares`} />
+      <Tabla etiqueta={`Campañas de ${p.nombre} con gasto`} numericas={[1, 2, 3, 4]} barra={{ columna: 1, valores: p.campanas.map((c) => c.inversion) }}
+        columnas={['Campaña', 'Inversión', 'Clics', 'Leads', 'Costo por lead']}
+        filas={p.campanas.map((c) => [{ texto: c.nombre, sub: [TIPO[c.canal], PRODUCTO[c.producto]].filter(Boolean).join(' · ') }, dolares(c.inversion), numero(c.clics), numero(c.leads), cplCampana(c, p.objetivo)])} />
+    </Bloque>
   );
 }

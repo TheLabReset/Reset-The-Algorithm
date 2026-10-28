@@ -8,7 +8,12 @@ import { CLIENTE } from '../cliente.js';
 // leads_c(I) = L_c · (I / I_c)^β : rendimientos decrecientes al mover presupuesto (β declarado en la configuración)
 const curva = (L, I, Inuevo, beta) => (I > 0 ? L * (Inuevo / I) ** beta : 0);
 
-export function reasignacion(cfg, canales) {
+// La propuesta va «al mes»: si el período no es un mes entero, la inversión y los leads del período se llevan a un ritmo
+// de 30 días (las tasas y los costos no cambian). Un mes entero se usa tal cual
+export function reasignacion(cfg, canales, P = null) {
+  // cada plataforma con sus días medidos: un día sin dato no le resta
+  const k = !P || (P.mes && !P.parcial) ? 1 : 30;
+  if (k !== 1) canales = canales.map((c) => ({ ...c, inversion: (c.inversion / (c.medidos || P.dias)) * 30, leads: (c.leads / (c.medidos || P.dias)) * 30 }));
   const sobre = canales.filter((c) => c.cpl != null && c.cpl > c.metaCpl).sort((a, b) => b.cpl / b.metaCpl - a.cpl / a.metaCpl)[0];
   if (!sobre) return null;
   // de dónde sacar: solo si la plataforma (CPL) y el CRM (costo por inscripción) coinciden en que es el más caro
@@ -31,7 +36,7 @@ export function reasignacion(cfg, canales) {
   return {
     id: 'reasignar', sostiene: ['3.1'], tipo: 'estimacion',
     desde: sobre, hacia: destino, monto, leads, inscripciones,
-    acuerdo: 'Pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada plataforma se mantiene', ...(empate.length > 1 ? [`${empate.map((c) => c.nombre).join(' y ')} cuestan parecido por inscripción; se elige la de lead más barato`] : [])],
+    acuerdo: 'Pasa su objetivo de costo por lead y el CRM confirma que es la que más cuesta por inscripción; el destino se elige por costo por inscripción del CRM', supuestos: [`Mover la mitad de la inversión de ${sobre.nombre}`, ...(k !== 1 ? [`Ritmo mensual: la inversión y los leads del período llevados a 30 días`] : []), `Cada dólar adicional rinde un poco menos que el anterior (elasticidad de ${String(central).replace('.', ',')}, entre ${String(baja).replace('.', ',')} y ${String(alta).replace('.', ',')})`, 'La tasa de inscripción de cada plataforma se mantiene', ...(empate.length > 1 ? [`${empate.map((c) => c.nombre).join(' y ')} cuestan parecido por inscripción; se elige la de lead más barato`] : [])],
   };
 }
 
@@ -57,7 +62,7 @@ export function fatigaCreativa(data, hasta) {
   const caida = (antes.ctr - previo.ctr) / previo.ctr, recuperacion = (despues.ctr - antes.ctr) / antes.ctr;
   if (!(caida <= -0.1 && recuperacion >= 0.1)) return null;
   const canal = data.config.canales.find((c) => c.id === ev.canal);
-  return { id: 'renovar', sostiene: ['3.2'], tipo: 'observacion', canal, evento: ev, ctrPrevio: previo.ctr, ctrAntes: antes.ctr, ctrDespues: despues.ctr, caida, recuperacion, diasDespues: despues.dias, supuestos: ['Compara 3 semanas antes del cambio de piezas con las 3 semanas de 6 a 9 semanas antes, y con lo que va desde el cambio'] };
+  return { id: 'renovar', sostiene: ['3.3'], tipo: 'observacion', canal, evento: ev, ctrPrevio: previo.ctr, ctrAntes: antes.ctr, ctrDespues: despues.ctr, caida, recuperacion, diasDespues: despues.dias, supuestos: ['Compara 3 semanas antes del cambio de piezas con las 3 semanas de 6 a 9 semanas antes, y con lo que va desde el cambio'] };
 }
 
 export function temporada(cfg, hasta) {

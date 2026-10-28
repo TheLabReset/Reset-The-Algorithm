@@ -89,6 +89,8 @@
   --mejora: var(--p-menta-oscura);       /* variación favorable: siempre con flecha y signo */
   --empeora: var(--p-rojo-texto);        /* variación desfavorable */
   --atencion: var(--p-ambar-700);        /* pocos casos, dato parcial */
+  --mejora-suave: color-mix(in oklab, var(--mejora) 12%, var(--superficie));   /* fondo de la pastilla «rinde» */
+  --empeora-suave: color-mix(in oklab, var(--empeora) 12%, var(--superficie)); /* fondo de la pastilla «costosa» */
   --s1: var(--p-tinta);                  /* la serie propia: tinta, como la marca */
   --resalte: var(--p-cat-menta);         /* lo que se mira primero en un gráfico: una sola marca por gráfico */
   --serie-1: var(--resalte);            /* barras y líneas de dato: el color de la marca para datos */

@@ -9,6 +9,7 @@
 import { crearAzar } from './azar.js';
 import { multinomial } from './generador.js';
 import { diaSemana, diasEntre, sumarDias } from './calendario.js';
+import { piezasDe } from './piezas.js';
 
 function semillaDe(...partes) {
   let h = 2166136261;
@@ -176,6 +177,20 @@ export function detallar(data) {
     r.palabras = cfg.redesMarcas[i].palabras;
   });
 
+  // El mes en curso trae lo que va: las cifras que se acumulan (publicaciones, vistas, interacciones, comentarios) se
+  // escalan por los días que van del mes. Los anuncios activos son un conteo del momento y no se escalan. Sin azar
+  // nuevo, para que nada más se mueva
+  const ultimoMes = meses.at(-1), vanDias = dias.filter((d) => mesDe(d) === ultimoMes).length;
+  const diasDelUltimo = new Date(Date.UTC(+ultimoMes.slice(0, 4), +ultimoMes.slice(5, 7), 0)).getUTCDate();
+  if (vanDias < diasDelUltimo) {
+    const f = vanDias / diasDelUltimo, esc = (n) => Math.round(n * f);
+    for (const h of hashtags) { const x = h.meses.at(-1); Object.assign(x, { publicaciones: esc(x.publicaciones), vistas: esc(x.vistas), interacciones: esc(x.interacciones) }); }
+    for (const r of redes) {
+      const x = r.meses.at(-1), t = x.sentimiento;
+      Object.assign(x, { publicaciones: esc(x.publicaciones), interacciones: esc(x.interacciones), sentimiento: { positivos: esc(t.positivos), neutros: esc(t.neutros), negativos: esc(t.negativos) } });
+    }
+  }
+
   // ── Búsquedas por región, lectura mensual: índice relativo a la región con más búsqueda (= 100) ──
   const azG = crearAzar(semillaDe(cfg.semilla, 'regiones'));
   const regiones = cfg.busquedas.map((b) => ({
@@ -209,7 +224,8 @@ export function detallar(data) {
   // con el formato ya repartido. Azar propio: no mueve ninguna otra serie. Sin imagen ni enlace: es muestra.
   const azA = crearAzar(semillaDe(cfg.semilla, 'anuncios'));
   const elegir = (items) => { let r = azA.u() * items.reduce((t, x) => t + x.peso, 0); for (const x of items) { r -= x.peso; if (r < 0) return x; } return items.at(-1); };
-  const finDe = Object.fromEntries(meses.map((m) => [m, dias.filter((d) => mesDe(d) === m).at(-1)]));
+  // el ancla es el fin del mes calendario (no el corte): así la fecha de un anuncio no se corre al pasar un día
+  const finDe = Object.fromEntries(meses.map((m) => [m, new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10)]));
   const temas = cfg.temasAnuncio.map((t) => ({ t, peso: 1 }));
   const anuncios = meses.map((m) => ({
     mes: m,
@@ -225,9 +241,19 @@ export function detallar(data) {
           });
         }
       });
-      return { id: r.id, nombre: r.nombre, propia: r.propia, anuncios: lista };
+      // en el mes en curso solo están los que ya empezaron al corte; el conteo de «anuncios activos» de la marca sigue
+      // a la lista, sin azar nuevo (el resto no se mueve)
+      const visibles = lista.filter((a) => a.desde <= cfg.corte);
+      if (visibles.length < lista.length) {
+        mm.anuncios = visibles.length;
+        mm.formatos = cfg.formatosAnuncio.map((f) => visibles.filter((a) => a.formato === f.nombre).length);
+      }
+      return { id: r.id, nombre: r.nombre, propia: r.propia, anuncios: visibles };
     }),
   }));
 
-  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses, anuncios };
+  // ── Piezas de cada campaña: conjuntos y piezas por día (src/muestra/piezas.js) ──
+  const piezas = piezasDe(data, campanas, { semillaDe, repartirMonto });
+
+  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses, anuncios, piezas };
 }

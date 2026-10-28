@@ -17,7 +17,7 @@ export const CAPAS = [
     id: 'inteligencia', numero: '2', nombre: 'Inteligencia de mercado', descripcion: 'Si conviene invertir ahora y qué mirar',
     titulo: 'Inteligencia de mercado', bajada: `Si conviene invertir ahora para captar ${CLIENTE.clientes}, qué mirar y qué viene.`,
     secciones: [
-      { id: 's-2-1', numero: '2.1', titulo: 'Lo que lee el modelo', pregunta: '¿Cómo está el mercado y qué conviene mirar este mes?', universos: ['modelo'], fuentes: [] },
+      { id: 's-2-1', numero: '2.1', titulo: 'Lo que lee el modelo', pregunta: '¿Cómo está el mercado y qué conviene mirar en el período?', universos: ['modelo'], fuentes: [] },
       { id: 's-2-2', numero: '2.2', titulo: 'Temporada y escenario', pregunta: '¿Los leads siguen a la demanda y cuántos habría si nada cambia?', universos: ['busquedas', 'pauta', 'modelo'], fuentes: ['busquedas', 'google', 'meta', 'tiktok'] },
     ],
   },
@@ -27,7 +27,8 @@ export const CAPAS = [
     secciones: [
       { id: 's-3-1', numero: '3.1', titulo: 'Dónde está la inversión', pregunta: 'Cómo se reparte entre plataformas y productos, y qué propone el modelo.', universos: ['pauta', 'modelo'], fuentes: ['google', 'meta', 'tiktok'] },
       { id: 's-3-2', numero: '3.2', titulo: 'Cada plataforma', pregunta: 'Campañas, palabras y resultados de Google Ads, Meta Ads y TikTok Ads.', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
-      { id: 's-3-3', numero: '3.3', titulo: 'Cuándo se visita el sitio', pregunta: 'Las horas y los días con más usuarios activos.', universos: ['web'], fuentes: ['web'] },
+      { id: 's-3-3', numero: '3.3', titulo: 'Piezas y campañas', pregunta: 'Qué campañas, conjuntos y piezas rinden, cuáles se encarecen y qué es nuevo.', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
+      { id: 's-3-4', numero: '3.4', titulo: 'Cuándo se visita el sitio', pregunta: 'Las horas y los días con más usuarios activos.', universos: ['web'], fuentes: ['web'] },
     ],
   },
   {

@@ -1,6 +1,6 @@
 # Fecha móvil de la maqueta
 
-La maqueta corta su data de muestra **ayer, en hora de Lima**, y su historia se mueve con ese corte. Así el panel se ve al día, como uno real: el sello dice «Datos al 25 de octubre», las fuentes dicen «al 25 oct» y el selector de mes termina en el último mes cerrado.
+La maqueta corta su data de muestra **ayer, en hora de Lima**, y su historia se mueve con ese corte. Así el panel se ve al día, como uno real: el sello dice «Datos al 25 de octubre», las fuentes dicen «al 25 oct» y el panel abre en los últimos 7 días.
 
 Es solo para la demo con data de muestra. **Una implementación real no la usa:** ahí el corte es el último día que entregó cada fuente.
 
@@ -28,7 +28,7 @@ Cada fecha de `configuracion.js` es de una de estas clases. **Al agregar una fec
    - feriados: los de fecha fija (`fechaMovil.feriadosFijos`) más el Jueves y el Viernes Santo, calculados desde la Pascua;
    - el Reto de enero (`fechaMovil.campanaEnero`): la campaña de Meta `m-reto`, las campañas `reto-AAAA` del CRM, el evento del primer lunes desde el 5 de enero y el alza de búsquedas y menciones de la marca (`campanaPropia`, seis semanas desde ese lunes);
    - la estacionalidad, el peso del presupuesto y la presión de subasta, que ya van por mes.
-3. **Historia: lo que la demo cuenta cerca del corte.** Se corre en **meses enteros**: lo que en la referencia pasa en su último mes cerrado (setiembre de 2026) pasa siempre en el último mes cerrado del corte, que es el mes que el panel abre. Un día que era fin de mes sigue siendo fin de mes. Son:
+3. **Historia: lo que la demo cuenta cerca del corte.** Se corre en **meses enteros**: lo que en la referencia pasa en su último mes cerrado (setiembre de 2026) pasa siempre en el último mes cerrado del corte (el «mes pasado» del selector, o «este mes» si el corte es fin de mes). Un día que era fin de mes sigue siendo fin de mes. Son:
    - `web.paginas[].desde` (la promo, que además toma el nombre del mes en que empieza: «Promo de octubre», `/promo-octubre`);
    - `sedes[].abre` (Los Olivos);
    - `busquedas[].aparece` (pilates reformer);
@@ -47,7 +47,8 @@ Lo que el panel ya mostró se mantiene al pasar un día dentro del mismo mes: la
 
 - la tendencia (`t` en `generador.js`) corre sobre un tramo fijo (`tramoTendencia`), no sobre el rango;
 - el azar del embudo (`generador.js`) y del CRM por dentro (`detalle.js`) va por día, origen y sede;
-- el de las búsquedas y la conversación va por término y por marca.
+- el de las búsquedas y la conversación va por término y por marca;
+- el de las piezas (`src/muestra/piezas.js`) va por campaña y por día. Las tandas de piezas salen del rango, de la fatiga de Meta y del evento de las piezas nuevas, que ya se corren: las piezas no suman fechas propias.
 
 Lo reciente sí cambia, como en un CRM real: las altas y los descartes llegan con días de atraso.
 
@@ -56,7 +57,7 @@ Al empezar un mes, la historia salta al nuevo mes cerrado. Al empezar un año, e
 ## Qué no tocar
 
 - **El orden de los flujos de azar.** Cada flujo (`semillaDe(semilla, 'algo', …)`) tiene que ser por entidad o por día. Si uno se comparte entre entidades, agregar un día corre el azar de las que vienen después y el pasado cambia. La prueba «lo que ya se mostró no cambia al pasar un día» lo detecta.
-- **El escenario de la demo.** TikTok se encarece desde la segunda quincena del mes anterior (así la cohorte del CRM ya lo ve), sus leads se inscriben menos (`calidad.alta`) y el presupuesto alcanza para que tenga más de 30 inscripciones en cualquier mes. Si se cambia el presupuesto, el reparto, la calidad o `cambiosCosto`, hay que correr las pruebas: la del barrido revisa que la propuesta de reparto aparezca con casos suficientes en 54 cortes de dos años.
+- **El escenario de la demo.** TikTok se encarece (1,85 veces) desde la segunda quincena del mes anterior (así la cohorte del CRM ya lo ve), sus leads se inscriben menos (`calidad.alta`) y el presupuesto (26 000 al mes) alcanza para que tenga más de 30 inscripciones en cualquier cohorte. Si se cambia el presupuesto, el reparto, la calidad o `cambiosCosto`, hay que correr las pruebas: el barrido revisa 162 cortes de dos años.
 - **`src/calculo/` y las pantallas.** No saben que la fecha se mueve. Leen `data.config.corte` como siempre.
 
 ## Pruebas
@@ -68,7 +69,7 @@ Al empezar un mes, la historia salta al nuevo mes cerrado. Al empezar un año, e
 3. que el calendario cae donde debe (Semana Santa, el primer lunes de enero, la promo con su mes, los fines de mes);
 4. que nada pasa del corte y que el rango empieza el 1 de enero del año anterior;
 5. que lo ya mostrado no cambia al pasar un día;
-6. que la historia (la propuesta de reparto y la lectura de las piezas nuevas de Meta) aparece en el mes que el panel abre. Lo hace para el 15 y el último día de cada mes, de octubre de 2026 a diciembre de 2028.
+6. que la historia aparece donde se mira: al abrir (últimos 7 días), TikTok pasa su objetivo y el CRM confirma que es la que más cuesta por inscripción, y la propuesta de reparto aparece salvo que ninguna otra plataforma quede bajo su objetivo (la subasta de los primeros días de diciembre encarece a las tres, y el modelo dice por qué no propone); en el último mes cerrado, la propuesta y la lectura de las piezas nuevas de Meta. Lo hace para los días 1, 3, 10, 15, 20 y el último de cada mes, de octubre de 2026 a diciembre de 2028.
 
 `pruebas/calculo.test.mjs` usa la fecha de referencia, así sus resultados no cambian con el día en que se corren.
 

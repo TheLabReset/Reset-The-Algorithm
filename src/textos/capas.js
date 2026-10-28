@@ -1,7 +1,7 @@
 // Lecturas que nacen con las cuatro capas: la ficha de cada plataforma, el embudo por fuente, el acumulado,
 // el índice y los resúmenes. Observan, no ordenan; dos frases como máximo; las comparaciones dicen frente a qué.
-import { numero, dolares, fechaCorta } from '../sistema/formato.js';
-import { comparacionTexto, enLetras, capital } from './comun.js';
+import { numero, dolares, fechaCorta, fechaSinAnio, fecha } from '../sistema/formato.js';
+import { comparacionTexto, enLetras, capital, enElPeriodo, delPeriodo } from './comun.js';
 import { CLIENTE } from '../cliente.js';
 
 // Ficha de una plataforma en Activación
@@ -24,16 +24,18 @@ export function embudoFuente(v) {
 // Acumulado del mes en el CRM, frente al mismo tramo de la comparación
 export function acumuladoLectura(v) {
   const c = v.lee.crmDetalle;
-  const titulo = 'Acumulado del mes';
-  if (c.totalPrevio == null) return { titulo, lectura: `${numero(c.total)} leads en el CRM en el mes. No hay dato completo de ${comparacionTexto(v.periodo)} para comparar.` };
+  const titulo = `Acumulado ${delPeriodo(v.periodo)}`;
+  if (c.totalPrevio == null) return { titulo, lectura: `${numero(c.total)} leads en el CRM ${enElPeriodo(v.periodo)}.${v.periodo.conComparacion ? ` No hay dato completo de ${comparacionTexto(v.periodo)} para comparar.` : ''}` };
   return { titulo, lectura: `${numero(c.total)} leads en el CRM, frente a ${numero(c.totalPrevio)} en ${comparacionTexto(v.periodo)}.` };
 }
 
 // Índice de oportunidad: el número, su banda y cómo se movió frente al mes anterior
 export function indiceLectura(ix) {
   const titulo = 'Índice de oportunidad';
-  if (ix.valor == null) return { titulo, lectura: 'Falta algún componente para calcularlo este mes.' };
-  const mov = ix.cambio == null ? '' : Math.round(ix.cambio) === 0 ? ' Igual que al cierre del mes anterior.' : ` ${Math.round(ix.cambio) > 0 ? 'Sube' : 'Baja'} ${numero(Math.abs(Math.round(ix.cambio)))} ${Math.abs(Math.round(ix.cambio)) === 1 ? 'punto' : 'puntos'} frente al cierre del mes anterior.`;
+  if (ix.valor == null) return { titulo, lectura: 'Falta algún componente para calcularlo en esta fecha.' };
+  // la comparación es el último día de la comparación elegida: «frente al 19 de octubre», «frente al 26 de octubre de 2025»
+  const dia = ix.fechaPrevio.slice(0, 4) === ix.fecha.slice(0, 4) ? fechaSinAnio(ix.fechaPrevio) : fecha(ix.fechaPrevio);
+  const mov = ix.cambio == null ? '' : Math.round(ix.cambio) === 0 ? ` Igual que el ${dia}.` : ` ${Math.round(ix.cambio) > 0 ? 'Sube' : 'Baja'} ${numero(Math.abs(Math.round(ix.cambio)))} ${Math.abs(Math.round(ix.cambio)) === 1 ? 'punto' : 'puntos'} frente al ${dia}.`;
   return { titulo, lectura: `Qué tan favorable está el mercado para captar ${CLIENTE.clientes}, de 0 a 100.${mov}` };
 }
 
@@ -83,7 +85,7 @@ export function notaSinContenido(n) {
 // Lectura de la tarjeta: quién tiene más anuncios activos, y la marca propia frente a eso
 export function anunciosLectura(a) {
   const titulo = 'Anuncios de la competencia';
-  if (!a.grupos.length) return { titulo, lectura: 'La biblioteca de anuncios no trajo anuncios de la competencia en este mes.' };
+  if (!a.grupos.length) return { titulo, lectura: 'La biblioteca de anuncios no trajo anuncios de la competencia en el mes.' };
   const [primero] = a.grupos;
   const propia = a.propio ? ` ${a.propio.nombre} tiene ${cuentaAnuncios(a.propio.anuncios.length)}.` : '';
   return { titulo, lectura: `${primero.nombre} tiene ${cuentaAnuncios(primero.anuncios.length)} activos en Meta, más que cualquier otra marca que se sigue.${propia}` };
@@ -99,5 +101,7 @@ export function textosDelAbanico(a, anio) {
     meta: (x) => metaDelAnuncio(x, anio),
     texto: textoDeMuestra,
     sinContenido: notaSinContenido(a.sinContenido),
+    // los que empezaron dentro del período: «2 nuevos en el período»
+    nuevos: (n) => `${numero(n)} ${segun(n, 'nuevo', 'nuevos')} en el período`,
   };
 }

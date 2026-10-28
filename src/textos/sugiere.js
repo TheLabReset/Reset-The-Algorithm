@@ -23,18 +23,18 @@ const ALERTAS = {
   }),
   'palabras-sin-conversion': (d) => ({
     titulo: `${d.palabras.length === 1 ? 'Una palabra clave gasta' : `${capital(enLetras(d.palabras.length, true))} palabras clave gastan`} y casi no trae${d.palabras.length === 1 ? '' : 'n'} leads`,
-    dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} en el mes, ${pct(d.pct)} de la inversión en Search.`,
+    dato: `${capital(lista(d.palabras.map((p) => `«${p}»`)))}: ${dolares(d.monto)} ${d.mesEntero ? 'en el mes' : 'en el período'}, ${pct(d.pct)} de la inversión en Search.`,
     mirar: `Si esas búsquedas corresponden a lo que ofrece ${CLIENTE.nombre}. Si no, se pueden pausar o agregar como negativas en Search.`,
   }),
   'contacto-lento': (d) => ({
     titulo: 'Más leads esperan más de un día por su primer contacto',
     dato: `${de100(d.ahora)} de cada 100 leads recibió su primer contacto en menos de un día; en ${mesTexto(d.mesAntes)}, ${de100(d.antes)}.${d.causa ? ` El CRM registra un cambio desde el ${dia(d.causaDesde)}: ${d.causa.toLowerCase()}.` : ''}`,
-    mirar: `Conversar con ${CLIENTE.nombre} si conviene ajustar el volumen de pauta a lo que el equipo puede atender mientras vuelve a estar completo.`,
+    mirar: `Si conviene ajustar el volumen de pauta a lo que el equipo puede atender mientras vuelve a estar completo, para conversarlo con ${CLIENTE.nombre}.`,
   }),
   'fin-de-semana': (d) => ({
     titulo: 'Los leads del fin de semana esperan más',
     dato: `${de100(d.finDeSemana)} de cada 100 leads del sábado y el domingo esperó más de un día por su primer contacto; entre semana, ${de100(d.laborable)}.`,
-    mirar: `Ver con ${CLIENTE.nombre} si conviene poner más inversión de lunes a jueves, cuando el equipo responde en el día.`,
+    mirar: `Si conviene poner más inversión de lunes a jueves, cuando el equipo responde en el día, para conversarlo con ${CLIENTE.nombre}.`,
   }),
   'plataforma-vs-crm': (d) => ({
     titulo: 'La plataforma y el CRM no coinciden en cuál rinde más',
@@ -49,7 +49,7 @@ const ALERTAS = {
   'cierra-campana': (d) => ({
     titulo: `«${d.campana}» cierra en ${numero(d.faltan)} ${d.faltan === 1 ? 'día' : 'días'}`,
     dato: `La campaña del CRM termina el ${fecha(d.hasta)} y lleva ${numero(d.leads)} leads y ${numero(d.altas)} inscripciones desde que empezó.`,
-    mirar: `Que ${d.plataformas.length ? lista(d.plataformas) : 'la pauta que la empuja'} tenga inversión hasta el cierre, y conversar con ${CLIENTE.nombre} qué mensaje sigue después.`,
+    mirar: `Que ${d.plataformas.length ? lista(d.plataformas) : 'la pauta que la empuja'} ${d.plataformas.length > 1 ? 'tengan' : 'tenga'} inversión hasta el cierre, y qué mensaje sigue después, para conversarlo con ${CLIENTE.nombre}.`,
   }),
   'interaccion-cae': (d) => ({
     titulo: `Las visitas desde ${d.canal.toLowerCase()} interactúan menos`,
@@ -73,7 +73,7 @@ const BIEN = {
   'bajo-objetivo': (d) => ({
     titulo: `${d.plataforma} está bajo su objetivo de costo por lead`,
     dato: `${dolares(d.cpl, 2)} por lead con un objetivo de ${dolares(d.objetivo, 2)}${d.anual != null && d.anual > 0 ? `, y ${pct(d.anual)} menos que un año antes` : ''}.`,
-    mirar: `Mantener lo que funciona en ${d.plataforma} antes de probar cambios.`,
+    mirar: `Qué está funcionando en ${d.plataforma}, antes de probar cambios.`,
   }),
   'mejora-anual': (d) => ({
     titulo: `${d.plataforma} consigue leads más baratos que hace un año`,
@@ -81,9 +81,9 @@ const BIEN = {
     mirar: 'Qué cambió, por si se puede repetir en otra plataforma.',
   }),
   'piezas-nuevas': (d) => ({
-    titulo: `Las piezas nuevas de ${d.canal} subieron el clic`,
+    titulo: `Las piezas nuevas de ${d.canal} recuperaron el CTR`,
     dato: `El CTR pasó de ${pct(d.antes, 2)} a ${pct(d.despues, 2)} desde el ${dia(d.fecha)}.`,
-    mirar: 'Las piezas funcionan. Lo que falta revisar es la página a la que llevan (ver la alerta de GA4).',
+    mirar: 'Las piezas, en Piezas y campañas; y la página a la que llevan, en el sitio.',
   }),
   'mejor-sentimiento': (d) => ({
     titulo: `${CLIENTE.nombre} tiene el mejor sentimiento entre las marcas comparadas`,
@@ -117,10 +117,10 @@ export function sinReasignar(r, periodo) {
   if (r.crmEstado === 'no-cargo') return { titulo: `${base}: el CRM no cargó y sin él no se sabe cuánto cuesta cada inscripción.` };
   if (!r.cohorteCerrada) return { titulo: `${base}: la cohorte que mide el costo por inscripción todavía no cierra.` };
   const a = r.masBaratoPorLead, b = r.masBaratoPorInscripcion;
-  const detalle = !a ? null : !b ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción todavía no hay casos suficientes.`
-    : r.cpaParecido ? `${capital(periodo)}. ${a.nombre} consigue el lead más barato; por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)} (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
-    : a.id === b.id ? `${capital(periodo)}. ${a.nombre} consigue el lead y la inscripción más baratos.`
-    : `${capital(periodo)}. Por lo que reporta la plataforma, ${a.nombre} consigue el lead más barato; por inscripción en el CRM, ${b.nombre}.`;
+  const detalle = !a ? null : !b ? `En ${periodo}, ${a.nombre} consigue el lead más barato; por inscripción todavía no hay casos suficientes.`
+    : r.cpaParecido ? `En ${periodo}, ${a.nombre} consigue el lead más barato; por inscripción, ${parecidoTexto(r.cpaParecido, r.canales.length)} (entre ${dolares(r.cpaParecido.min)} y ${dolares(r.cpaParecido.max)}).`
+    : a.id === b.id ? `En ${periodo}, ${a.nombre} consigue el lead y la inscripción más baratos.`
+    : `En ${periodo}, por lo que reporta la plataforma, ${a.nombre} consigue el lead más barato; por inscripción en el CRM, ${b.nombre}.`;
   if (!r.sobreMeta.length) return { titulo: `${base}: las ${enLetras(r.canales.length, true)} plataformas quedan bajo su objetivo de costo por lead.`, detalle };
   return { titulo: `${base}: la plataforma que pasa su objetivo no es la que más cuesta por inscripción.`, detalle };
 }

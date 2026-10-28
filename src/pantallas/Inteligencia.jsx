@@ -1,8 +1,8 @@
 // Capa 2 · Inteligencia de mercado: lo que lee el modelo. El índice, qué mirar (y qué va bien), la temporada y el
 // escenario si nada cambia. No calcula: pinta las salidas de src/calculo y los textos de src/textos.
-import { Bloque, ListaAlertas } from '../sistema/Componentes.jsx';
+import { Bloque, ListaAlertas, Etiqueta } from '../sistema/Componentes.jsx';
 import { Linea, Barras, DosLineas, Proyeccion } from '../sistema/graficos/Graficos.jsx';
-import { numero } from '../sistema/formato.js';
+import { numero, fechaSinAnio } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, sinDato, alertasDe, buenasDe } from './comun.jsx';
 import { periodoTexto, mesTexto } from '../textos/comun.js';
 import { escenarioTexto } from '../textos/sugiere.js';
@@ -28,13 +28,13 @@ export default function Inteligencia({ capa, vista: v }) {
     <MarcoCapa capa={capa} vista={v} conResumen={false}>
       {/* ───── 2.1 Lo que lee el modelo ───── */}
       <SeccionDe def={s21} vista={v} conAvisos={false}>
-        <Bloque universo="modelo" {...indiceLectura(ix)} alcance={`lectura al cierre de ${periodoTexto(v.periodo)}`}
+        <Bloque universo="modelo" {...indiceLectura(ix)} alcance={`lectura al ${fechaSinAnio(v.periodo.hasta)}`}
           ayuda={<p>Junta cinco componentes, cada uno medido contra su propia historia: 0 es lo más bajo de su rango y 100 lo más alto. El índice es su promedio ponderado.</p>}
-          pie={<span>Se recalcula con cada cierre de mes. Componentes medidos: {numero(ix.componentes.filter((c) => c.puntaje != null).length)} de {numero(ix.componentes.length)}.</span>}>
+          pie={<span>Se calcula al último día del período. Componentes medidos: {numero(ix.componentes.filter((c) => c.puntaje != null).length)} de {numero(ix.componentes.length)}.</span>}>
           <div className="q-oport">
             <div className="q-oport-cifra">
-              <span className="q-cifra-valor">{ix.valor == null ? '—' : numero(Math.round(ix.valor))}</span><span className="q-oport-de">de 100</span>
-              {ix.banda && <span className="q-oport-banda">{bandaTexto(ix.banda)}</span>}
+              <span className="q-cifra-valor">{ix.valor == null ? 'sin dato' : numero(Math.round(ix.valor))}</span><span className="q-oport-de">de 100</span>
+              {ix.banda && <Etiqueta variante="llena" tono="bien" icono={null} className="q-oport-banda">{bandaTexto(ix.banda)}</Etiqueta>}
             </div>
             <div>
               <h4 className="q-subtitulo">Cómo viene, cierre de cada mes</h4>
@@ -53,9 +53,9 @@ export default function Inteligencia({ capa, vista: v }) {
           </header>
           <div className="q-bloque-cuerpo">
             {todas.length ? <ListaAlertas grupos={GRUPOS.map((g) => ({ ...g, items: todas.filter((a) => a.nivel === g.nivel) }))} />
-              : <p className="q-nota-bloque">Este mes nada se sale de lo esperado.</p>}
+              : <p className="q-nota-bloque">{v.sugiere.pocosDias ? 'Con menos de 7 días las alertas no se leen: un día raro mandaría.' : 'En el período nada se sale de lo esperado.'}</p>}
           </div>
-          <footer className="q-bloque-pie"><span>Cada alerta sale de una regla con un umbral fijo y se activa con el dato del mes.</span></footer>
+          <footer className="q-bloque-pie"><span>Cada alerta sale de una regla con un umbral fijo y se activa con el dato del período.</span></footer>
         </div>
       </SeccionDe>
 

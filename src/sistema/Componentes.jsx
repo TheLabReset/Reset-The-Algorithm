@@ -2,11 +2,12 @@
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, CircleHelp, Megaphone, Contact, Search, MessagesSquare, Globe,
-  Sigma, CircleCheck, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
-  Eye, TrendingUp, Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
-  ExternalLink, Play,
+  Sigma, TriangleAlert, CloudOff, Inbox, CalendarX2, CircleDashed, Hourglass, FlaskConical,
+  Bot, Calendar, Pin, ChevronDown, CornerDownRight, ListChecks, X, Layers, ArrowUpRight as Ir,
+  ExternalLink, Play, Check, PanelRightOpen,
 } from 'lucide-react';
 import { NO_MEDIDO, variacion } from './formato.js';
+import { estadoDe } from './estados.js';
 
 // ── Universos: qué se cuenta y de dónde. El icono ayuda a reconocerlo sin leer; el color no se usa ──
 export const UNIVERSOS = {
@@ -18,28 +19,33 @@ export const UNIVERSOS = {
   modelo: { icono: Sigma, nombre: 'Modelo' },
 };
 
-export function Chip({ tipo = 'neutro', icono: Icono, children, titulo }) {
+// ── Etiqueta: la única forma de una etiqueta chica. Cinco variantes según qué dice, el tono según el catálogo de
+// estados (src/sistema/estados.js). Ninguna pantalla arma su propia pastilla: guía en docs/guia-rapida.md ──
+//  · borde: un dato del contexto (universo, fuente, ventana del período)
+//  · llena: un estado con juicio (rinde, costosa, sin leads)
+//  · tinta: una marca que se ve de lejos (Nuevo)
+//  · texto: un nivel o un sello sin caja (el nivel de una alerta, «Datos al…» en la barra)
+//  · rotulo: el nombre de un grupo, en mayúsculas grises («Los propios»)
+export function Etiqueta({ variante = 'borde', estado, tono, icono, titulo, className = '', children }) {
+  const e = estado ? estadoDe(estado) : null;
+  const Icono = icono === undefined ? e?.icono : icono;
   return (
-    <span className={`q-chip${tipo === 'neutro' ? '' : ' q-chip-' + tipo}`} title={titulo}>
-      {Icono && <Icono size={13} aria-hidden="true" strokeWidth={2.2} />}
+    <span className={`q-etiqueta q-etiqueta-${variante}${className ? ' ' + className : ''}`} data-tono={tono ?? e?.tono ?? 'neutro'} data-estado={estado} title={titulo}>
+      {Icono && <Icono size={13} aria-hidden="true" strokeWidth={2.4} />}
       {children}
     </span>
   );
 }
 
+// Atajos con significado: el universo de una cifra, el estado de una fuente, lo nuevo y el sello de la barra
 export const ChipUniverso = ({ universo, children }) => {
   const u = UNIVERSOS[universo];
-  return <Chip tipo="universo" icono={u.icono}>{children || u.nombre}</Chip>;
+  return <Etiqueta tono="fuerte" icono={u.icono}>{children || u.nombre}</Etiqueta>;
 };
-
-const ICONO_FUENTE = { ok: CircleCheck, parcial: TriangleAlert, 'no-cargo': CloudOff };
 export function ChipFuente({ nombre, estado, detalle }) {
-  return <Chip tipo={estado === 'ok' ? 'fuente' : 'atencion'} icono={ICONO_FUENTE[estado]} titulo={detalle}>{nombre}{detalle ? ` · ${detalle}` : ''}</Chip>;
+  return <Etiqueta estado={`fuente-${estado}`} titulo={detalle}>{nombre}{detalle ? ` · ${detalle}` : ''}</Etiqueta>;
 }
-
-export const SelloMuestra = ({ children }) => (
-  <span className="q-sello-muestra"><FlaskConical size={13} aria-hidden="true" />{children}</span>
-);
+export const SelloMuestra = ({ children }) => <Etiqueta variante="texto" tono="barra" icono={FlaskConical} className="q-sello-muestra">{children}</Etiqueta>;
 
 // ── Cifra con su variación ──
 // mejorSi: 'sube' o 'baja' decide el color; la flecha y el signo siempre van, así el color nunca va solo
@@ -138,7 +144,7 @@ export const VentanaContexto = createContext(null);
 export const CargandoContexto = createContext(false);
 export function Ventana({ texto, fija }) {
   const Icono = fija ? Pin : Calendar;
-  return <span className={`q-ventana${fija ? ' q-ventana-fija' : ''}`} title={fija ? 'No sigue el período elegido' : 'Sigue el período elegido'}><Icono size={12} aria-hidden="true" />{texto}</span>;
+  return <Etiqueta icono={Icono} className={`q-ventana${fija ? ' q-ventana-fija' : ''}`} titulo={fija ? 'No sigue el período elegido' : 'Sigue el período elegido'}>{texto}</Etiqueta>;
 }
 
 export function Bloque({ titulo, lectura, universo, ancho = 'completo', alcance, ventana, estado, ayuda, pie, children, id }) {
@@ -250,12 +256,12 @@ export function Seccion({ id, numero, titulo, pregunta, fuentes = [], avisos, ch
   );
 }
 
-// ── Alertas: el nivel lleva icono, palabra y color (el color nunca va solo) ──
+// ── Alertas: el nivel lleva icono, palabra y color (el color nunca va solo). Tono e icono, del catálogo de estados ──
 export const NIVELES = {
-  atencion: { icono: TriangleAlert, nombre: 'Atención' },
-  revisar: { icono: Eye, nombre: 'Para revisar' },
-  oportunidad: { icono: TrendingUp, nombre: 'Oportunidad' },
-  bien: { icono: CircleCheck, nombre: 'Va bien' },
+  atencion: { nombre: 'Atención' },
+  revisar: { nombre: 'Para revisar' },
+  oportunidad: { nombre: 'Oportunidad' },
+  bien: { nombre: 'Va bien' },
 };
 
 export function Alerta({ id, nivel, titulo, dato, mirar, fuente, ir, irTexto }) {
@@ -263,7 +269,7 @@ export function Alerta({ id, nivel, titulo, dato, mirar, fuente, ir, irTexto }) 
   return (
     <article className={`q-alerta q-alerta-${nivel}`} id={id}>
       <div className="q-alerta-cab">
-        <span className="q-nivel"><n.icono size={14} aria-hidden="true" strokeWidth={2.4} />{n.nombre}</span>
+        <Etiqueta variante="texto" estado={`nivel-${nivel}`} className="q-nivel">{n.nombre}</Etiqueta>
         <span className="q-alerta-fuente">{fuente}</span>
       </div>
       <h3>{titulo}</h3>
@@ -299,7 +305,7 @@ export function ListaAlertas({ grupos }) {
                     <summary>
                       <span className="q-fila-num">{n}</span>
                       <span className="q-fila-cuerpo">
-                        <span className="q-fila-titulo"><span className="q-nivel" title={nv.nombre}><nv.icono size={14} aria-hidden="true" strokeWidth={2.4} /><span className="solo-lector">{nv.nombre}: </span></span>{a.titulo}</span>
+                        <span className="q-fila-titulo"><Etiqueta variante="texto" estado={`nivel-${a.nivel}`} className="q-nivel" titulo={nv.nombre}><span className="solo-lector">{nv.nombre}: </span></Etiqueta>{a.titulo}</span>
                         {a.mirar && <span className="q-fila-mirar"><CornerDownRight size={14} aria-hidden="true" />{a.mirar}</span>}
                       </span>
                       <span className="q-fila-fuente">{a.fuente}</span>
@@ -329,7 +335,7 @@ export function AvisosCapitulo({ avisos }) {
         const n = NIVELES[a.nivel];
         return (
           <li key={a.id} className={`q-aviso q-alerta-${a.nivel}`}>
-            <a href={'#' + a.id}><span className="q-nivel"><n.icono size={14} aria-hidden="true" strokeWidth={2.4} />{n.nombre}</span><span className="q-aviso-texto">{a.titulo}</span><Ir size={14} aria-hidden="true" /></a>
+            <a href={'#' + a.id}><Etiqueta variante="texto" estado={`nivel-${a.nivel}`} className="q-nivel">{n.nombre}</Etiqueta><span className="q-aviso-texto">{a.titulo}</span><Ir size={14} aria-hidden="true" /></a>
           </li>
         );
       })}
@@ -471,6 +477,69 @@ export function Selector({ etiqueta, opciones, valor, onCambiar }) {
   );
 }
 
+// ── Selector de período: el botón dice el tramo y el atajo; el panel lleva los atajos, dos fechas y con qué se compara.
+// Una fecha fuera de la data o un «desde» después del «hasta» no cambia el período: se marca el campo y se dice por qué ──
+export function SelectorPeriodo({ texto, atajo, atajos, desde, hasta, min, max, comparacion, aviso, onAtajo, onRango }) {
+  const [abierto, setAbierto] = useState(false);
+  const [borrador, setBorrador] = useState({ desde, hasta });
+  const id = useId();
+  const ref = useRef(null), panel = useRef(null);
+  useEffect(() => { setBorrador({ desde, hasta }); }, [desde, hasta]);
+  useLayoutEffect(() => {
+    const g = panel.current;
+    if (!abierto || !g) return undefined;
+    // el panel no se sale de la pantalla en un teléfono: se corre lo justo
+    const ubicar = () => {
+      g.style.transform = '';
+      const r = g.getBoundingClientRect(), m = 16, ancho = document.documentElement.clientWidth;
+      const dx = r.left < m ? m - r.left : r.right > ancho - m ? ancho - m - r.right : 0;
+      if (dx) g.style.transform = `translateX(${Math.round(dx)}px)`;
+    };
+    ubicar();
+    window.addEventListener('resize', ubicar);
+    return () => window.removeEventListener('resize', ubicar);
+  }, [abierto]);
+  useEffect(() => {
+    if (!abierto) return undefined;
+    const fuera = (e) => { if (!ref.current?.contains(e.target)) setAbierto(false); };
+    const tecla = (e) => { if (e.key === 'Escape') setAbierto(false); };
+    document.addEventListener('pointerdown', fuera);
+    document.addEventListener('keydown', tecla);
+    return () => { document.removeEventListener('pointerdown', fuera); document.removeEventListener('keydown', tecla); };
+  }, [abierto]);
+  const valida = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d || '') && d >= min && d <= max;
+  const aplicar = (b) => { if (valida(b.desde) && valida(b.hasta) && b.desde <= b.hasta) onRango(b.desde, b.hasta); };
+  const malDesde = !valida(borrador.desde) || (valida(borrador.hasta) && borrador.desde > borrador.hasta), malHasta = !valida(borrador.hasta);
+  const nombre = atajos.find((a) => a.id === atajo)?.nombre;
+  return (
+    <div className="q-periodo" ref={ref}>
+      <button type="button" className="q-periodo-boton" aria-haspopup="dialog" aria-expanded={abierto} aria-controls={id} onClick={() => setAbierto((a) => !a)}>
+        <Calendar size={16} aria-hidden="true" /><span>{texto}</span>{nombre && <small>{nombre}</small>}<ChevronDown size={16} aria-hidden="true" />
+      </button>
+      <div id={id} ref={panel} className="q-periodo-panel" role="dialog" aria-label="Elegir período" hidden={!abierto}>
+        <p className="q-periodo-titulo">Atajos</p>
+        <div className="q-periodo-atajos">
+          {atajos.map((a) => (
+            <button key={a.id} type="button" aria-pressed={a.id === atajo} onClick={() => { onAtajo(a.id); setAbierto(false); }}>
+              <span>{a.nombre}</span>{a.id === atajo && <Check size={16} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+        <p className="q-periodo-titulo">Fechas</p>
+        <div className="q-periodo-rango">
+          <label>Desde<input type="date" value={borrador.desde} min={min} max={valida(borrador.hasta) ? borrador.hasta : max} aria-invalid={malDesde} onChange={(e) => { const b = { ...borrador, desde: e.target.value }; setBorrador(b); aplicar(b); }} /></label>
+          <label>Hasta<input type="date" value={borrador.hasta} min={valida(borrador.desde) ? borrador.desde : min} max={max} aria-invalid={malHasta} onChange={(e) => { const b = { ...borrador, hasta: e.target.value }; setBorrador(b); aplicar(b); }} /></label>
+        </div>
+        {(malDesde || malHasta) && aviso && <p className="q-periodo-error" role="alert">{aviso}</p>}
+        {comparacion && <p className="q-periodo-nota">{comparacion}</p>}
+      </div>
+    </div>
+  );
+}
+
+// ── Sello de lo nuevo: lo que empezó dentro del período; va primero en su lista ──
+export const SelloNuevo = ({ texto = 'Nuevo', className = 'q-junto' }) => <Etiqueta variante="tinta" icono={null} className={className}>{texto}</Etiqueta>;
+
 // ── Tabla: números a la derecha, primera columna como encabezado de fila ──
 // barra: { columna, valores } pone una barra delgada junto a la cifra de esa columna (magnitud de un vistazo).
 // Una celda puede ser texto o { texto, sub, tono }: sub va debajo en gris; tono 'empeora' o 'mejora' colorea la cifra.
@@ -508,24 +577,65 @@ export function Datos({ pares }) {
 }
 
 // ── Panel lateral (Qué se monitorea): se abre desde la cabecera de la capa; Esc o la X lo cierran ──
-export function PanelLateral({ titulo, bajada, abierto, onCerrar, children }) {
+export function PanelLateral({ titulo, bajada, abierto, onCerrar, children, className = '' }) {
   const ref = useRef(null);
+  const tituloId = useId();
   useEffect(() => {
     const d = ref.current;
-    if (!d) return;
+    if (!d) return undefined;
     if (abierto && !d.open) d.showModal();
     if (!abierto && d.open) d.close();
+    // con el panel abierto, la rueda no mueve la página de atrás
+    if (!abierto) return undefined;
+    document.documentElement.classList.add('q-sin-desplazar');
+    return () => document.documentElement.classList.remove('q-sin-desplazar');
   }, [abierto]);
   return (
-    <dialog ref={ref} className="q-panel" aria-labelledby="panel-t" onClose={onCerrar} onClick={(e) => { if (e.target === ref.current) onCerrar(); }}>
+    <dialog ref={ref} className={`q-panel ${className}`} aria-labelledby={tituloId} onClose={onCerrar} onClick={(e) => { if (e.target === ref.current) onCerrar(); }}>
       <div className="q-panel-cuerpo">
         <header className="q-panel-cab">
-          <div><h2 id="panel-t">{titulo}</h2>{bajada && <p>{bajada}</p>}</div>
+          <div><h2 id={tituloId}>{titulo}</h2>{bajada && <p>{bajada}</p>}</div>
           <button type="button" className="q-boton q-boton-quieto" onClick={onCerrar} aria-label="Cerrar"><X size={18} aria-hidden="true" /></button>
         </header>
         {children}
       </div>
     </dialog>
+  );
+}
+
+// ── Detalle de un capítulo: la vista general lleva tres tarjetas como máximo; lo minucioso va aquí, en el panel de
+// la derecha. El botón dice qué hay adentro. Un ancla «#detalle-…» lo abre (las alertas apuntan así a su dato) ──
+export const DetallesAbiertos = createContext(false); // la prueba de render los abre todos
+export function Detalle({ id, titulo, bajada, vistas, children }) {
+  const [abierto, setAbierto] = useState(useContext(DetallesAbiertos));
+  useEffect(() => {
+    // el ancla lo abre; si el ancla cambia (el botón Atrás), lo cierra. Abierto con clic no tiene ancla propia
+    let porAncla = false;
+    const mirar = () => {
+      if (location.hash === '#' + id) { porAncla = true; setAbierto(true); }
+      else if (porAncla) { porAncla = false; setAbierto(false); }
+    };
+    mirar();
+    window.addEventListener('hashchange', mirar);
+    return () => window.removeEventListener('hashchange', mirar);
+  }, [id]);
+  const boton = useRef(null);
+  const cerrar = () => {
+    setAbierto(false);
+    // el ancla que lo abrió vuelve a ser la del capítulo: pedir el detalle otra vez lo abre
+    if (location.hash === '#' + id) history.replaceState(null, '', `${location.pathname}${location.search}#${id.replace(/^detalle-/, '')}`);
+    setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) boton.current?.focus(); }, 60);
+  };
+  return (
+    <div className="q-detalle" id={id}>
+      <button ref={boton} type="button" className="q-boton q-detalle-boton" aria-haspopup="dialog" aria-expanded={abierto} onClick={() => setAbierto(true)}>
+        <PanelRightOpen size={16} aria-hidden="true" />
+        <span>Ver el detalle<span className="q-detalle-vistas">: {vistas.length > 1 ? `${vistas.slice(0, -1).join(', ')} y ${vistas.at(-1)}` : vistas[0]}</span></span>
+      </button>
+      <PanelLateral titulo={titulo} bajada={bajada} abierto={abierto} onCerrar={cerrar} className="q-panel-detalle">
+        {abierto && <div className="q-detalle-cuerpo">{children}</div>}
+      </PanelLateral>
+    </div>
   );
 }
 
@@ -535,7 +645,7 @@ export function Monitoreo({ grupos }) {
       {grupos.map((g) => (
         <section key={g.titulo}>
           <h3>{g.titulo} <span>{g.items.length}</span></h3>
-          <ul className="q-palabras">{g.items.map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul className="q-palabras">{g.items.map((x) => <li key={x}><Etiqueta tono="fuerte" icono={null}>{x}</Etiqueta></li>)}</ul>
         </section>
       ))}
     </div>
@@ -620,7 +730,7 @@ function TarjetaAnuncio({ a, anunciante, t }) {
       {a.imagen && !rota && <div className="q-anuncio-pieza"><img src={a.imagen} alt={`Imagen del anuncio de ${anunciante}`} loading="lazy" referrerPolicy="no-referrer" onError={() => setRota(true)} /></div>}
       {!a.imagen && a.arte != null && <div className="q-anuncio-pieza"><ArteMuestra a={a} grande /></div>}
       <div className="q-anuncio-cuerpo">
-        {a.titulo && <h3>{a.titulo}</h3>}
+        {a.titulo && <h3>{a.titulo}{a.nuevo && <SelloNuevo />}</h3>}
         {texto && <p className="q-anuncio-texto">{texto}</p>}
         {meta && <p className="q-anuncio-meta">{meta}</p>}
         {a.enlace && (
@@ -657,6 +767,7 @@ function Mazo({ g, onAbrir, propio, t }) {
   return (
     <button type="button" className="q-mazo" onClick={() => onAbrir(g.nombre)} data-anunciante={g.nombre} aria-haspopup="dialog">
       <span className="q-mazo-pila" aria-hidden="true">
+        {g.nuevos > 0 && <SelloNuevo className="q-sobre-carta" />}
         {pila.map((a, i) => {
           const conImg = a.imagen && conImagen.length;
           return (
@@ -667,8 +778,8 @@ function Mazo({ g, onAbrir, propio, t }) {
           );
         })}
       </span>
-      <span className="q-mazo-nombre">{g.nombre}{propio && <span className="q-mazo-propio">{t.propio}</span>}</span>
-      <span className="q-mazo-dato"><b>{t.cuenta(n)}</b>{t.detalle(g) && ` · ${t.detalle(g)}`}</span>
+      <span className="q-mazo-nombre">{g.nombre}{propio && <Etiqueta variante="rotulo" icono={null}>{t.propio}</Etiqueta>}</span>
+      <span className="q-mazo-dato"><b>{t.cuenta(n)}</b>{g.nuevos > 0 && t.nuevos ? ` · ${t.nuevos(g.nuevos)}` : t.detalle(g) && ` · ${t.detalle(g)}`}</span>
       <span className="q-mazo-ver">{t.ver(n)}<ArrowRight size={14} aria-hidden="true" /></span>
     </button>
   );

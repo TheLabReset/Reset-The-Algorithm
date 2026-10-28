@@ -1,9 +1,9 @@
 // Piezas comunes de las pantallas: marco de capa (índice al costado), cabecera con fuentes y capítulos.
 import { useState } from 'react';
-import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo, VentanaAnuncios } from '../sistema/Componentes.jsx';
+import { IndiceCapa, Seccion, FuentesCapa, AvisosCapitulo, VentanaContexto, PanelLateral, Monitoreo, BotonMonitoreo, VentanaAnuncios, Etiqueta } from '../sistema/Componentes.jsx';
 import { Histograma, Barras, Dispersion } from '../sistema/graficos/Graficos.jsx';
-import { diaSemanaLargo, compacto, mesCorto } from '../sistema/formato.js';
-import { comparacionTexto, tramoFechas } from '../textos/comun.js';
+import { diaSemanaLargo, compacto } from '../sistema/formato.js';
+import { comparacionTexto, comparacionCorta, ventanaTexto } from '../textos/comun.js';
 import { alerta, bien } from '../textos/sugiere.js';
 import { seccionPorNumero } from '../capas/estructura.js';
 import { fechaCorta, numero } from '../sistema/formato.js';
@@ -31,8 +31,8 @@ export function buenasDe(vista) {
 // Estado de una tarjeta cuando su fuente no trae el dato
 export const sinDato = (estado) => ({ tipo: estado === 'no-cargo' ? 'no-cargo' : estado === 'fuera' ? 'fuera' : 'sin-datos', reemplaza: true });
 export const delta = (cambio, mejorSi, v) => ({ cambio, mejorSi, referencia: `contra ${comparacionTexto(v.periodo)}`, motivo: 'sin comparación' });
-// En el resumen la referencia va corta para que cada cifra quede en una línea: «contra set 2025»
-export const deltaCorto = (cambio, mejorSi, v) => ({ ...delta(cambio, mejorSi, v), referencia: `contra ${mesCorto(+v.periodo.compararDesde.slice(5, 7))} ${v.periodo.compararDesde.slice(0, 4)}` });
+// En el resumen la referencia va corta para que cada cifra quede en una línea: «contra set 2025», «contra 12 al 18 oct»
+export const deltaCorto = (cambio, mejorSi, v) => ({ ...delta(cambio, mejorSi, v), referencia: `contra ${comparacionCorta(v.periodo)}` });
 
 // Partes de un todo: tres con color (orden validado para daltonismo) y el resto juntas en un solo gris.
 // La tabla de al lado lista todas; la franja no repite grises que no se distinguen.
@@ -49,7 +49,7 @@ export const partesConResto = (partes, nombreResto) => {
 // Da a cada tarjeta la ventana del período («1 al 30 de setiembre»), que la tarjeta muestra arriba a la derecha.
 export function MarcoCapa({ capa, vista, bajada, conResumen = true, children }) {
   const ids = [...new Set(capa.secciones.flatMap((s) => s.fuentes))];
-  const ventana = tramoFechas(vista.periodo.desde, vista.periodo.hasta).replace(/^del /, '');
+  const ventana = ventanaTexto(vista.periodo.desde, vista.periodo.hasta);
   const [monitoreo, setMonitoreo] = useState(false);
   return (
     <VentanaContexto.Provider value={ventana}>
@@ -119,7 +119,6 @@ export function Competencia({ marcas, numero, anuncios, t, verSus, nota }) {
           formatoX={compacto} notas={{ neutro: 'neutro', arriba: 'positivo', abajo: 'negativo' }}
           puntos={marcas.map((x) => ({ id: x.id, nombre: x.nombre, propia: x.propia, x: x.interacciones, y: x.sentimiento.indice }))}
           elegido={m.id} onElegir={setElegida} />
-        <p className="q-nota-bloque">Elige un punto para ver el detalle de cada marca.</p>
       </div>
       <aside className="q-ficha" aria-live="polite" aria-label={`Detalle de ${m.nombre}`}>
         <h4>{m.nombre}</h4>
@@ -127,7 +126,7 @@ export function Competencia({ marcas, numero, anuncios, t, verSus, nota }) {
           <div><dt>Interacción</dt><dd><b>{compacto(m.interacciones)}</b> en {numero(m.publicaciones)} {m.publicaciones === 1 ? 'publicación' : 'publicaciones'}</dd></div>
           <div><dt>Sentimiento de los comentarios</dt><dd><b>{numero(m.sentimiento.indice)}</b></dd></div>
           <div><dt>Anuncios activos</dt><dd><b>{numero(m.anuncios)}</b></dd></div>
-          <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}>{p}</li>)}</ul></dd></div>
+          <div><dt>Palabras que más repite</dt><dd><ul className="q-palabras">{m.palabras.map((p) => <li key={p}><Etiqueta tono="fuerte" icono={null}>{p}</Etiqueta></li>)}</ul></dd></div>
         </dl>
         {suyos && <button type="button" className="q-boton" aria-haspopup="dialog" data-ver-anuncios={m.nombre} onClick={() => setAbierta(m.nombre)}>{verSus(suyos.anuncios.length)}</button>}
       </aside>

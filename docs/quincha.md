@@ -28,7 +28,7 @@ Los semánticos se agrupan por función:
 - **Superficies:** `--fondo` (la página), `--superficie-capitulo` (el panel que agrupa), `--superficie` (la tarjeta) y `--barra` (la barra superior).
 - **Texto:** `--texto-1` (cifras y títulos), `--texto-2` (lectura) y `--texto-3` (notas y ejes).
 - **Acento:** `--acento` y `--acento-texto`, el rojo de la marca. Es identidad (la capa activa, el número de capítulo), nunca dato.
-- **Estado:** `--mejora`, `--empeora` y `--atencion`. Siempre van con flecha, signo o ícono, para que el color nunca vaya solo.
+- **Estado:** `--mejora`, `--empeora` y `--atencion`, y sus fondos `--mejora-suave` y `--empeora-suave` (las pastillas «Rinde» y «Costosa»). Siempre van con flecha, signo o ícono, para que el color nunca vaya solo.
 - **Datos:**
   - `--serie-1`: barras y líneas, en el color de datos de la marca;
   - `--serie-resto`: el resto, cuando hay un resalte;
@@ -61,19 +61,19 @@ Tres papeles: **títulos y cifras** (`--f-titulo`), **texto** (`--f-texto`) y **
 
 Las cifras van en números tabulares. Si la tipografía de texto tiene el cero cruzado, se reemplazan solo los dígitos.
 
-**Escala** (`--t-13` a `--t-36`, en px): 13 para ejes, pies y chips; 14 para tablas; 16 para la lectura; 19 para el título de tarjeta; 24 para el capítulo; 28 y 36 para la cabecera de capa. Cifras: 24 y 32 (`--c-24`, `--c-32`). Pesos de la letra variable: 400 lectura, 560 rótulos, 640 cifras, 700 títulos. Se subió un escalón en octubre de 2026: la de antes (12, 13, 15, 17, 20) dejaba niveles muy pegados y lo secundario chico, más con Sofia Sans, que es más baja que una letra común (altura de x 0,49 contra 0,53 de Arial).
+**Escala** (`--t-13` a `--t-36`, en px): 13 para ejes, pies y etiquetas; 14 para tablas; 16 para la lectura; 19 para el título de tarjeta; 24 para el capítulo; 28 y 36 para la cabecera de capa. Cifras: 24 y 32 (`--c-24`, `--c-32`). Pesos de la letra variable: 400 lectura, 560 rótulos, 640 cifras, 700 títulos. Se subió un escalón en octubre de 2026: la de antes (12, 13, 15, 17, 20) dejaba niveles muy pegados y lo secundario chico, más con Sofia Sans, que es más baja que una letra común (altura de x 0,49 contra 0,53 de Arial).
 
 **Una letra condensada solo desde 24 px.** Más chica se aprieta. El título de tarjeta va en `--f-tarjeta`: la de texto si la de títulos es condensada, la de títulos si no lo es. El modo presentar sube toda la escala con `--escala-presentar`.
 
 ## 4. Componentes
 
-Están en `src/sistema/Componentes.jsx`. No calculan: reciben cifras ya armadas por `src/calculo` y textos ya escritos por `src/textos`.
+Están en `src/sistema/Componentes.jsx`. No calculan: reciben cifras ya armadas por `src/calculo` y textos ya escritos por `src/textos`. Para elegir rápido qué usar (componente, etiqueta, formato o texto), [guia-rapida.md](guia-rapida.md).
 
 | Componente | Para qué |
 |---|---|
 | `NavegacionCapas` | Las cuatro pestañas; la activa con fondo teñido y una marca redonda abajo |
 | `IndiceCapa` | «En esta capa», al costado, marca el capítulo que se está leyendo |
-| `FuentesCapa`, `ChipFuente` | Cada fuente con su fecha de corte y su estado (punto y texto) |
+| `FuentesCapa` | Cada fuente con su fecha de corte y su estado (punto y texto) |
 | `Resumen`, `Frase` | Las cifras de la capa y, debajo, una frase por plataforma contra su objetivo |
 | `Seccion`, `AvisosCapitulo` | El capítulo y las alertas que sostiene, una línea cada una |
 | `Bloque`, `Ventana`, `Ayuda`, `Estado` | La tarjeta: título, ventana, ayuda, lectura, cuerpo y pie; y lo que muestra cuando falta el dato o está cargando |
@@ -81,7 +81,11 @@ Están en `src/sistema/Componentes.jsx`. No calculan: reciben cifras ya armadas 
 | `Flujo` | Una fila por plataforma, un paso por columna (de la inversión a la inscripción) |
 | `ListaAlertas` | Qué mirar: lista numerada por nivel, cada fila se abre con el detalle |
 | `SugerenciaModelo` | La propuesta del modelo, con robot y una columna por plataforma |
-| `PanelLateral`, `Monitoreo` | Qué se monitorea |
+| `SelectorPeriodo` | El período: el tramo y el atajo en el botón; adentro, los atajos, dos fechas (una fecha fuera de la data se marca y se dice por qué) y con qué se compara |
+| `PanelLateral`, `Monitoreo` | El panel de la derecha (cada uno con su propio título accesible; la página de atrás no se desplaza) y Qué se monitorea |
+| `Detalle`, `DetallesAbiertos` | El detalle de un capítulo: el botón al pie, «Ver el detalle: …», y el panel ancho con lo minucioso. Un ancla `#detalle-s-x-y` lo abre. La prueba de render los abre todos con `DetallesAbiertos` |
+| `Etiqueta` | La única etiqueta chica, en cinco variantes (`borde`, `llena`, `tinta`, `texto`, `rotulo`); tono e icono salen del catálogo `src/sistema/estados.js`. Cuándo va cada una: [guia-rapida.md](guia-rapida.md) |
+| `ChipUniverso`, `ChipFuente`, `SelloNuevo`, `SelloMuestra` | Atajos de `Etiqueta`: el universo de una cifra, una fuente con problema, «Nuevo» (con `q-sobre-carta`, sobre un mazo) y la fecha de la muestra en la barra |
 | `Abanico`, `VentanaAnuncios`, `ArteMuestra` | Las artes agrupadas por dueño: un mazo que se abre en abanico y una ventana con todas las piezas. Detalle en [abanico.md](abanico.md) |
 | `Dialogo` | La ventana modal genérica (`<dialog>` nativo): foco atrapado, solo se desplaza su cuerpo, el foco vuelve a quien la abrió |
 | `BarraDemo` | Los estados de la demo |
@@ -131,6 +135,8 @@ Reglas de forma:
 | La serie frente a su comparación | 2:1 |
 | El color de datos frente al gris del resto | 2:1 |
 | Dos escalones vecinos de una rampa | 1,2:1 |
+
+6. **Una sola etiqueta:** ninguna regla fuera de `.q-etiqueta` arma una pastilla (letra de 12 o 13 px, relleno, radio y fondo o borde) y ninguna clase se llama chip, badge, insignia, pastilla, pill o tag. Un botón, un campo y lo que flota no cuentan.
 
 La última fila es la regla de la casa: **nunca dos grises vecinos que se confundan**. Nació de una corrección real, porque los dos últimos grises de un gráfico no se distinguían.
 

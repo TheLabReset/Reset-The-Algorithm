@@ -11,14 +11,12 @@ import { escenario } from './escenario.js';
 import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugerencias.js';
 import { queMirar, queVaBien } from './queMirar.js';
 import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeAnuncios, leeGa4, analizaReparto, analizaPautaCrm } from './produccion.js';
+import { periodoDe, diasAlineados, DIAS_MINIMOS } from './periodo.js';
+import { leerPiezas } from './piezas.js';
 import { CLIENTE } from '../cliente.js';
 
-export function periodoDesdeFiltros(cfg, { mes, comparar = 'anio' }) {
-  const desde = mes + '-01', hasta = finDeMes(mes);
-  const comp = comparar === 'anio' ? sumarMeses(mes, -12) : sumarMeses(mes, -1);
-  const coh = sumarMeses(mes, -1);
-  return { desde, hasta, compararDesde: comp + '-01', compararHasta: finDeMes(comp), cohorteDesde: coh + '-01', cohorteHasta: finDeMes(coh), comparar, mes };
-}
+// El período de los filtros (un atajo, dos fechas o un mes) y su comparación: src/calculo/periodo.js
+export { periodoDe } from './periodo.js';
 
 export function mesesDisponibles(cfg) {
   const out = [];
@@ -28,7 +26,7 @@ export function mesesDisponibles(cfg) {
 
 export function armarVista(data, filtros, estado = {}) {
   const cfg = data.config;
-  const P = filtros.desde ? filtros : periodoDesdeFiltros(cfg, filtros);
+  const P = filtros.cohorteDesde ? filtros : periodoDe(cfg, filtros);
   const { desde, hasta, compararDesde, compararHasta, cohorteDesde, cohorteHasta } = P;
   if (hasta > cfg.corte) throw new Error('El período no puede pasar el corte de la muestra');
   const caidas = new Set(estado.fuentesCaidas || []); // escenario: fuentes que no cargaron
@@ -38,7 +36,8 @@ export function armarVista(data, filtros, estado = {}) {
   const compFuera = compararDesde < cfg.desde;
 
   const pa = ventanaPauta(data, desde, hasta), pb = ventanaPauta(data, compararDesde, compararHasta);
-  const comparable = !compFuera && pa.cobertura >= minCob && pb.cobertura >= minCob;
+  // una variación se publica con días suficientes, la comparación dentro de la muestra y días medidos en las dos ventanas
+  const comparable = P.conComparacion && !compFuera && pa.cobertura >= minCob && pb.cobertura >= minCob;
   const periodo = {
     ...P, dias: pa.dias, comparable, compFuera, corte: cfg.corte,
     mesCompleto: desde.endsWith('-01') && sumarDias(hasta, 1).endsWith('-01') && desde.slice(0, 7) === hasta.slice(0, 7),
@@ -58,7 +57,6 @@ export function armarVista(data, filtros, estado = {}) {
 
   // ══════════════ CAPA 1 · LEE ══════════════
   const fechas = rango(desde, hasta);
-  const desfase = diasEntre(compararDesde, desde);
   const pauta = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : {
     estado: 'ok', universo: 'Leads que reporta cada plataforma de pauta',
     leads: pa.leads, leadsPrevio: pb.leads, inversion: pa.inversion, cpl: pa.cpl, cplPrevio: pb.cpl,
@@ -66,7 +64,7 @@ export function armarVista(data, filtros, estado = {}) {
     cambioCpl: comparable ? cambioPct(pa.cpl, pb.cpl) : null,
     diasParciales: pa.parciales,
     serie: fechas.map((d) => ({ fecha: d, valor: leadsPautaDia(data, d) })),
-    seriePrevia: fechas.map((d) => { const f = sumarDias(d, -desfase); return { fecha: f, valor: dentro(data, f) ? leadsPautaDia(data, f) : null }; }),
+    seriePrevia: diasAlineados(P).map((f) => ({ fecha: f, valor: f && dentro(data, f) ? leadsPautaDia(data, f) : null })),
     eventos: cfg.eventos.filter((e) => e.fecha >= desde && e.fecha <= hasta),
     // Inversión total por día: un día con una plataforma sin dato queda como hueco, no como cero
     serieInversion: fechas.map((d) => {
@@ -121,7 +119,7 @@ export function armarVista(data, filtros, estado = {}) {
     busquedas = {
       estado: 'ok', universo: 'Interés relativo de 0 a 100 en Google Trends (no es volumen)', semanas: semPer.length,
       demanda: prom(g, semPer), demandaPrevia: semComp.length ? prom(g, semComp) : null,
-      cambio: semComp.length ? cambioPct(prom(g, semPer), prom(g, semComp)) : null,
+      cambio: semComp.length && P.conComparacion ? cambioPct(prom(g, semPer), prom(g, semComp)) : null,
       serie: fin52.map((s) => ({ fecha: s, valor: g.semanas.find((x) => x.semana === s).indice })),
       seriePrevia: fin52.map((s) => { const f = sumarDias(s, -364); const x = g.semanas.find((y) => y.semana === f); return { fecha: f, valor: x ? x.indice : null }; }),
       terminos: data.busquedas.map((b) => ({ id: b.id, nombre: b.termino, propia: b.propia, actual: prom(b, semPer), previo: semComp.length ? prom(b, semComp) : null })),
@@ -156,6 +154,9 @@ export function armarVista(data, filtros, estado = {}) {
   if (busquedas.estado === 'ok') Object.assign(busquedas, leeBusquedasDetalle(data, P));
   const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: `TikTok y conversación pública sobre ${CLIENTE.nombre}`, ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
   const competencia = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'Publicaciones y anuncios de cada marca (cifras de muestra)', ...leeCompetencia(data, P) } : { estado: estadoGrupo('conversacion') };
+  // Piezas y campañas: lo que reporta cada plataforma por pieza, con su estado (src/calculo/piezas.js)
+  const piezasLeidas = estadoGrupo('pauta') === 'ok' ? leerPiezas(data, P) : null;
+  const piezas = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : piezasLeidas ? { estado: 'ok', universo: 'Lo que reporta cada plataforma por pieza', ...piezasLeidas } : { estado: 'sin-datos' };
   const anunciosLeidos = estadoGrupo('conversacion') === 'ok' ? leeAnuncios(data, P) : null;
   const anuncios = anunciosLeidos ? { estado: 'ok', universo: 'Biblioteca de anuncios de Meta (piezas de muestra)', ...anunciosLeidos } : { estado: estadoGrupo('conversacion') === 'ok' ? 'vacio' : estadoGrupo('conversacion') };
 
@@ -173,7 +174,7 @@ export function armarVista(data, filtros, estado = {}) {
     const o = coCanal ? pl.canales.reduce((t, id) => { const x = coCanal.porOrigen[id] || {}; return { leads: t.leads + (x.leads || 0), altas: t.altas + (x.altas || 0) }; }, { leads: 0, altas: 0 }) : null;
     const invCanal = (id) => suma(diasComunes, (d) => ix.pautaDia[id].get(d).inversion);
     return {
-      id: pl.id, nombre: pl.nombre, inversion: a.inversion, leads: a.leads, cpl: a.cpl, metaCpl: objetivoPlataforma(cfg, pl, invCanal), sinDato: a.sinDato,
+      id: pl.id, nombre: pl.nombre, inversion: a.inversion, leads: a.leads, cpl: a.cpl, metaCpl: objetivoPlataforma(cfg, pl, invCanal), sinDato: a.sinDato, medidos: a.medidos,
       pctInversion: pctInv[i], pctLeads: pctLeads[i],
       cohorte: o ? { leads: o.leads, altas: o.altas, tasaAlta: razon(o.altas, o.leads), cpa: razon(invCoh.inversion, o.altas), pocosCasos: o.altas < cfg.metodo.casosMinimos, cobertura: invCoh.cobertura } : null,
     };
@@ -213,7 +214,7 @@ export function armarVista(data, filtros, estado = {}) {
   // Los leads se suman: el total de un día es la suma de sus horas
   const horas = porHoraDelDia(sumaHD, veces);
   const porDiaSemana = sumaHD.map((f, i) => (veces[i] ? suma(f, (v) => v) / veces[i] : null));
-  const horaDia = estadoGrupo('crm') !== 'ok' ? { estado: estadoGrupo('crm') } : { estado: 'ok', universo: 'Leads del CRM por hora de entrada', porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: diaDestacado(porDiaSemana, cfg.metodo.margenParecido), veces };
+  const horaDia = estadoGrupo('crm') !== 'ok' ? { estado: estadoGrupo('crm') } : { estado: 'ok', universo: 'Leads del CRM por hora de entrada', porHora: horas.porHora, horasAltas: horas.altas, porDiaSemana, diaMayor: veces.every((n) => n > 0) ? diaDestacado(porDiaSemana, cfg.metodo.margenParecido) : null, semanaCompleta: veces.every((n) => n > 0), veces };
 
   // Sedes: leads del CRM del período contra la comparación (por día), y tasa de inscripción de 3 cohortes cerradas
   const tres = [sumarMeses(cohorteDesde.slice(0, 7), -2) + '-01', cohorteHasta];
@@ -242,13 +243,16 @@ export function armarVista(data, filtros, estado = {}) {
 
   // ══════════════ CAPA 3 · SUGIERE ══════════════
   const indice = calcularIndice(data, hasta);
-  const fechaPrevio = sumarDias(desde, -1);
-  const previo = fechaPrevio >= cfg.desde ? calcularIndice(data, fechaPrevio) : null;
+  // la variación del índice: contra el último día de la comparación elegida (el día antes del período, el mismo día del
+  // mes anterior o de un año antes), y solo con días suficientes
+  const fechaPrevio = P.compararHasta;
+  const previo = P.conComparacion && fechaPrevio >= cfg.desde ? calcularIndice(data, fechaPrevio) : null;
   const historia = Array.from({ length: 12 }, (_, k) => finDeMes(sumarMeses(hasta.slice(0, 7), k - 11))).filter((f) => f >= cfg.desde && f <= cfg.corte).map((f) => { const i = calcularIndice(data, f); return { fecha: f, valor: i.completo ? i.valor : null }; });
   const indiceVista = { ...indice, previo: previo?.valor ?? null, fechaPrevio, cambio: previo?.valor != null && indice.valor != null ? indice.valor - previo.valor : null, historia, banda: bandaDe(indice.valor, cfg.metodo.bandasIndice) };
 
   const sugerencias = [
-    rendimiento.estado === 'ok' && rendimiento.cohorteCerrada ? reasignacion(cfg, canales) : null,
+    // mover inversión es una decisión de dinero: con menos de DIAS_MINIMOS días no se propone
+    rendimiento.estado === 'ok' && rendimiento.cohorteCerrada && P.dias >= DIAS_MINIMOS ? reasignacion(cfg, canales, P) : null,
     crm.estado === 'ok' ? agendamiento(cfg, { cerrada, etapas: crm.etapas, exclusivas: crm.exclusivas }) : null,
     estadoGrupo('pauta') === 'ok' ? fatigaCreativa(data, hasta) : null,
     temporada(cfg, hasta),
@@ -273,11 +277,13 @@ export function armarVista(data, filtros, estado = {}) {
 
   const vista = {
     periodo, fuentes, monitoreo,
-    lee: { pauta, plataformas, crm, crmDetalle, busquedas, redes, competencia, anuncios, conversacion, web },
+    lee: { pauta, plataformas, piezas, crm, crmDetalle, busquedas, redes, competencia, anuncios, conversacion, web },
     analiza: { rendimiento, reparto, pautaCrm, demandaRespuesta, horaDia, sedes },
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };
-  vista.sugiere.queMirar = fuera ? [] : queMirar(data, P, vista);
-  vista.sugiere.queVaBien = fuera ? [] : queVaBien(data, P, vista);
+  // las alertas leen reglas con umbrales: con menos de DIAS_MINIMOS días un día raro mandaría, y no se leen
+  vista.sugiere.pocosDias = P.dias < DIAS_MINIMOS;
+  vista.sugiere.queMirar = fuera || vista.sugiere.pocosDias ? [] : queMirar(data, P, vista);
+  vista.sugiere.queVaBien = fuera || vista.sugiere.pocosDias ? [] : queVaBien(data, P, vista);
   return vista;
 }

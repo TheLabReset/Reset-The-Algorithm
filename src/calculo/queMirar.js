@@ -7,14 +7,15 @@
 import { rango, sumarDias, diasEntre } from '../muestra/calendario.js';
 import { suma, razon, cuantil, indices, sumarMeses, finDeMes, plataformaDe } from './base.js';
 import { leeCrmDetalle, interaccionCanal } from './produccion.js';
+import { DIAS_MINIMOS } from './periodo.js';
 
 export const UMBRALES = {
   sinConversion: 0.08, // gasto en palabras casi sin conversiones, sobre el gasto de Search
-  caidaContactoEnElDia: 5, // puntos menos de leads con primer contacto en menos de 24 horas, contra el mes anterior
+  caidaContactoEnElDia: 5, // puntos menos de leads con primer contacto en menos de 24 horas, contra el mes anterior al período
   finDeSemanaEspera: 0.25, // más de un cuarto de los leads del fin de semana espera más de un día por su primer contacto
   llegaAlCrm: 0.85, // de cada lead reportado, cuántos llegan al CRM
   subeBusqueda: 50, // % de subida en tres meses
-  caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior
+  caidaInteraccion: 20, // % de caída de la tasa de interacción de un canal pagado del sitio contra el mes anterior al período
   diaBajo: 0.5, // un día con menos de la mitad de la inversión mediana del período
   cierraCampana: 31, // días: una campaña del CRM que cierra dentro del mes siguiente al período
 };
@@ -28,9 +29,13 @@ export function queMirar(data, P, v) {
   if (pl.estado === 'ok') {
     const ult7 = rango(sumarDias(P.hasta, -6), P.hasta);
     for (const p of pl.plataformas) {
-      // CPL de la última semana contra su objetivo
+      // CPL de la última semana del período contra su objetivo: los 7 días de la data, aunque el período sea más corto
       let inv = 0, leads = 0;
-      ult7.forEach((d) => { const f = p.porDia.find((x) => x.fecha === d); if (f?.inversion != null) { inv += f.inversion; leads += f.leads; } });
+      ult7.forEach((d) => {
+        const filas = p.canales.map((c) => ix.pautaDia[c].get(d));
+        if (filas.some((f) => !f || f.sinDato)) return;
+        inv += suma(filas, (f) => f.inversion); leads += suma(filas, (f) => f.leads);
+      });
       const cpl = razon(inv, leads);
       if (cpl != null && p.objetivo != null && cpl > p.objetivo) add({ id: 'cpl-objetivo', nivel: 'atencion', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl, objetivo: p.objetivo, leads, desde: ult7[0], hasta: P.hasta } });
       // días fuera de rango: sin dato o con menos de la mitad de la inversión mediana
@@ -40,21 +45,23 @@ export function queMirar(data, P, v) {
     }
     const k = pl.palabras;
     const pct = razon(k.gastoSinConversion, k.inversionSearch);
-    if (pct >= UMBRALES.sinConversion) add({ id: 'palabras-sin-conversion', nivel: 'revisar', fuente: 'Google Ads', sostiene: '3.2', datos: { palabras: k.sinConversion.map((x) => x.texto), monto: k.gastoSinConversion, pct } });
+    if (pct >= UMBRALES.sinConversion) add({ id: 'palabras-sin-conversion', nivel: 'revisar', fuente: 'Google Ads', sostiene: '3.2', datos: { palabras: k.sinConversion.map((x) => x.texto), monto: k.gastoSinConversion, pct, mesEntero: !!P.mes && !P.parcial } });
   }
 
   const cd = v.lee.crmDetalle;
   if (cd.estado === 'ok') {
-    // contacto rápido contra el mes anterior (regla operativa: siempre contra el mes previo)
-    const mesAnt = sumarMeses(P.hasta.slice(0, 7), -1);
-    if (mesAnt + '-01' >= cfg.desde) {
+    // contacto rápido contra el mes anterior al período (regla operativa: siempre contra un mes entero que no se pisa
+    // con el período), solo con días suficientes para que un día raro no mande
+    const mesAnt = sumarMeses(P.desde.slice(0, 7), -1);
+    if (mesAnt + '-01' >= cfg.desde && P.dias >= DIAS_MINIMOS) {
       const ant = leeCrmDetalle(data, { ...P, desde: mesAnt + '-01', hasta: finDeMes(mesAnt), compararDesde: P.compararDesde, compararHasta: P.compararHasta });
       const caida = (ant.atencion.enElDia - cd.atencion.enElDia) * 100;
       if (caida >= UMBRALES.caidaContactoEnElDia) add({ id: 'contacto-lento', nivel: 'atencion', fuente: 'CRM', sostiene: '4.3', datos: { ahora: cd.atencion.enElDia, antes: ant.atencion.enElDia, mesAntes: mesAnt, causa: cd.atencion.cambioDesde?.texto || null, causaDesde: cd.atencion.cambioDesde?.desde || null } });
     }
-    // Calendario: una campaña del CRM que cierra pronto; la pauta que la empuja tiene que llegar hasta el cierre
-    for (const k of cd.campanas) {
-      const faltan = diasEntre(P.hasta, k.hasta);
+    // Calendario: una campaña del CRM que cierra pronto; la pauta que la empuja tiene que llegar hasta el cierre.
+    // Cuenta desde hoy (el corte): solo si el período llega al corte; un período pasado no avisa de lo que ya cerró
+    for (const k of P.hasta === cfg.corte ? cd.campanas : []) {
+      const faltan = diasEntre(cfg.corte, k.hasta);
       if (faltan > 0 && faltan <= UMBRALES.cierraCampana) {
         const plataformas = [...new Set((k.canales || []).map((c) => plataformaDe(cfg, c)?.nombre).filter(Boolean))];
         add({ id: 'cierra-campana', nivel: 'revisar', fuente: 'Calendario', sostiene: '4.3', datos: { campana: k.nombre, hasta: k.hasta, faltan, leads: k.leads, altas: k.altas, plataformas } });
@@ -74,11 +81,11 @@ export function queMirar(data, P, v) {
   const bu = v.lee.busquedas;
   if (bu.estado === 'ok' && bu.palabras) for (const b of bu.palabras) if (!b.propia && (b.cambio3m >= UMBRALES.subeBusqueda || b.subiendo)) add({ id: 'busqueda-sube', nivel: 'oportunidad', fuente: 'Google Trends', sostiene: '1.1', datos: { termino: b.termino, cambio: b.cambio3m, sinBase: b.sinBase } });
 
-  // GA4: un canal pagado cuyas sesiones interactúan bastante menos que el mes anterior (el clic se paga igual).
+  // GA4: un canal pagado cuyas sesiones interactúan bastante menos que el mes anterior al período (el clic se paga igual).
   // Si en el período hay un evento anotado en una plataforma de ese canal, se cita como coincidencia, no como causa.
   if (v.lee.web.estado === 'ok') {
-    const mesAnt = sumarMeses(P.hasta.slice(0, 7), -1);
-    if (mesAnt + '-01' >= cfg.desde) for (const f of cfg.web.fuentes.filter((x) => x.deClics)) {
+    const mesAnt = sumarMeses(P.desde.slice(0, 7), -1);
+    if (mesAnt + '-01' >= cfg.desde && P.dias >= DIAS_MINIMOS) for (const f of cfg.web.fuentes.filter((x) => x.deClics)) {
       const ahora = interaccionCanal(data, f.id, P.desde, P.hasta), antes = interaccionCanal(data, f.id, mesAnt + '-01', finDeMes(mesAnt));
       if (ahora.sesiones < 300 || !antes.tasa) continue;
       const caida = ((antes.tasa - ahora.tasa) / antes.tasa) * 100;
@@ -95,7 +102,7 @@ export function queMirar(data, P, v) {
 // Lo que va bien: el algoritmo también dice qué sostener. Mismas reglas de honestidad: cada señal trae su dato.
 export const UMBRALES_BIEN = {
   bajoObjetivo: 0.1, // una plataforma con costo por lead al menos 10 % bajo su objetivo en el mes
-  mejoraAnual: 0.15, // costo por lead al menos 15 % más bajo que un año antes
+  mejoraAnual: 0.15, // costo por lead al menos 15 % más bajo que un año antes (solo cuando se compara con un año antes)
   recuperaCtr: 0.2, // las piezas nuevas suben el CTR al menos 20 %
 };
 
@@ -105,12 +112,13 @@ export function queVaBien(data, P, v) {
   if (pl.estado === 'ok') for (const p of pl.plataformas) {
     if (p.cpl == null || p.objetivo == null) continue;
     const margen = (p.objetivo - p.cpl) / p.objetivo;
-    const anual = p.cplPrevio ? (p.cplPrevio - p.cpl) / p.cplPrevio : null;
+    // «un año antes» solo cuando la comparación elegida es un año antes
+    const anual = P.comparar === 'anio' && p.cplPrevio ? (p.cplPrevio - p.cpl) / p.cplPrevio : null;
     if (margen >= UMBRALES_BIEN.bajoObjetivo) bien.push({ id: 'bajo-objetivo', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl: p.cpl, objetivo: p.objetivo, margen, anual } });
     else if (anual != null && anual >= UMBRALES_BIEN.mejoraAnual) bien.push({ id: 'mejora-anual', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl: p.cpl, previo: p.cplPrevio, anual } });
   }
   const renovar = v.sugiere.sugerencias.find((s) => s.id === 'renovar');
-  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '3.2', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
+  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '3.3', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
   const co = v.lee.competencia;
   if (co.estado === 'ok') {
     const orden = [...co.marcas].sort((a, b) => b.sentimiento.indice - a.sentimiento.indice);

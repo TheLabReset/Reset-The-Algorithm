@@ -21,10 +21,9 @@
 .q-marca-producto b { font-family: var(--f-titulo); font-weight: var(--peso-titulo); font-size: var(--t-19); letter-spacing: -0.01em; }
 .q-marca-producto span { font-size: var(--t-13); color: var(--sobre-barra-2); }
 .q-barra-controles { display: flex; align-items: center; gap: var(--e-3); }
-.q-sello-muestra { display: inline-flex; align-items: center; gap: var(--e-2); font-size: var(--t-13); color: var(--sobre-barra-2); white-space: nowrap; }
 .q-barra .q-boton-quieto { color: var(--sobre-barra-2); }
 .q-barra .q-boton-quieto:hover { color: var(--sobre-barra); background: transparent; }
-@media (max-width: 640px) { .q-marca-producto span, .q-sello-muestra { display: none; } }
+@media (max-width: 640px) { .q-marca-producto span { display: none; } }
 
 /* ── Capas y filtros: una fila fija. La capa activa se ve como un lugar: fondo apenas teñido, texto y número en el
    color de la marca y una marca redonda abajo (28 × 7 px). Patrón de la guía general de algoritmos ── */
@@ -154,11 +153,6 @@
 .q-delta-igual .q-delta-valor { color: var(--texto-2); }
 
 /* ── Chips: solo para avisos de fuente y estado ── */
-.q-chip { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-13); font-weight: var(--peso-rotulo); line-height: 1.3; color: var(--texto-2); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde-control); white-space: nowrap; }
-.q-chip-universo { color: var(--texto-1); background: var(--superficie); }
-.q-chip-fuente { border-color: var(--borde); }
-.q-chip-atencion { color: var(--atencion); border-color: currentColor; background: var(--superficie); }
-.q-chip svg { flex: none; }
 
 /* ── Estados de un bloque ── */
 .q-estado { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-1) var(--e-3); align-items: start; padding: var(--e-4); border: 1px dashed var(--borde-control); border-radius: var(--r-bloque); color: var(--texto-2); font-size: var(--t-14); }
@@ -216,7 +210,6 @@
 .q-ficha dd { margin: 0; font-size: var(--t-14); color: var(--texto-2); }
 .q-ficha dd b { font-family: var(--f-titulo); font-size: var(--c-24); font-weight: var(--peso-cifra); color: var(--texto-1); margin-right: var(--e-1); }
 .q-palabras { list-style: none; margin: var(--e-1) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
-.q-palabras li { font-size: var(--t-13); color: var(--texto-1); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); border: 1px solid var(--borde); }
 
 /* Sentimiento: dos polos y un centro gris, cada parte con su número escrito */
 
@@ -226,11 +219,7 @@
 @media (min-width: 900px) { .q-alerta.q-mitad { grid-column: span 6; } }
 @media (max-width: 640px) { .q-alerta { padding: var(--e-4); } }
 .q-alerta:target { outline: 2px solid var(--foco); outline-offset: 2px; }
-.q-alerta-atencion { --nivel: var(--empeora); }
-.q-alerta-revisar { --nivel: var(--atencion); }
-.q-alerta-oportunidad, .q-alerta-bien { --nivel: var(--mejora); }
 .q-alerta-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); }
-.q-nivel { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--nivel); }
 .q-alerta-fuente { font-size: var(--t-13); color: var(--texto-3); }
 .q-alerta h3 { font-family: var(--f-titulo); font-size: var(--t-19); font-weight: var(--peso-titulo); line-height: 1.3; }
 .q-alerta-dato { font-size: var(--t-16); color: var(--texto-1); max-width: var(--ancho-lectura); }
@@ -284,7 +273,6 @@
 
 /* ── Ventana de cada tarjeta, arriba a la derecha: calendario si sigue el período, alfiler si no ── */
 .q-bloque-marcas { display: flex; align-items: center; gap: var(--e-2); flex-shrink: 0; }
-.q-ventana { display: inline-flex; align-items: center; gap: var(--e-1); padding: 2px var(--e-2); border: 1px solid var(--borde); border-radius: var(--r-control); font-size: var(--t-13); color: var(--texto-2); white-space: nowrap; }
 @media (max-width: 520px) { .q-bloque-titulo { flex-wrap: wrap; } }
 
 /* ── Ver como tabla: debajo de cada gráfico, a la vista ── */
@@ -369,7 +357,7 @@
 .q-oport-cifra { display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: var(--e-2); row-gap: var(--e-2); }
 .q-oport-cifra .q-cifra-valor { font-size: var(--c-32); }
 .q-oport-de { font-size: var(--t-16); color: var(--texto-2); }
-.q-oport-banda { grid-column: 1 / -1; width: fit-content; padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--resalte-suave); color: var(--mejora); font-size: var(--t-14); font-weight: var(--peso-rotulo); }
+.q-oport-banda { grid-column: 1 / -1; width: fit-content; }
 @media (max-width: 760px) { .q-oport { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); } }
 
 /* ── Panel lateral: Qué se monitorea ── */
@@ -430,7 +418,6 @@
 .q-carta-texto { display: flex; align-items: center; padding: var(--e-3); }
 .q-carta-texto span { font-size: var(--t-13); color: var(--texto-2); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; line-clamp: 7; overflow: hidden; }
 .q-mazo-nombre { font-family: var(--f-titulo); font-size: var(--t-19); font-weight: var(--peso-titulo); }
-.q-mazo-propio { display: block; font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--texto-3); text-transform: uppercase; letter-spacing: 0.04em; }
 .q-mazo-dato { font-size: var(--t-14); color: var(--texto-2); }
 .q-mazo-dato b { font-family: var(--f-tabla); font-variant-numeric: tabular-nums; font-weight: var(--peso-rotulo); color: var(--texto-1); }
 .q-mazo-ver { display: inline-flex; align-items: center; gap: var(--e-1); margin-top: var(--e-2); font-size: var(--t-14); font-weight: var(--peso-rotulo); color: var(--texto-1); }
@@ -482,3 +469,93 @@
 .q-anuncio-meta { margin-top: auto; font-size: var(--t-13); color: var(--texto-3); }
 .q-anuncio-enlace { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-14); font-weight: var(--peso-rotulo); color: var(--texto-1); }
 .q-ficha .q-boton { margin-top: var(--e-2); }
+
+/* Selector de período: el botón dice el tramo y el atajo; el panel lleva los atajos, dos fechas y la comparación */
+.q-periodo { position: relative; }
+.q-periodo-boton { display: inline-flex; align-items: center; gap: var(--e-2); min-height: 40px; padding: var(--e-1) var(--e-3); border: 1px solid var(--borde-control); border-radius: var(--r-control); background: var(--superficie); color: var(--texto-1); font: inherit; font-size: var(--t-14); cursor: pointer; }
+.q-periodo-boton small { font-size: var(--t-13); color: var(--texto-3); }
+.q-periodo-boton:hover, .q-periodo-boton[aria-expanded="true"] { border-color: var(--texto-3); }
+.q-periodo-boton:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.q-periodo-panel {
+  position: absolute; left: 0; right: auto; top: calc(100% + var(--e-2)); z-index: 30; width: min(340px, calc(100vw - 2 * var(--e-4)));
+  display: grid; gap: var(--e-2); padding: var(--e-4); border-radius: var(--r-bloque);
+  background: var(--elevada); border: 1px solid var(--borde); box-shadow: var(--sombra-flota);
+}
+.q-periodo-titulo { font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--texto-3); }
+.q-periodo-atajos { display: grid; gap: 2px; }
+.q-periodo-atajos button { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: var(--e-2) var(--e-3); border: 0; border-radius: var(--r-control); background: transparent; color: var(--texto-1); font: inherit; font-size: var(--t-14); text-align: left; cursor: pointer; }
+.q-periodo-atajos button:hover, .q-periodo-atajos button[aria-pressed="true"] { background: var(--superficie-capitulo); }
+.q-periodo-atajos button:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.q-periodo-rango { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.q-periodo-rango label { display: grid; gap: var(--e-1); font-size: var(--t-13); color: var(--texto-2); }
+.q-periodo-rango input { min-height: 40px; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--r-control); background: var(--superficie); color: var(--texto-1); font: inherit; font-size: var(--t-14); min-width: 0; }
+.q-periodo-rango input[aria-invalid="true"] { border-color: var(--texto-1); }
+.q-periodo-nota { font-size: var(--t-13); color: var(--texto-3); }
+.q-periodo-error { font-size: var(--t-13); font-weight: var(--peso-rotulo); color: var(--texto-1); }
+@media (max-width: 640px) { .q-periodo-boton small { display: none; } }
+
+/* Detalle de un capítulo: el botón al pie del capítulo y el panel ancho, con las tarjetas una debajo de otra */
+.q-detalle { grid-column: 1 / -1; display: flex; }
+.q-detalle-boton { gap: var(--e-2); text-align: left; }
+.q-detalle-vistas { color: var(--texto-2); font-weight: var(--peso-lectura); }
+.q-panel-detalle { width: min(48rem, 100vw); }
+.q-detalle-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-5); }
+.q-detalle-cuerpo > .q-bloque { grid-column: 1 / -1; }
+
+
+
+/* Piezas y campañas (capa 3): la tabla por campaña, que se abre en conjuntos y piezas */
+.q-control-tarjeta { flex-wrap: wrap; }
+.q-tabla-arbol { font-size: var(--t-14); }
+.q-tabla-arbol th, .q-tabla-arbol td { vertical-align: middle; }
+.q-tabla-arbol .q-arbol-campana th, .q-tabla-arbol .q-arbol-campana td { background: var(--superficie-capitulo); font-weight: var(--peso-rotulo); color: var(--texto-1); }
+.q-tabla-arbol .q-arbol-campana th { padding-left: var(--e-2); }
+.q-tabla-arbol .q-arbol-conjunto th { padding-left: var(--e-5); font-weight: var(--peso-rotulo); }
+.q-tabla-arbol .q-arbol-pieza th { padding-left: var(--e-8); font-weight: var(--peso-lectura); }
+.q-tabla-arbol .q-arbol-pausada th .q-arbol-nombre, .q-tabla-arbol .q-arbol-pausada td { color: var(--texto-3); }
+.q-arbol-nombre { display: block; }
+.q-arbol-abrir { display: inline-flex; align-items: flex-start; gap: var(--e-1); padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.q-arbol-abrir svg { margin-top: 2px; flex: none; }
+.q-arbol-abrir:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.q-arbol-campana .q-arbol-sub { padding-left: var(--e-5); }
+.q-arbol-sub { display: block; font-size: var(--t-13); font-weight: var(--peso-lectura); color: var(--texto-3); }
+.q-arbol-dato { font-size: var(--t-14); color: var(--texto-2); min-width: 16em; }
+.q-arbol-pieza-nombre { display: flex; align-items: center; gap: var(--e-2); }
+/* la miniatura de una pieza: el arte de muestra, chico y sin texto */
+.q-arte-mini { flex: none; width: 2.5rem; height: 2.5rem; border-radius: var(--r-control); overflow: hidden; border: 1px solid var(--borde); }
+.q-arte-mini .q-arte { padding: var(--e-1); gap: var(--e-1); }
+.q-arte-mini .q-arte-tema { display: none; }
+.q-arte-mini .q-arte-marca { right: var(--e-1); bottom: var(--e-1); }
+
+/* ── Etiqueta: la única forma de una etiqueta chica (Etiqueta en Componentes.jsx; guía en docs/guia-rapida.md).
+   La variante dice qué es; data-tono, de qué color, desde el catálogo src/sistema/estados.js. Ninguna otra regla del
+   sistema arma una pastilla: npm run sistema lo revisa ── */
+.q-etiqueta {
+  --tono: var(--texto-2); --tono-fondo: var(--superficie-capitulo);
+  display: inline-flex; align-items: center; gap: var(--e-1); max-width: 100%; font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo);
+  line-height: 1.3; white-space: nowrap; color: var(--tono); vertical-align: middle;
+}
+.q-etiqueta svg { flex: none; }
+.q-etiqueta[data-tono="fuerte"] { --tono: var(--texto-1); }
+.q-etiqueta[data-tono="bien"] { --tono: var(--mejora); --tono-fondo: var(--mejora-suave); }
+.q-etiqueta[data-tono="atencion"] { --tono: var(--atencion); --tono-fondo: var(--atencion); }
+.q-etiqueta[data-tono="alerta"] { --tono: var(--empeora); --tono-fondo: var(--empeora-suave); }
+.q-etiqueta[data-tono="grave"] { --tono: var(--empeora); --tono-fondo: var(--empeora); }
+.q-etiqueta[data-tono="barra"] { --tono: var(--sobre-barra-2); gap: var(--e-2); font-weight: var(--peso-lectura); }
+/* borde: un dato del contexto */
+.q-etiqueta-borde { padding: 2px var(--e-2); border: 1px solid var(--borde); border-radius: var(--r-control); background: var(--superficie); }
+.q-etiqueta-borde[data-tono="fuerte"] { border-color: var(--borde-control); }
+.q-etiqueta-borde[data-tono="atencion"] { border-color: currentColor; }
+@media (max-width: 640px) { .q-etiqueta-borde { white-space: normal; } }
+/* llena: un estado con juicio; los graves y los de atención, con la letra en blanco sobre el color */
+.q-etiqueta-llena { padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--tono-fondo); }
+.q-etiqueta-llena[data-tono="grave"], .q-etiqueta-llena[data-tono="atencion"] { color: var(--superficie); }
+/* tinta: una marca que se ve de lejos */
+.q-etiqueta-tinta { padding: 1px var(--e-2); border-radius: var(--r-control); background: var(--texto-1); color: var(--superficie); text-transform: uppercase; letter-spacing: 0.06em; }
+/* rótulo: el nombre de un grupo */
+.q-etiqueta-rotulo { display: block; color: var(--texto-3); text-transform: uppercase; letter-spacing: 0.04em; }
+/* dónde va (no cómo se ve): junto a un nombre, o sobre la pila de cartas de un mazo */
+.q-junto { margin-left: var(--e-2); }
+.q-sobre-carta { position: absolute; z-index: 5; top: var(--e-2); left: var(--e-2); }
+/* en teléfono, la fecha de la barra se esconde (con .q-etiqueta delante, para ganarle a su display) */
+@media (max-width: 640px) { .q-etiqueta.q-sello-muestra { display: none; } }

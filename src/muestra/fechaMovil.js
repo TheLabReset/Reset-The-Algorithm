@@ -6,7 +6,7 @@
 // tres clases:
 //  · historia: lo que la demo cuenta cerca del corte (la promo, la caída de Meta, TikTok que se encarece, el equipo
 //    de contacto más chico). Se corre en meses enteros: lo que en la referencia pasa en su último mes cerrado pasa
-//    siempre en el último mes cerrado, que es el que el panel abre. Un día que era fin de mes sigue siendo fin de mes.
+//    siempre en el último mes cerrado (el «mes pasado» del selector; el panel abre en los últimos 7 días, que caen al final de esa historia). Un día que era fin de mes sigue siendo fin de mes.
 //  · calendario: lo que pasa en una fecha del año (el Reto de enero, los feriados). Se repite cada año del rango.
 //  · rango: desde el 1 de enero del año anterior al corte, hasta el corte. Siempre hay un año entero para comparar.
 

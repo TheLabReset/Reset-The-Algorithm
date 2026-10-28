@@ -1,7 +1,7 @@
 // Lecturas de cada fuente por separado (Captura, Activación y Rendimiento). Cada función recibe la vista y devuelve frases que observan, no ordenan.
 // Si el dato no sostiene una conclusión, la frase lo dice o se queda en lo descriptivo.
 import { numero, dolares, porcentaje, compacto, diaSemanaLargo, mesLargo, fecha } from '../sistema/formato.js';
-import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto } from './comun.js';
+import { periodoTexto, comparacionTexto, frente, cuanto, capital, lista, enLetras, variacionFrase, horasTexto, diasTexto, enElPeriodo, delPeriodo } from './comun.js';
 import { CLIENTE } from '../cliente.js';
 
 const P = (v) => v.periodo;
@@ -9,17 +9,8 @@ const P = (v) => v.periodo;
 export function pautaResumen(v) {
   const p = v.lee.pauta;
   const titulo = 'Leads que reportan las plataformas';
-  if (p.cambio == null) return { titulo, lectura: `Un lead cada ${dolares(p.cpl, 2)}. No hay días medidos suficientes para comparar con ${comparacionTexto(P(v))}.` };
+  if (p.cambio == null) return { titulo, lectura: `Un lead cada ${dolares(p.cpl, 2)}.${P(v).conComparacion ? ` No hay días medidos suficientes para comparar con ${comparacionTexto(P(v))}.` : ''}` };
   return { titulo, lectura: `${variacionFrase('Los leads por día', p.cambio, P(v))}. Cada lead costó ${dolares(p.cpl, 2)}.` };
-}
-
-export function inversionDia(v) {
-  const s = v.lee.pauta.serieInversion.filter((p) => p.valor != null);
-  const titulo = 'Inversión por día';
-  if (!s.length) return { titulo, lectura: 'Ningún día del período tiene el dato de las tres plataformas.' };
-  const prom = s.reduce((t, p) => t + p.valor, 0) / s.length;
-  const alto = s.reduce((a, p) => (p.valor > a.valor ? p : a));
-  return { titulo, lectura: `Unos ${dolares(Math.round(prom))} al día. El más alto fue el ${fecha(alto.fecha).replace(/ de \d{4}$/, '')}, con ${dolares(Math.round(alto.valor))}.` };
 }
 
 export function plataformasLectura(v) {
@@ -28,7 +19,7 @@ export function plataformasLectura(v) {
   const titulo = 'Costo por lead contra el objetivo';
   if (!sobre.length) {
     const justa = [...ps].filter((p) => p.cpl != null && p.objetivo).sort((a, b) => b.cpl / b.objetivo - a.cpl / a.objetivo)[0];
-    return { titulo, lectura: `Las ${enLetras(ps.length, true)} plataformas quedan bajo su objetivo en el mes. ${justa.nombre} es la más ajustada: ${dolares(justa.cpl, 2)} con un objetivo de ${dolares(justa.objetivo, 2)}.` };
+    return { titulo, lectura: `Las ${enLetras(ps.length, true)} plataformas quedan bajo su objetivo ${enElPeriodo(P(v))}. ${justa.nombre} es la más ajustada: ${dolares(justa.cpl, 2)} con un objetivo de ${dolares(justa.objetivo, 2)}.` };
   }
   return { titulo, lectura: `${lista(sobre.map((p) => p.nombre))} ${sobre.length === 1 ? 'paga' : 'pagan'} más por lead que su objetivo en ${periodoTexto(P(v))}.` };
 }
@@ -39,7 +30,7 @@ export function campanasLectura(v) {
   const sin = todas.filter((c) => c.leads === 0 && c.inversion > 0);
   const barata = [...conLeads].sort((a, b) => a.cpl - b.cpl)[0];
   let lectura = barata ? `La campaña con el lead más barato es «${barata.nombre}», a ${dolares(barata.cpl, 2)}.` : 'Ninguna campaña reportó leads.';
-  if (sin.length) lectura += ` ${capital(enLetras(sin.length, true))} ${sin.length === 1 ? 'campaña es' : 'campañas son'} de alcance y no ${sin.length === 1 ? 'busca' : 'buscan'} leads: ${dolares(sin.reduce((s, c) => s + c.inversion, 0))} en el mes.`;
+  if (sin.length) lectura += ` ${capital(enLetras(sin.length, true))} ${sin.length === 1 ? 'campaña es' : 'campañas son'} de alcance y no ${sin.length === 1 ? 'busca' : 'buscan'} leads: ${dolares(sin.reduce((s, c) => s + c.inversion, 0))} ${enElPeriodo(P(v))}.`;
   return { titulo: 'Campañas con gasto en el período', lectura };
 }
 
@@ -47,7 +38,7 @@ export function palabrasLectura(v) {
   const k = v.lee.plataformas.palabras;
   const titulo = 'Palabras clave en Google Ads';
   if (!k.sinConversion.length) return { titulo, lectura: 'Todas las palabras con gasto trajeron leads en una proporción parecida a la del resto.' };
-  return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${dolares(k.gastoSinConversion)} en el mes y casi no ${k.sinConversion.length === 1 ? 'trajo' : 'trajeron'} leads.` };
+  return { titulo, lectura: `${capital(lista(k.sinConversion.map((x) => `«${x.texto}»`)))} ${k.sinConversion.length === 1 ? 'gastó' : 'gastaron'} ${dolares(k.gastoSinConversion)} ${enElPeriodo(P(v))} y casi no ${k.sinConversion.length === 1 ? 'trajo' : 'trajeron'} leads.` };
 }
 
 export function terminosLectura(v) {
@@ -91,12 +82,13 @@ export function crmAtencion(v) {
 export function crmDescarte(v) {
   const d = v.lee.crmDetalle.descarte;
   const top = d.motivos[0];
+  if (!d.total) return { titulo: 'Por qué se descartan', lectura: 'Ningún lead del período se descartó todavía.' };
   return { titulo: 'Por qué se descartan', lectura: `${capital(numero(d.total))} leads del período se descartaron. El motivo más frecuente: «${top.nombre.toLowerCase()}», ${numero(Math.round((top.valor / d.total) * 100))} de cada 100.` };
 }
 
 export function busquedasLectura(v) {
   const b = v.lee.busquedas;
-  const base = `El interés por «${CLIENTE.busqueda}» promedia ${numero(b.demanda)} de 100 en las semanas de ${periodoTexto(P(v))}.`;
+  const base = `El interés por «${CLIENTE.busqueda}» promedia ${numero(b.demanda)} de 100 en ${b.semanas === 1 ? 'la semana' : `las ${numero(b.semanas)} semanas`} ${delPeriodo(P(v))}.`;
   return { titulo: 'Interés de búsqueda en el último año', lectura: b.cambio == null ? base : `${base} Es ${frente(b.cambio, P(v))}.` };
 }
 
@@ -148,5 +140,5 @@ export function webPaginas(v) {
 
 export function webHoras(v) {
   const w = v.lee.web;
-  return { titulo: 'Cuándo están activos', lectura: `Hay más usuarios activos ${horasTexto(w.horasAltas)}. ${diasTexto(w.porDiaSemana, w.diaMayor, 'usuarios activos al día', (n) => numero(Math.round(n)))}` };
+  return { titulo: 'Cuándo están activos', lectura: `Hay más usuarios activos ${horasTexto(w.horasAltas)}. ${diasTexto(w.porDiaSemana, w.diaMayor, 'usuarios activos al día', (n) => numero(Math.round(n)), w.semanaCompleta)}` };
 }

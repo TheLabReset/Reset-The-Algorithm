@@ -65,9 +65,9 @@ export const BASE = {
   // Leads que llegan por el sitio sin pauta: entran al CRM pero no son leads de pauta (asumo: convierten un poco más)
   organico: { id: 'organico', nombre: 'Sitio sin pauta', calidad: { cita: 1.1, alta: 1.1 } },
 
-  // asumo, en dólares. Con 24 000 (y TikTok al 35 %), TikTok junta más de 30 inscripciones al mes en cualquier mes del año:
-  // así la historia de la demo se sostiene con casos suficientes en el mes que el panel abre (pruebas/fecha-movil.test.mjs)
-  presupuestoMensual: 24000,
+  // asumo, en dólares. Con 26 000 (y TikTok al 35 %), TikTok junta más de 30 inscripciones en cualquier cohorte del año:
+  // así la historia de la demo se sostiene con casos suficientes al abrir y en el último mes cerrado (pruebas/fecha-movil.test.mjs)
+  presupuestoMensual: 26000,
   pesoPresupuestoMes: [1.3, 1.15, 1.0, 0.9, 0.9, 0.85, 0.95, 1.05, 1.0, 0.95, 0.95, 1.0], // asumo: la inversión sigue a la demanda
   presionSubasta: [1.15, 1.0, 1.0, 1.0, 1.0, 1.0, 1.05, 1.0, 1.0, 1.0, 1.12, 1.18], // asumo: CPM más caro en enero y fin de año
 
@@ -300,7 +300,7 @@ export const BASE = {
   // Escenario de la demo, para que el modelo proponga mover inversión con sus reglas de siempre: desde la segunda
   // quincena del mes anterior (así la cohorte del CRM ya lo ve) la subasta de TikTok se encarece (pasa su objetivo de costo por lead) y sus leads se inscriben menos que los de
   // las otras plataformas (calidad.alta), así el CRM confirma que es la que más cuesta por inscripción.
-  cambiosCosto: [{ canal: 'tiktok', desde: '2026-08-16', factor: 1.7 }],
+  cambiosCosto: [{ canal: 'tiktok', desde: '2026-08-16', factor: 1.85 }],
   cambiosInteraccion: [{ fuente: 'redesPagadas', desde: '2026-09-08', factor: 0.62, texto: 'las piezas nuevas de Meta llevan a /promo-setiembre' }],
   // Vistas de página por sesión, por página (asumo)
   vistasPorSesion: 2.1,
@@ -314,6 +314,33 @@ export const BASE = {
     { fecha: '2026-07-14', tipo: 'caida', canal: 'meta', texto: 'Meta no entregó datos' },
     { fecha: '2026-09-08', tipo: 'creativo', canal: 'meta', texto: 'Nuevas piezas en Meta' },
   ],
+
+  // Piezas de cada campaña (src/muestra/piezas.js): conjuntos de anuncios y piezas que se renuevan cada tantos días.
+  // Cada día, lo que reporta la campaña se reparte entre sus piezas activas: suman exacto. Las campañas de alcance no
+  // buscan leads y no tienen piezas que juzgar por costo por lead. Todo «asumo».
+  piezas: {
+    cada: 21, // días entre una tanda de piezas y la siguiente en cada conjunto
+    solapa: 6, // días que una pieza sigue activa después de que entra la siguiente
+    conjuntos: {
+      's-marca': ['Marca'], 's-membresias': ['Membresías', 'Precios y planes'], 's-distritos': ['Gimnasio cerca', 'Por distrito'],
+      'd-remarketing': ['Visitas del sitio, 30 días'], 'd-prospeccion': ['Intereses de deporte'],
+      'm-prueba': ['Lima Norte, 20 a 40', 'Lima Moderna, 20 a 40'], 'm-remarketing': ['Visitas del sitio, 30 días'],
+      'm-reto': ['Lima, 18 a 35'], 'm-olivos': ['Los Olivos y alrededores'],
+      't-prueba': ['Lima, 18 a 30', 'Intereses de deporte'],
+    },
+    formatos: { search: ['Anuncio de búsqueda'], display: ['Banner'], meta: ['Video', 'Carrusel', 'Imagen'], tiktok: ['Video'] },
+    temas: ['Clase de prueba gratis', 'Sin matrícula', 'Plan anual', 'Rutina guiada', 'Antes y después', 'Abierto hasta las 11'],
+    // cómo le va a cada pieza dentro de su campaña: peso del gasto, CTR y conversión relativos. Una pieza que se satura
+    // rinde al principio, se queda activa dos tandas y después de tres semanas convierte cada vez menos
+    comportamientos: {
+      rinde: { gasto: 1, ctr: 1, conversion: 1.1 },
+      costosa: { gasto: 0.9, ctr: 0.9, conversion: 0.45 },
+      'sin-leads': { gasto: 0.45, ctr: 0.7, conversion: 0 },
+      saturada: { gasto: 1.1, ctr: 1, conversion: 1.1, cansa: true, tandas: 2 },
+    },
+    // el orden en que se reparten por tanda (cada conjunto empieza en otro punto): así cualquier período tiene de todo
+    orden: ['rinde', 'costosa', 'rinde', 'saturada', 'rinde', 'sin-leads', 'rinde', 'costosa', 'rinde', 'saturada'],
+  },
 
   // Umbrales de método, declarados para que ningún número quede suelto en la pantalla
   metodo: {

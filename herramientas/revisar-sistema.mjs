@@ -5,6 +5,9 @@
 //     y ningún componente usa un primitivo ni un token que no existe.
 //  4. Los dos bloques del tema alterno (preferencia del sistema y botón) son idénticos.
 //  5. Contraste WCAG medido de cada token de texto y de gráfico sobre cada superficie, en los dos temas.
+//  6. Una sola etiqueta: ninguna regla fuera de .q-etiqueta arma una pastilla (letra chica, radio y fondo o borde),
+//     y ninguna clase se llama chip, badge, insignia, pastilla, pill o tag. Se usa <Etiqueta> (docs/guia-rapida.md).
+//     Un botón chico (selector con «boton») es un control, no una etiqueta.
 // La función revisar() es pura: recibe { ruta: contenido } y devuelve errores. La prueba negativa la usa con archivos sembrados.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -75,6 +78,24 @@ export function revisar(archivos) {
       if (/^border(-(top|right|bottom|left|inline|block)(-(start|end))?)?(-width)?$/.test(prop)) for (const n of valor.matchAll(/(\d*\.?\d+)px/g)) if (+n[1] > 2) err(ruta, `${prop} de ${n[0]}: franja de resalte; se resalta con orden, tamaño o peso, no con bordes gruesos`);
       if (/^(transition|animation)(-duration)?$/.test(prop) && /(^|[\s,])\d*\.?\d+m?s\b/.test(valor)) err(ruta, `duración literal en ${prop}: ${valor.trim()}`);
     }
+  }
+
+  // 6 · una sola etiqueta (los controles, «boton», no son etiquetas aunque se parezcan)
+  const NOMBRE_PASTILLA = /(?<![\w-])q-(?:[a-z0-9]+-)*(chip|badge|insignia|pastilla|pill|tag)(?![a-z0-9])/i;
+  for (const [ruta, texto0] of otros) {
+    if (ruta.endsWith('.css')) {
+      for (const m of quitarComentarios(texto0).matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        const sel = m[1].trim(), cuerpo = m[2];
+        if (sel.startsWith('@') || /^(from|to|\d+%)$/.test(sel) || sel.split(',').every((x) => /\.q-etiqueta\b/.test(x))) continue;
+        if (NOMBRE_PASTILLA.test(sel)) err(ruta, `${sel}: una clase de pastilla propia; se usa <Etiqueta>`);
+        if (/boton|button|input|select|textarea/.test(sel)) continue;
+        // una pastilla: letra chica, relleno, radio y fondo o borde. Lo que flota (sombra o posición) o tiene medida fija
+        // (la marca de MAIA, un punto) es otra cosa
+        const pastilla = /font-size:\s*var\(--t-1[23]\)/.test(cuerpo) && /padding\s*:/.test(cuerpo) && /border-radius\s*:/.test(cuerpo) && /(background(-color)?|border)\s*:/.test(cuerpo)
+          && !/position:\s*(fixed|absolute|sticky)|box-shadow\s*:|(^|[;\s])(width|height)\s*:\s*[\d.]|(^|[;\s])(width|height)\s*:\s*var\(/.test(cuerpo);
+        if (pastilla) err(ruta, `${sel}: arma una pastilla (letra chica, radio y fondo o borde) fuera de .q-etiqueta; se usa <Etiqueta>`);
+      }
+    } else for (const m of texto0.matchAll(/[`'"]([^`'"\n]*)[`'"]/g)) if (NOMBRE_PASTILLA.test(m[1])) err(ruta, `clase «${m[1].match(NOMBRE_PASTILLA)[0]}»: una clase de pastilla propia; se usa <Etiqueta>`);
   }
 
   // 3 · huérfanos y referencias

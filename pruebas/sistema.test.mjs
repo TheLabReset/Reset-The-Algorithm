@@ -40,6 +40,28 @@ test('atrapa franjas de resalte y deja pasar bordes finos', () => {
   assert.deepEqual(conAdemas({ 'src/a.css': '.a { border-left: 2px solid var(--texto-1); border: 1px solid var(--borde); }' }).errores, []);
 });
 
+test('atrapa una pastilla armada fuera de Etiqueta y deja pasar la de Quincha, los botones y lo que flota', () => {
+  const r = (extra) => conAdemas(extra).errores.join('\n');
+  assert.match(r({ 'src/a.css': '.q-palabras li { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde); }' }), /arma una pastilla/);
+  assert.match(r({ 'src/a.css': '.q-chip-nuevo { color: var(--texto-1); }' }), /clase de pastilla propia/);
+  assert.match(r({ 'src/A.jsx': '<span className="q-badge">Nuevo</span>' }), /clase de pastilla propia/);
+  assert.match(r({ 'src/A.jsx': '<span className={`q-insignia q-insignia-${e}`}>x</span>' }), /clase de pastilla propia/);
+  // cualquier texto entre comillas, no solo className="…"; y un selector compuesto no se salva por llevar .q-etiqueta
+  assert.match(r({ 'src/A.jsx': "<span className={x ? 'q-pill' : ''}>x</span>" }), /clase de pastilla propia/);
+  assert.match(r({ 'src/a.js': "const CLASE = 'q-tag-marca';" }), /clase de pastilla propia/);
+  assert.match(r({ 'src/a.css': '.q-etiqueta, .q-mia { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); }' }), /arma una pastilla/);
+  // un tramo entero: q-stag o q-etiquetado no son pastillas por su nombre; ni un ancho flexible salva a una pastilla
+  assert.equal(r({ 'src/a.css': '.q-stag { color: var(--texto-1); }', 'src/A.jsx': '<div className="q-stag q-pillar" />' }), '');
+  assert.match(r({ 'src/a.css': '.q-banda { width: fit-content; font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); }' }), /arma una pastilla/);
+  assert.equal(r({ 'src/a.css': [
+    '.q-etiqueta-borde { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); border: 1px solid var(--borde); }',
+    '.q-boton-filtro { font-size: var(--t-13); padding: 2px var(--e-2); border-radius: var(--r-control); background: var(--superficie); }',
+    '.q-pista { font-size: var(--t-13); padding: var(--e-2); border-radius: var(--r-control); background: var(--superficie); box-shadow: var(--sombra-flota); }',
+    '.q-aviso { position: fixed; font-size: var(--t-13); padding: var(--e-2); border-radius: var(--r-control); background: var(--superficie); }',
+    '.q-marca-redonda { font-size: var(--t-13); padding: 0; width: 22px; height: 22px; border-radius: var(--r-control); background: var(--superficie); }',
+  ].join(' ') }), '');
+});
+
 test('atrapa primitivos usados en componentes y tokens sin declarar', () => {
   assert.ok(conAdemas({ 'src/a.css': '.a { color: var(--p-violeta-700); }' }).errores.some((e) => e.includes('primitivo --p-violeta-700')));
   assert.ok(conAdemas({ 'src/a.css': '.a { color: var(--inventado); }' }).errores.some((e) => e.includes('--inventado se usa')));
@@ -63,4 +85,21 @@ test('atrapa contraste insuficiente y temas alternos que no coinciden', () => {
 test('el contraste coincide con valores de referencia WCAG', () => {
   assert.equal(+contraste('#000000', '#ffffff').toFixed(2), 21);
   assert.equal(+contraste('#777777', '#ffffff').toFixed(2), 4.48);
+});
+
+// El catálogo de estados: cada estado que produce el cálculo tiene su tono, y cada tono su regla en el CSS
+import { ESTADOS, TONOS, estadoDe } from '../src/sistema/estados.js';
+import { ESTADO_PIEZA } from '../src/textos/piezas.js';
+
+test('catálogo de estados: cada estado de pieza, de fuente y de alerta tiene tono e icono, y cada tono su regla', () => {
+  const css = readFileSync(new URL('../src/sistema/componentes.css', import.meta.url), 'utf8');
+  const niveles = [...readFileSync(new URL('../src/sistema/Componentes.jsx', import.meta.url), 'utf8').match(/export const NIVELES = \{([\s\S]*?)\};/)[1].matchAll(/^\s*([a-z]+):/gm)].map((m) => m[1]);
+  assert.ok(niveles.length >= 4);
+  for (const e of [...Object.keys(ESTADO_PIEZA), ...niveles.map((n) => `nivel-${n}`), 'fuente-parcial', 'fuente-no-cargo']) {
+    const x = estadoDe(e);
+    assert.ok(TONOS.includes(x.tono) && x.icono, e);
+  }
+  for (const [nombre, x] of Object.entries(ESTADOS)) assert.ok(TONOS.includes(x.tono), `${nombre}: tono «${x.tono}» fuera del catálogo`);
+  for (const t of TONOS.filter((t) => t !== 'neutro')) assert.ok(css.includes(`.q-etiqueta[data-tono="${t}"]`), `el tono «${t}» no tiene regla en componentes.css`);
+  assert.throws(() => estadoDe('inventado'), /sin catálogo/);
 });

@@ -1,6 +1,6 @@
 // Lecturas de los cruces entre fuentes (Inteligencia, Activación y Rendimiento). Observan; no ordenan.
 import { numero, dolares, porcentaje, diaSemanaLargo } from '../sistema/formato.js';
-import { periodoTexto, mesTexto, capital, lista, horasTexto, diasTexto, parecidoTexto } from './comun.js';
+import { mesTexto, capital, lista, horasTexto, diasTexto, parecidoTexto, delPeriodo } from './comun.js';
 import { CLIENTE } from '../cliente.js';
 
 export function veredicto(v) {
@@ -26,7 +26,7 @@ export function productos(v) {
   const p = v.analiza.reparto.productos;
   const total = p.reduce((s, x) => s + x.total, 0);
   const marca = p.find((x) => x.id === 'marca');
-  return { titulo: 'Por producto y plataforma', lectura: `${porcentaje((marca.total / total) * 100)} de la inversión de ${periodoTexto(v.periodo)} fue a campañas de marca, que no buscan leads.` };
+  return { titulo: 'Por producto y plataforma', lectura: `${porcentaje((marca.total / total) * 100)} de la inversión ${delPeriodo(v.periodo)} fue a campañas de marca, que no buscan leads.` };
 }
 
 export function pautaCrm(v) {
@@ -58,7 +58,7 @@ export function demanda(v) {
 
 export function hora(v) {
   const h = v.analiza.horaDia;
-  return { titulo: 'Cuándo entran los leads', lectura: `Entran más leads ${horasTexto(h.horasAltas)}. ${diasTexto(h.porDiaSemana, h.diaMayor, 'leads al día', (n) => numero(Math.round(n)))}` };
+  return { titulo: 'Cuándo entran los leads', lectura: `Entran más leads ${horasTexto(h.horasAltas)}. ${diasTexto(h.porDiaSemana, h.diaMayor, 'leads al día', (n) => numero(Math.round(n)), h.semanaCompleta)}` };
 }
 
 export function sedes(v) {
