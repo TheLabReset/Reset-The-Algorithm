@@ -61,7 +61,7 @@ export function fatigaCreativa(data, hasta) {
   const caida = (antes.ctr - previo.ctr) / previo.ctr, recuperacion = (despues.ctr - antes.ctr) / antes.ctr;
   if (!(caida <= -0.1 && recuperacion >= 0.1)) return null;
   const canal = data.config.canales.find((c) => c.id === ev.canal);
-  return { id: 'renovar', sostiene: ['3.2'], tipo: 'observacion', canal, evento: ev, ctrPrevio: previo.ctr, ctrAntes: antes.ctr, ctrDespues: despues.ctr, caida, recuperacion, diasDespues: despues.dias, supuestos: ['Compara 3 semanas antes del cambio de piezas con las 3 semanas de 6 a 9 semanas antes, y con lo que va desde el cambio'] };
+  return { id: 'renovar', sostiene: ['3.3'], tipo: 'observacion', canal, evento: ev, ctrPrevio: previo.ctr, ctrAntes: antes.ctr, ctrDespues: despues.ctr, caida, recuperacion, diasDespues: despues.dias, supuestos: ['Compara 3 semanas antes del cambio de piezas con las 3 semanas de 6 a 9 semanas antes, y con lo que va desde el cambio'] };
 }
 
 export function temporada(cfg, hasta) {

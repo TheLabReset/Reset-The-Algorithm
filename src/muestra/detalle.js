@@ -9,6 +9,7 @@
 import { crearAzar } from './azar.js';
 import { multinomial } from './generador.js';
 import { diaSemana, diasEntre, sumarDias } from './calendario.js';
+import { piezasDe } from './piezas.js';
 
 function semillaDe(...partes) {
   let h = 2166136261;
@@ -243,5 +244,8 @@ export function detallar(data) {
     }),
   }));
 
-  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses, anuncios };
+  // ── Piezas de cada campaña: conjuntos y piezas por día (src/muestra/piezas.js) ──
+  const piezas = piezasDe(data, campanas, { semillaDe, repartirMonto });
+
+  return { campanas, palabras, terminos, programatica, crm, hashtags, redes, regiones, web, meses, anuncios, piezas };
 }

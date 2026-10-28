@@ -112,7 +112,7 @@ export function queVaBien(data, P, v) {
     else if (anual != null && anual >= UMBRALES_BIEN.mejoraAnual) bien.push({ id: 'mejora-anual', fuente: p.nombre, sostiene: '3.2', datos: { plataforma: p.nombre, cpl: p.cpl, previo: p.cplPrevio, anual } });
   }
   const renovar = v.sugiere.sugerencias.find((s) => s.id === 'renovar');
-  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '3.2', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
+  if (renovar && renovar.recuperacion >= UMBRALES_BIEN.recuperaCtr) bien.push({ id: 'piezas-nuevas', fuente: renovar.canal.nombre, sostiene: '3.3', datos: { canal: renovar.canal.nombre, antes: renovar.ctrAntes, despues: renovar.ctrDespues, recuperacion: renovar.recuperacion, fecha: renovar.evento.fecha } });
   const co = v.lee.competencia;
   if (co.estado === 'ok') {
     const orden = [...co.marcas].sort((a, b) => b.sentimiento.indice - a.sentimiento.indice);

@@ -1,7 +1,7 @@
 // Capa 1 · Captura de señales: qué pasa afuera. Búsquedas, lo que se publica en el rubro y quién entra al sitio.
 // No calcula: pinta la vista y las lecturas de src/textos.
 import { useState } from 'react';
-import { Bloque, Cifra, Tabla, Resumen, Abanico } from '../sistema/Componentes.jsx';
+import { Bloque, Cifra, Tabla, Resumen, Abanico, Detalle } from '../sistema/Componentes.jsx';
 import { Linea, Barras, Franja } from '../sistema/graficos/Graficos.jsx';
 import { numero, porcentaje, compacto, variacion } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, sinDato, deltaCorto, partesConResto } from './comun.jsx';
@@ -33,12 +33,6 @@ export default function Senales({ capa, vista: v }) {
             ayuda={<p>Google Trends da un índice relativo de 0 a 100 (100 es la semana con más búsquedas del conjunto), no cantidad de búsquedas. Una semana pertenece al mes de su jueves.</p>}>
             <Linea serie={b.serie} previa={b.seriePrevia} rotuloX="semana" etiqueta={`Interés semanal por «${CLIENTE.busqueda}», con el año anterior en gris`} />
           </Bloque>
-          <Bloque universo="busquedas" {...L.palabrasBusqueda(v)} alcance="últimos tres meses" pie={<span>Google informa solo las regiones donde más se busca cada palabra; la primera vale 100.</span>}>
-            <Tabla etiqueta="Palabras que se siguen" numericas={[1, 2]} barra={{ columna: 1, valores: b.palabras.map((p) => p.actual) }}
-              columnas={['Palabra', 'Interés, de 0 a 100', 'En 3 meses', 'Dónde se busca más']}
-              destacada={b.palabras.findIndex((p) => p.propia)}
-              filas={b.palabras.map((p) => [p.termino, numero(p.actual), p.sinBase ? (p.subiendo ? 'sin base · subiendo' : 'sin base') : { texto: variacion(p.cambio3m), tono: p.cambio3m >= 20 ? 'mejora' : null }, p.regiones.slice(0, 3).map((x) => `${x.region} ${x.indice}`).join(' · ')])} />
-          </Bloque>
         </>}
         {!ok(r) ? <Bloque titulo="TikTok" universo="conversacion" estado={sinDato(r.estado)} /> : (
           <Bloque universo="conversacion" {...L.redesTiktok(v)} alcance={`lectura de ${mesFuenteTexto(r.mes, r.parcial)}`} pie={<span>Interacción: reacciones, comentarios y compartidos sobre las vistas.</span>}>
@@ -50,11 +44,20 @@ export default function Senales({ capa, vista: v }) {
         )}
         {an.estado !== 'ok' ? <Bloque titulo="Anuncios de la competencia" universo="conversacion" estado={sinDato(an.estado)} /> : (
           <Bloque universo="conversacion" {...anunciosLectura(an)} alcance={`anuncios activos en ${mesTexto(an.mes)}`}
-            ayuda={<p>Anuncios activos en Facebook e Instagram de cada marca que se sigue, según la biblioteca de anuncios de Meta. Pasa el mouse por un mazo para abrirlo; un clic muestra todos sus anuncios.</p>}
+            ayuda={<p>Anuncios activos en Facebook e Instagram de cada marca que se sigue, según la biblioteca de anuncios de Meta.</p>}
             pie={<span>Piezas de muestra: la demo no reproduce anuncios reales. En producción, la imagen, el texto y el enlace de cada anuncio llegan de la biblioteca de anuncios de Meta.</span>}>
             <Abanico lista={an} abierta={anunciosDe} onAbrir={setAnunciosDe} t={textosDelAbanico(an, an.mes.slice(0, 4))} nota={`anuncios activos en ${mesTexto(an.mes)}`} />
           </Bloque>
         )}
+          {ok(b) && <Detalle id={`detalle-${s11.id}`} titulo="Palabras que se siguen" bajada="El interés de cada palabra, su cambio en tres meses y las regiones donde más se busca."
+            vistas={['cada palabra, su cambio en tres meses y dónde se busca más']}>
+            <Bloque universo="busquedas" {...L.palabrasBusqueda(v)} alcance="últimos tres meses" pie={<span>Google informa solo las regiones donde más se busca cada palabra; la primera vale 100.</span>}>
+              <Tabla etiqueta="Palabras que se siguen" numericas={[1, 2]} barra={{ columna: 1, valores: b.palabras.map((p) => p.actual) }}
+                columnas={['Palabra', 'Interés, de 0 a 100', 'En 3 meses', 'Dónde se busca más']}
+                destacada={b.palabras.findIndex((p) => p.propia)}
+                filas={b.palabras.map((p) => [p.termino, numero(p.actual), p.sinBase ? (p.subiendo ? 'sin base · subiendo' : 'sin base') : { texto: variacion(p.cambio3m), tono: p.cambio3m >= 20 ? 'mejora' : null }, p.regiones.slice(0, 3).map((x) => `${x.region} ${x.indice}`).join(' · ')])} />
+            </Bloque>
+          </Detalle>}
       </SeccionDe>
 
       {/* ───── 1.2 Quién entra al sitio: tráfico de GA4, sin leads ───── */}

@@ -27,7 +27,8 @@ export const CAPAS = [
     secciones: [
       { id: 's-3-1', numero: '3.1', titulo: 'Dónde está la inversión', pregunta: 'Cómo se reparte entre plataformas y productos, y qué propone el modelo.', universos: ['pauta', 'modelo'], fuentes: ['google', 'meta', 'tiktok'] },
       { id: 's-3-2', numero: '3.2', titulo: 'Cada plataforma', pregunta: 'Campañas, palabras y resultados de Google Ads, Meta Ads y TikTok Ads.', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
-      { id: 's-3-3', numero: '3.3', titulo: 'Cuándo se visita el sitio', pregunta: 'Las horas y los días con más usuarios activos.', universos: ['web'], fuentes: ['web'] },
+      { id: 's-3-3', numero: '3.3', titulo: 'Piezas y campañas', pregunta: 'Qué campañas, conjuntos y piezas rinden, cuáles se encarecen y qué es nuevo.', universos: ['pauta'], fuentes: ['google', 'meta', 'tiktok'] },
+      { id: 's-3-4', numero: '3.4', titulo: 'Cuándo se visita el sitio', pregunta: 'Las horas y los días con más usuarios activos.', universos: ['web'], fuentes: ['web'] },
     ],
   },
   {

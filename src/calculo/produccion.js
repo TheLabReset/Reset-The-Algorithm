@@ -238,7 +238,13 @@ export function leeAnuncios(data, P) {
   const mes = mesDe(P);
   const m = detalleDe(data).anuncios.find((x) => x.mes === mes);
   if (!m) return null;
-  return { mes, ...agruparAnuncios(m.marcas.map((x) => ({ nombre: x.nombre, propia: x.propia, anuncios: x.anuncios.map(anuncioDeMuestra) }))) };
+  const lista = agruparAnuncios(m.marcas.map((x) => ({ nombre: x.nombre, propia: x.propia, anuncios: x.anuncios.map(anuncioDeMuestra) })));
+  // nuevo: empezó dentro del período. Ya van primero en su mazo (del más reciente al más antiguo)
+  for (const g of [lista.propio, ...lista.grupos].filter(Boolean)) {
+    g.anuncios = g.anuncios.map((a) => ({ ...a, nuevo: !!a.desde && a.desde >= P.desde && a.desde <= P.hasta && a.desde > data.config.desde }));
+    g.nuevos = g.anuncios.filter((a) => a.nuevo).length;
+  }
+  return { mes, ...lista, nuevos: lista.grupos.reduce((s, g) => s + g.nuevos, 0) };
 }
 
 // ══════════ 1.6 Sitio (GA4): tráfico, sin leads ══════════

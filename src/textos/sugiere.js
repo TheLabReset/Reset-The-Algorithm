@@ -81,7 +81,7 @@ const BIEN = {
     mirar: 'Qué cambió, por si se puede repetir en otra plataforma.',
   }),
   'piezas-nuevas': (d) => ({
-    titulo: `Las piezas nuevas de ${d.canal} subieron el clic`,
+    titulo: `Las piezas nuevas de ${d.canal} recuperaron el CTR`,
     dato: `El CTR pasó de ${pct(d.antes, 2)} a ${pct(d.despues, 2)} desde el ${dia(d.fecha)}.`,
     mirar: 'Las piezas funcionan. Lo que falta revisar es la página a la que llevan (ver la alerta de GA4).',
   }),

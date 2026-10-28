@@ -525,3 +525,26 @@
 /* Sello de lo nuevo: tinta llena, en mayúsculas cortas */
 .q-sello-nuevo { display: inline-flex; align-items: center; margin-left: var(--e-2); padding: 1px var(--e-2); border-radius: var(--r-control); background: var(--texto-1); color: var(--superficie); font-family: var(--f-texto); font-size: var(--t-13); font-weight: var(--peso-rotulo); text-transform: uppercase; letter-spacing: 0.06em; vertical-align: middle; }
 .q-sello-nuevo-carta { position: absolute; z-index: 5; top: var(--e-2); left: var(--e-2); margin: 0; }
+
+/* Piezas y campañas (capa 3): la tabla por campaña, que se abre en conjuntos y piezas */
+.q-control-tarjeta { flex-wrap: wrap; }
+.q-tabla-arbol { font-size: var(--t-14); }
+.q-tabla-arbol th, .q-tabla-arbol td { vertical-align: middle; }
+.q-tabla-arbol .q-arbol-campana th, .q-tabla-arbol .q-arbol-campana td { background: var(--superficie-capitulo); font-weight: var(--peso-rotulo); color: var(--texto-1); }
+.q-tabla-arbol .q-arbol-campana th { padding-left: var(--e-2); }
+.q-tabla-arbol .q-arbol-conjunto th { padding-left: var(--e-5); font-weight: var(--peso-rotulo); }
+.q-tabla-arbol .q-arbol-pieza th { padding-left: var(--e-8); font-weight: var(--peso-lectura); }
+.q-tabla-arbol .q-arbol-pausada th .q-arbol-nombre, .q-tabla-arbol .q-arbol-pausada td { color: var(--texto-3); }
+.q-arbol-nombre { display: block; }
+.q-arbol-abrir { display: inline-flex; align-items: flex-start; gap: var(--e-1); padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.q-arbol-abrir svg { margin-top: 2px; flex: none; }
+.q-arbol-abrir:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.q-arbol-campana .q-arbol-sub { padding-left: var(--e-5); }
+.q-arbol-sub { display: block; font-size: var(--t-13); font-weight: var(--peso-lectura); color: var(--texto-3); }
+.q-arbol-dato { font-size: var(--t-14); color: var(--texto-2); min-width: 16em; }
+.q-arbol-pieza-nombre { display: flex; align-items: center; gap: var(--e-2); }
+/* la miniatura de una pieza: el arte de muestra, chico y sin texto */
+.q-arte-mini { flex: none; width: 2.5rem; height: 2.5rem; border-radius: var(--r-control); overflow: hidden; border: 1px solid var(--borde); }
+.q-arte-mini .q-arte { padding: var(--e-1); gap: var(--e-1); }
+.q-arte-mini .q-arte-tema { display: none; }
+.q-arte-mini .q-arte-marca { right: var(--e-1); bottom: var(--e-1); }

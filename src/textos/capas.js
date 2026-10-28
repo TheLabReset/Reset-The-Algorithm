@@ -101,5 +101,7 @@ export function textosDelAbanico(a, anio) {
     meta: (x) => metaDelAnuncio(x, anio),
     texto: textoDeMuestra,
     sinContenido: notaSinContenido(a.sinContenido),
+    // los que empezaron dentro del período: «2 nuevos en el período»
+    nuevos: (n) => `${numero(n)} ${segun(n, 'nuevo', 'nuevos')} en el período`,
   };
 }

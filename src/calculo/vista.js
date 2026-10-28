@@ -12,6 +12,7 @@ import { reasignacion, agendamiento, fatigaCreativa, temporada } from './sugeren
 import { queMirar, queVaBien } from './queMirar.js';
 import { leePlataformas, leeCrmDetalle, leeBusquedasDetalle, leeRedes, leeCompetencia, leeAnuncios, leeGa4, analizaReparto, analizaPautaCrm } from './produccion.js';
 import { periodoDe } from './periodo.js';
+import { leerPiezas } from './piezas.js';
 import { CLIENTE } from '../cliente.js';
 
 // El período de los filtros (un atajo, dos fechas o un mes) y su comparación: src/calculo/periodo.js
@@ -154,6 +155,9 @@ export function armarVista(data, filtros, estado = {}) {
   if (busquedas.estado === 'ok') Object.assign(busquedas, leeBusquedasDetalle(data, P));
   const redes = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: `TikTok y conversación pública sobre ${CLIENTE.nombre}`, ...leeRedes(data, P) } : { estado: estadoGrupo('conversacion') };
   const competencia = estadoGrupo('conversacion') === 'ok' ? { estado: 'ok', universo: 'Publicaciones y anuncios de cada marca (cifras de muestra)', ...leeCompetencia(data, P) } : { estado: estadoGrupo('conversacion') };
+  // Piezas y campañas: lo que reporta cada plataforma por pieza, con su estado (src/calculo/piezas.js)
+  const piezasLeidas = estadoGrupo('pauta') === 'ok' ? leerPiezas(data, P) : null;
+  const piezas = estadoGrupo('pauta') !== 'ok' ? { estado: estadoGrupo('pauta') } : piezasLeidas ? { estado: 'ok', universo: 'Lo que reporta cada plataforma por pieza', ...piezasLeidas } : { estado: 'sin-datos' };
   const anunciosLeidos = estadoGrupo('conversacion') === 'ok' ? leeAnuncios(data, P) : null;
   const anuncios = anunciosLeidos ? { estado: 'ok', universo: 'Biblioteca de anuncios de Meta (piezas de muestra)', ...anunciosLeidos } : { estado: estadoGrupo('conversacion') === 'ok' ? 'vacio' : estadoGrupo('conversacion') };
 
@@ -271,7 +275,7 @@ export function armarVista(data, filtros, estado = {}) {
 
   const vista = {
     periodo, fuentes, monitoreo,
-    lee: { pauta, plataformas, crm, crmDetalle, busquedas, redes, competencia, anuncios, conversacion, web },
+    lee: { pauta, plataformas, piezas, crm, crmDetalle, busquedas, redes, competencia, anuncios, conversacion, web },
     analiza: { rendimiento, reparto, pautaCrm, demandaRespuesta, horaDia, sedes },
     sugiere: { indice: indiceVista, sugerencias, escenario: escenarioVista },
   };

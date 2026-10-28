@@ -1,7 +1,7 @@
 // Capa 4 · Rendimiento y optimización: qué dio resultado. Cómo viene el período, de la pauta al CRM, el CRM por
 // dentro, cuándo y dónde entran los leads, y la competencia. Lo de universos distintos se compara, nunca se suma.
 // No calcula: pinta la vista y las lecturas de src/textos.
-import { Bloque, Tabla, Resumen, Flujo } from '../sistema/Componentes.jsx';
+import { Bloque, Tabla, Resumen, Flujo, Detalle } from '../sistema/Componentes.jsx';
 import { Linea, Barras, Etapas, Reticula, Histograma, Columnas, Acumulado } from '../sistema/graficos/Graficos.jsx';
 import { numero, dolares, porcentaje, variacion, rangoFechas, fecha } from '../sistema/formato.js';
 import { MarcoCapa, SeccionDe, HorasYDias, Competencia, sinDato, deltaCorto } from './comun.jsx';
@@ -95,20 +95,6 @@ export default function Rendimiento({ capa, vista: v }) {
       {/* ───── 4.3 Dentro del CRM ───── */}
       <SeccionDe def={s43} vista={v}>
         {!ok(cr) ? <Bloque titulo="Dentro del CRM" universo="crm" estado={sinDato(cr.estado)} /> : <>
-          <Bloque universo="crm" ancho="mitad" {...L.crmFuentes(v)} pie={<span>Fuente por último clic, registrada en el CRM.</span>}>
-            <Barras etiqueta="Leads del CRM por fuente" formato={(n) => numero(n)}
-              filas={cr.fuentes.map((f) => ({ nombre: f.nombre, valor: f.leads, nota: `${numero(f.pct)} de 100` }))} />
-          </Bloque>
-          <Bloque universo="crm" ancho="mitad" {...L.crmEtapas(v)}
-            pie={<span>«≥»: los leads siguen en la etapa, así que los días son un piso. Un lead se descarta si pasa su plazo sin avanzar.</span>}>
-            <Tabla etiqueta="Etapas de los leads del período" numericas={[1, 2, 3]} barra={{ columna: 2, valores: [...cr.etapas.map((e) => e.estan), cr.salidas.descartados] }}
-              columnas={['Etapa', 'Entraron', 'Están hoy', 'Días ahí']}
-              apagadas={[cr.etapas.length]}
-              filas={[
-                ...cr.etapas.map((e) => [e.nombre, numero(e.entraron), e.estan == null ? '' : numero(e.estan), e.diasAhi == null ? '' : `≥ ${numero(e.diasAhi, 1)}`]),
-                ['Descartados', '', numero(cr.salidas.descartados), ''],
-              ]} />
-          </Bloque>
           {ok(co)
             ? <Bloque universo="crm" alcance={cohorte} {...L.crmCohorte(v)}
                 estado={co.cerrada ? null : { tipo: 'abierta', texto: 'Algunas inscripciones de esta cohorte todavía no ocurren: las tasas pueden subir.' }}>
@@ -123,15 +109,32 @@ export default function Rendimiento({ capa, vista: v }) {
               barras={cr.atencion.tramos.map((t) => ({ nombre: t.nombre, corto: t.nombre.replace('menos de ', '< ').replace('más de ', '> '), valor: t.valor, pct: t.pct }))} resaltar={[]} />
             <p className="q-nota-bloque">La mitad de los leads tuvo {numero(cr.atencion.medianaIntentos)} {cr.atencion.medianaIntentos === 1 ? 'intento' : 'intentos'} de contacto o menos. {numero(cr.atencion.sinRegistro)} contactos sin registro de hora.</p>
           </Bloque>
-          <Bloque universo="crm" ancho="mitad" {...L.crmDescarte(v)}>
-            <Barras etiqueta="Motivos de descarte" filas={cr.descarte.motivos.map((m) => ({ nombre: m.nombre, valor: m.valor }))} />
+          <Bloque universo="crm" ancho="mitad" {...L.crmFuentes(v)} pie={<span>Fuente por último clic, registrada en el CRM.</span>}>
+            <Barras etiqueta="Leads del CRM por fuente" formato={(n) => numero(n)}
+              filas={cr.fuentes.map((f) => ({ nombre: f.nombre, valor: f.leads, nota: `${numero(f.pct)} de 100` }))} />
           </Bloque>
-          <Bloque universo="crm" titulo="Campañas del CRM" alcance="acumulado de cada campaña" lectura={cr.campanas.length ? 'Las campañas que se cruzan con el período, con lo que el CRM les atribuye desde que empezaron.' : 'Ninguna campaña del CRM se cruza con este período.'}
-            pie={<span>Valor estimado: inscripciones por el ticket de entrada (matrícula y primer mes). No se compara con la inversión, que mide otra cosa.</span>}>
-            {cr.campanas.length > 0 && <Tabla etiqueta="Campañas del CRM" numericas={[2, 3, 4]}
-              columnas={['Campaña', 'Vigencia', 'Leads', 'Inscripciones', 'Valor estimado']}
-              filas={cr.campanas.map((k) => [{ texto: k.nombre, sub: k.enCurso ? 'en curso' : null }, rangoFechas(k.desde, k.hasta), numero(k.leads), numero(k.altas), dolares(k.valor)])} />}
-          </Bloque>
+          <Detalle id={`detalle-${s43.id}`} titulo="Dentro del CRM" bajada="Dónde están hoy los leads del período, por qué se descartan y las campañas que el CRM sigue."
+            vistas={['etapas de hoy', 'motivos de descarte', 'campañas del CRM']}>
+            <Bloque universo="crm" {...L.crmEtapas(v)}
+              pie={<span>«≥»: los leads siguen en la etapa, así que los días son un piso. Un lead se descarta si pasa su plazo sin avanzar.</span>}>
+              <Tabla etiqueta="Etapas de los leads del período" numericas={[1, 2, 3]} barra={{ columna: 2, valores: [...cr.etapas.map((e) => e.estan), cr.salidas.descartados] }}
+                columnas={['Etapa', 'Entraron', 'Están hoy', 'Días ahí']}
+                apagadas={[cr.etapas.length]}
+                filas={[
+                  ...cr.etapas.map((e) => [e.nombre, numero(e.entraron), e.estan == null ? '' : numero(e.estan), e.diasAhi == null ? '' : `≥ ${numero(e.diasAhi, 1)}`]),
+                  ['Descartados', '', numero(cr.salidas.descartados), ''],
+                ]} />
+            </Bloque>
+            <Bloque universo="crm" {...L.crmDescarte(v)}>
+              <Barras etiqueta="Motivos de descarte" filas={cr.descarte.motivos.map((m) => ({ nombre: m.nombre, valor: m.valor }))} />
+            </Bloque>
+            <Bloque universo="crm" titulo="Campañas del CRM" alcance="acumulado de cada campaña" lectura={cr.campanas.length ? 'Las campañas que se cruzan con el período, con lo que el CRM les atribuye desde que empezaron.' : 'Ninguna campaña del CRM se cruza con este período.'}
+              pie={<span>Valor estimado: inscripciones por el ticket de entrada (matrícula y primer mes). No se compara con la inversión, que mide otra cosa.</span>}>
+              {cr.campanas.length > 0 && <Tabla etiqueta="Campañas del CRM" numericas={[2, 3, 4]}
+                columnas={['Campaña', 'Vigencia', 'Leads', 'Inscripciones', 'Valor estimado']}
+                filas={cr.campanas.map((k) => [{ texto: k.nombre, sub: k.enCurso ? 'en curso' : null }, rangoFechas(k.desde, k.hasta), numero(k.leads), numero(k.altas), dolares(k.valor)])} />}
+            </Bloque>
+          </Detalle>
         </>}
       </SeccionDe>
 

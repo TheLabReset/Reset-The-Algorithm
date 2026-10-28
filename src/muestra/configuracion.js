@@ -315,6 +315,33 @@ export const BASE = {
     { fecha: '2026-09-08', tipo: 'creativo', canal: 'meta', texto: 'Nuevas piezas en Meta' },
   ],
 
+  // Piezas de cada campaña (src/muestra/piezas.js): conjuntos de anuncios y piezas que se renuevan cada tantos días.
+  // Cada día, lo que reporta la campaña se reparte entre sus piezas activas: suman exacto. Las campañas de alcance no
+  // buscan leads y no tienen piezas que juzgar por costo por lead. Todo «asumo».
+  piezas: {
+    cada: 21, // días entre una tanda de piezas y la siguiente en cada conjunto
+    solapa: 6, // días que una pieza sigue activa después de que entra la siguiente
+    conjuntos: {
+      's-marca': ['Marca'], 's-membresias': ['Membresías', 'Precios y planes'], 's-distritos': ['Gimnasio cerca', 'Por distrito'],
+      'd-remarketing': ['Visitas del sitio, 30 días'], 'd-prospeccion': ['Intereses de deporte'],
+      'm-prueba': ['Lima Norte, 20 a 40', 'Lima Moderna, 20 a 40'], 'm-remarketing': ['Visitas del sitio, 30 días'],
+      'm-reto': ['Lima, 18 a 35'], 'm-olivos': ['Los Olivos y alrededores'],
+      't-prueba': ['Lima, 18 a 30', 'Intereses de deporte'],
+    },
+    formatos: { search: ['Anuncio de búsqueda'], display: ['Banner'], meta: ['Video', 'Carrusel', 'Imagen'], tiktok: ['Video'] },
+    temas: ['Clase de prueba gratis', 'Sin matrícula', 'Plan anual', 'Rutina guiada', 'Antes y después', 'Abierto hasta las 11'],
+    // cómo le va a cada pieza dentro de su campaña: peso del gasto, CTR y conversión relativos. Una pieza que se satura
+    // rinde al principio, se queda activa dos tandas y después de tres semanas convierte cada vez menos
+    comportamientos: {
+      rinde: { gasto: 1, ctr: 1, conversion: 1.1 },
+      costosa: { gasto: 0.9, ctr: 0.9, conversion: 0.45 },
+      'sin-leads': { gasto: 0.45, ctr: 0.7, conversion: 0 },
+      saturada: { gasto: 1.1, ctr: 1, conversion: 1.1, cansa: true, tandas: 2 },
+    },
+    // el orden en que se reparten por tanda (cada conjunto empieza en otro punto): así cualquier período tiene de todo
+    orden: ['rinde', 'costosa', 'rinde', 'saturada', 'rinde', 'sin-leads', 'rinde', 'costosa', 'rinde', 'saturada'],
+  },
+
   // Umbrales de método, declarados para que ningún número quede suelto en la pantalla
   metodo: {
     margenParecido: 0.1, // asumo: costos por inscripción a menos de 10 % entre sí se leen como parecidos (la cohorte tiene ruido)

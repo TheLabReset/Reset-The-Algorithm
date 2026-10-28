@@ -81,6 +81,11 @@ test('fecha móvil: lo que ya se mostró no cambia al pasar un día', () => {
   assert.equal(pa.length, pb.size, 'cambió la cantidad de filas del pasado');
   const distinta = pa.find(([k, x]) => pb.get(k) !== JSON.stringify(x));
   assert.equal(distinta?.[0], undefined, `cambió ${distinta?.[0]}`);
+  // las piezas de cada campaña, día por día
+  const piezasDia = (d) => detallar(d).piezas.dias.filter((x) => x.fecha <= hasta).map((x) => JSON.stringify(x));
+  const pza = piezasDia(a), pzb = piezasDia(b);
+  const j = pza.findIndex((x, k) => x !== pzb[k]);
+  assert.equal(j, -1, `cambiaron las piezas del ${pza[j]?.slice(10, 20)}`);
   const crm = (d) => detallar(d).crm.filter((x) => x.fecha <= hasta).map((x) => JSON.stringify(x));
   const ca = crm(a), cb = crm(b);
   const i = ca.findIndex((x, k) => x !== cb[k]);

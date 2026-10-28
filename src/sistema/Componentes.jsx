@@ -728,7 +728,7 @@ function TarjetaAnuncio({ a, anunciante, t }) {
       {a.imagen && !rota && <div className="q-anuncio-pieza"><img src={a.imagen} alt={`Imagen del anuncio de ${anunciante}`} loading="lazy" referrerPolicy="no-referrer" onError={() => setRota(true)} /></div>}
       {!a.imagen && a.arte != null && <div className="q-anuncio-pieza"><ArteMuestra a={a} grande /></div>}
       <div className="q-anuncio-cuerpo">
-        {a.titulo && <h3>{a.titulo}</h3>}
+        {a.titulo && <h3>{a.titulo}{a.nuevo && <SelloNuevo />}</h3>}
         {texto && <p className="q-anuncio-texto">{texto}</p>}
         {meta && <p className="q-anuncio-meta">{meta}</p>}
         {a.enlace && (
@@ -765,6 +765,7 @@ function Mazo({ g, onAbrir, propio, t }) {
   return (
     <button type="button" className="q-mazo" onClick={() => onAbrir(g.nombre)} data-anunciante={g.nombre} aria-haspopup="dialog">
       <span className="q-mazo-pila" aria-hidden="true">
+        {g.nuevos > 0 && <SelloNuevo className="q-sello-nuevo-carta" />}
         {pila.map((a, i) => {
           const conImg = a.imagen && conImagen.length;
           return (
@@ -776,7 +777,7 @@ function Mazo({ g, onAbrir, propio, t }) {
         })}
       </span>
       <span className="q-mazo-nombre">{g.nombre}{propio && <span className="q-mazo-propio">{t.propio}</span>}</span>
-      <span className="q-mazo-dato"><b>{t.cuenta(n)}</b>{t.detalle(g) && ` · ${t.detalle(g)}`}</span>
+      <span className="q-mazo-dato"><b>{t.cuenta(n)}</b>{g.nuevos > 0 && t.nuevos ? ` · ${t.nuevos(g.nuevos)}` : t.detalle(g) && ` · ${t.detalle(g)}`}</span>
       <span className="q-mazo-ver">{t.ver(n)}<ArrowRight size={14} aria-hidden="true" /></span>
     </button>
   );
