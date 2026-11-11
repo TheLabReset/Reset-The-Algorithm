@@ -245,6 +245,7 @@ const N_RIEL = 9;
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
   const lienzo = $("#lienzo");
+  let SOLO = true; try { SOLO = window.self === window.top; } catch (e) { SOLO = false; }
   const encajar = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); lienzo.style.transform = `translate(${-960 * k}px, ${-540 * k}px) scale(${k})`; };
   encajar(); addEventListener("resize", encajar);
   // el reloj gira desde su centro
@@ -263,7 +264,12 @@ const N_RIEL = 9;
   }
   let L = 0, paso = 0, tl = null, tecnica = false;
   const total = (l) => (LAMINAS[l].pasos || []).length;
-  function ir(l, n, animar) {
+  // si algo falla, se ve en una esquina en vez de dejar la lámina a medias
+  const aviso = (err) => { let d = $("#falla-deck"); if (!d) { d = document.createElement("div"); d.id = "falla-deck"; d.style.cssText = "position:fixed;left:12px;bottom:12px;z-index:99;max-width:60vw;padding:8px 12px;border-radius:8px;background:#16181F;color:#EDEFF2;font:12px/1.4 monospace"; document.body.appendChild(d); } d.textContent = "Error en la lámina " + (L + 1) + ": " + (err && err.message ? err.message : err); };
+  addEventListener("error", (e) => aviso(e.error || e.message));
+  addEventListener("unhandledrejection", (e) => aviso(e.reason));
+  function ir(l, n, animar) { try { mover(l, n, animar); } catch (err) { L = l; paso = n; aviso(err); } }
+  function mover(l, n, animar) {
     if (tl) { tl.progress(1); tl.kill(); tl = null; }
     const lam = LAMINAS[l];
     if (!animar || RM) fijar(l, n);
@@ -282,7 +288,8 @@ const N_RIEL = 9;
     if (!animar || RM) { gsap.set("#palabras", { x: -1500 * Math.max(0, lam.parada ?? 0) }); gsap.set("#trama", { backgroundPositionX: -620 * Math.max(0, lam.parada ?? 0) }); }
     L = l; paso = n;
     textos(l, n, animar);
-    try { history.replaceState(null, "", "#" + lam.id + (n ? "/" + n : "")); } catch (e) {}
+    // el ancla solo se escribe fuera de un marco: dentro del visor de artifacts la URL es del visor
+    if (SOLO) { try { history.replaceState(null, "", "#" + lam.id + (n ? "-" + n : "")); } catch (e) {} }
   }
   function textos(l, n, animar) {
     const lam = LAMINAS[l], d = animar && !RM ? 0.5 : 0, tinta = lam.tipo === "tinta";
@@ -324,14 +331,16 @@ const N_RIEL = 9;
   $("#nav .t").addEventListener("click", (e) => { e.stopPropagation(); alternarT(); });
   $("#nav .pc").addEventListener("click", (e) => { e.stopPropagation(); pantallaCompleta(); });
   lienzo.addEventListener("click", () => adelante());
-  // el ancla: #reglas/2 abre la lámina «reglas» en su paso 2
+  // el ancla: #reglas-2 abre la lámina «reglas» en su paso 2 (solo letras, números y guion)
   const desdeAncla = () => {
-    const [id, n] = decodeURIComponent(location.hash.slice(1)).split("/");
+    let a = ""; try { a = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+    const [id, n] = a.split(/[-/]/);
     const l = LAMINAS.findIndex((x) => x.id === id);
-    return l < 0 ? [0, 0] : [l, Math.min(+n || 0, total(l))];
+    return l < 0 ? null : [l, Math.min(+n || 0, total(l))];
   };
-  addEventListener("hashchange", () => { const [l, n] = desdeAncla(); if (l !== L || n !== paso) ir(l, n, false); });
-  const arrancar = () => ir(...desdeAncla(), false);
+  // un ancla vacía o desconocida no mueve nada
+  addEventListener("hashchange", () => { const d = desdeAncla(); if (d && (d[0] !== L || d[1] !== paso)) ir(d[0], d[1], false); });
+  const arrancar = () => ir(...(desdeAncla() || [0, 0]), false);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(arrancar); else arrancar();
 })();
 </script>
